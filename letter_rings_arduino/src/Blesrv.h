@@ -19,6 +19,7 @@ class Blesrv {
     static BLEService* pService;
     static BLECharacteristic* pLabelCharacteristic;
     static BLECharacteristic* pModusCharacteristic;
+    static BLECharacteristic* pLightCharacteristic;
 
    public:
     static String macAdress;
@@ -28,6 +29,10 @@ class Blesrv {
      * for when the modus was changed on the device
      */
     static bool writeModus();
+    /**
+     * for when the brightness changes
+     */
+    static bool writeLight();
 };
 
 #endif

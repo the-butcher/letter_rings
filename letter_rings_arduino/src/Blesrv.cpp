@@ -4,6 +4,7 @@ BLEServer* Blesrv::pServer;
 BLEService* Blesrv::pService;
 BLECharacteristic* Blesrv::pLabelCharacteristic;
 BLECharacteristic* Blesrv::pModusCharacteristic;
+BLECharacteristic* Blesrv::pLightCharacteristic;
 String Blesrv::macAdress;
 
 // Function to convert a struct to a byte array
@@ -25,6 +26,8 @@ class BlesrvCallbacks : public BLEServerCallbacks {
         // do nothing
         Serial.println("something connected");
         Display::needsStatusRedraw = true;
+        // Blesrv::writeModus();
+        // Blesrv::writeLight();
     };
     void onDisconnect(BLEServer* pServer) {
         // do nothing
@@ -69,9 +72,30 @@ class ModusCallbacks : public BLECharacteristicCallbacks {
 
         uint8_t bModus = newValue[0];
         if (bModus >= MODUS________WORDS && bModus <= MODUS________FREQU) {
-            // Display::clearLabel();
-            // Display::clearFrequ();
             Device::modus = (modus_________e)bModus;
+            Display::needsStatusRedraw = true;
+        }
+    }
+};
+
+class LightCallbacks : public BLECharacteristicCallbacks {
+
+    void onWrite(BLECharacteristic* pCharacteristic) {
+
+        size_t pDataLength = pCharacteristic->getLength();
+        uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
+
+        Serial.print("pDataLength: ");
+        Serial.print(String(pDataLength));
+        Serial.print(", core: ");
+        Serial.print(xPortGetCoreID());
+        Serial.print(", newValue: ");
+        Serial.println(String(newValue[0]));
+
+        uint8_t bLight = newValue[0];
+        if (bLight >= 0 && bLight <= 15) {
+            Matrices::brightness = bLight;
+            Matrices::needsBrightnessUpdate = true;
             Display::needsStatusRedraw = true;
         }
     }
@@ -101,6 +125,14 @@ bool Blesrv::begin() {
     int cModus = Device::modus;
     Blesrv::pModusCharacteristic->setValue(cModus);
 
+    Blesrv::pLightCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_LIGHT_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
+    Blesrv::pLightCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_LIGHT_DSC_UUID, sizeof(uint8_t)));
+    Blesrv::pLightCharacteristic->addDescriptor(new BLE2902());
+    Blesrv::pLightCharacteristic->setCallbacks(new LightCallbacks());
+    // initial value
+    int cLight = Matrices::brightness;
+    Blesrv::pLightCharacteristic->setValue(cLight);
+
     Blesrv::pService->start();
 
     BLEAdvertising* pAdvertising = BLEDevice::getAdvertising();
@@ -119,12 +151,25 @@ bool Blesrv::begin() {
 }
 
 bool Blesrv::writeModus() {
-    if (Blesrv::isConnected()) {
-        int cModus = Device::modus;
-        Blesrv::pModusCharacteristic->setValue(cModus);
-        Blesrv::pModusCharacteristic->notify();
-        return true;
-    } else {
-        return false;
-    }
+    // if (Blesrv::isConnected()) {
+    int cModus = Device::modus;
+    Blesrv::pModusCharacteristic->setValue(cModus);
+    Blesrv::pModusCharacteristic->notify();
+    return Blesrv::isConnected();
+    //     return true;
+    // } else {
+    //     return false;
+    // }
+}
+
+bool Blesrv::writeLight() {
+    // if (Blesrv::isConnected()) {
+    int cLight = Matrices::brightness;
+    Blesrv::pLightCharacteristic->setValue(cLight);
+    Blesrv::pLightCharacteristic->notify();
+    return Blesrv::isConnected();
+    //     return true;
+    // } else {
+    //     return false;
+    // }
 }

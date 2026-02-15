@@ -22,6 +22,7 @@ void Buttons::handleInterruptA() {
         } else if (Matrices::brightness < 15) {
             Matrices::brightness += 1;
             Matrices::needsBrightnessUpdate = true;
+            Blesrv::writeLight();
         }
         Buttons::buttonA.lastInterruptMillis = interruptMillis;
         Display::needsStatusRedraw = true;
@@ -60,6 +61,7 @@ void Buttons::handleInterruptC() {
         } else if (Matrices::brightness > 0) {
             Matrices::brightness -= 1;
             Matrices::needsBrightnessUpdate = true;
+            Blesrv::writeLight();
         }
         Buttons::buttonC.lastInterruptMillis = interruptMillis;
         Display::needsStatusRedraw = true;

@@ -21,6 +21,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
     var gattInstance: BluetoothGatt? = null;
     var labelCharacteristic: BluetoothGattCharacteristic? = null
     var modusCharacteristic: BluetoothGattCharacteristic? = null
+    var lightCharacteristic: BluetoothGattCharacteristic? = null
 
     @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
     fun writeLabelValue(value: String) {
@@ -39,10 +40,26 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
         }
     }
 
+    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    fun writeLightValue(light: Int) {
+        if (gattInstance != null && lightCharacteristic != null) {
+            val bytes = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(light).array()
+            bytes.reverse() // significant byte need to be first
+            Log.i("BLE", "writing light value ${bytes.size} ${bytes[0]} ${bytes[3]}")
+            gattInstance!!.writeCharacteristic(lightCharacteristic!!, bytes, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+        }
+    }
+
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun readModusValue() {
         val readResult = gattInstance?.readCharacteristic(modusCharacteristic);
         Log.i("BLE","modus characteristic read (result: ${readResult})") // returns true
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun readLightValue() {
+        val readResult = gattInstance?.readCharacteristic(lightCharacteristic);
+        Log.i("BLE","light characteristic read (result: ${readResult})") // returns true
     }
 
     // https://punchthrough.com/android-ble-guide/
@@ -115,6 +132,10 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                             val modus = value[0]
                             MainActivity.instance.get()?.setModus(modus, side)
                             Log.i("BLE", "received modus change (${modus})")
+                        } else if (characteristic.uuid.toString() == COMMAND_LIGHT_____UUID) {
+                            val light = value[0]
+                            MainActivity.instance.get()?.setLight(light, side)
+                            Log.i("BLE", "received light change (${light})")
                         } else {
                             Log.i("BLE", "received unknown characteristic change (${characteristic.uuid})")
                         }
@@ -135,6 +156,11 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                     readModusValue()
 //                    val readResult = gattInstance?.readCharacteristic(characteristic);
 //                    Log.i("BLE","modus characteristic read (${gattInstance}, ${characteristic}, ${readResult})") // returns true
+                    Log.i("BLE","modus characteristic changed") // returns true
+                } else if (characteristic.uuid.toString() == COMMAND_LIGHT_____UUID) {
+                    readLightValue()
+//                    val readResult = gattInstance?.readCharacteristic(characteristic);
+                    Log.i("BLE","light characteristic changed") // returns true
                 }
             }
 
@@ -150,6 +176,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                         Log.d("BLE", "letter-rings service bind (${service.toString()} ${address ?: "none"})")
                         labelCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_LABEL_____UUID))
                         modusCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_MODUS_____UUID))
+                        lightCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_LIGHT_____UUID))
 
                         modusCharacteristic?.let {
 
@@ -164,11 +191,22 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                                 }
                             }, 1000)
 
-                            // read initial value
-//                            val modus = it.value[0]
-//                            MainActivity.instance.get()?.setModus(modus, side)
-
                         } ?: Log.i("BLE","modus characteristic not found") // returns true
+
+                        lightCharacteristic?.let {
+
+                            enableNotifications(it)
+
+                            // get initial modus value
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                try {
+                                    readLightValue()
+                                } catch (e: Exception) {
+                                    Log.e("BLE", "failed to read light ${e.message}")
+                                }
+                            }, 2000)
+
+                        } ?: Log.i("BLE","light characteristic not found") // returns true
 
                         MainActivity.instance.get()?.checkBleState(side)
 

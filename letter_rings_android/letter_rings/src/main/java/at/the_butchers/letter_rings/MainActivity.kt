@@ -9,8 +9,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
@@ -67,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         val inputStream = assetManager.open("shazam.properties")
         properties.load(inputStream)
         val shazamJwt = properties.getProperty("SHAZAM_JWT")
-        Log.d("SHK", "shazamJwt from file ($shazamJwt)")
+        Log.d("MAIN", "shazamJwt from file ($shazamJwt)")
 
         val tokenProvider = DeveloperTokenProvider {
             DeveloperToken(shazamJwt)
@@ -81,6 +83,9 @@ class MainActivity : AppCompatActivity() {
 
         setupRadioButtons(Side.LEFT)
         setupRadioButtons(Side.RIGHT)
+
+        setupSeekBar(Side.LEFT)
+        setupSeekBar(Side.RIGHT)
 
         // set up bluetooth and find devices ====================
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
@@ -108,6 +113,24 @@ class MainActivity : AppCompatActivity() {
                 bleDeviceInstanceMap[side]?.writeModusValue(modus)
             }
         }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun setupSeekBar(side: Side) {
+        val sbLight: SeekBar =  findViewById (side.idSbLight)
+        sbLight.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                Log.i("MAIN", "onStopTrackingTouch (${side.idSbLight})")
+                bleDeviceInstanceMap[side]?.writeLightValue(sbLight.progress)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+//                Log.i("MAIN", "onStartTrackingTouch (${side.idSbLight}, ${sbLight.progress})")
+            }
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+//                Log.i("MAIN", "onProgressChanged (${side.idSbLight}, ${progress})")
+            }
+        })
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -152,25 +175,33 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    fun setLight(light: Byte, side: Side) {
+
+        val sbLight: SeekBar =  findViewById (side.idSbLight)
+        Log.d("BLE", "sbLight will be changed on ui-thread")
+        this@MainActivity.runOnUiThread { sbLight.setProgress((light.toInt())) }
+
+    }
+
     fun checkBleState(side: Side) {
 
         Log.d("BLE", "unchecking BLE connection")
         val bleDeviceSwitch: Switch =  findViewById (side.idSwConn)
-        val rgModus: RadioGroup =  findViewById ( side.idRgModus)
+        val llContr: LinearLayout =  findViewById ( side.idLlContr)
         if (bleDeviceInstanceMap[side]?.gattInstance == null) {
             Log.d("BLE", "gattL is null")
             if (bleDeviceSwitch.isChecked) {
                 Log.d("BLE", "switch is checked, will uncheck on ui-thread")
                 this@MainActivity.runOnUiThread { bleDeviceSwitch.toggle() }
             }
-            if (rgModus.visibility == View.VISIBLE) { // set the radio groups visibility to gone if visibility
-                Log.d("BLE", "rgModus is VISIBLE, will set to GONE")
-                this@MainActivity.runOnUiThread { rgModus.setVisibility(View.GONE) }
+            if (llContr.visibility == View.VISIBLE) { // set the radio groups visibility to gone if visibility
+                Log.d("BLE", "llContr is VISIBLE, will set to GONE")
+                this@MainActivity.runOnUiThread { llContr.setVisibility(View.GONE) }
             }
         } else { // set the radio groups visibility to visible if gone
-            if (rgModus.visibility == View.GONE) { // show radio group if gone
-                Log.d("BLE", "rgModus is GONE, will set to VISIBLE")
-                this@MainActivity.runOnUiThread { rgModus.setVisibility(View.VISIBLE) }
+            if (llContr.visibility == View.GONE) { // show radio group if gone
+                Log.d("BLE", "llContr is GONE, will set to VISIBLE")
+                this@MainActivity.runOnUiThread { llContr.setVisibility(View.VISIBLE) }
             }
         }
 
@@ -192,8 +223,6 @@ class MainActivity : AppCompatActivity() {
             bleDeviceInstanceMap[Side.RIGHT]?.writeLabelValue(artist)
         } else {
             // maybe the devices should go to MODUS________FREQU after not receiving a title for a while
-//            bleDeviceInstanceMap[Side.LEFT]?.writeModusValue(MODUS________FREQU);
-
         }
 
     }
