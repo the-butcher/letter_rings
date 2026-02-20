@@ -90,13 +90,11 @@ void loop() {
 
     if (Device::modus == MODUS________WORDS) {
 
+        if ((currMillis - lastWordUpdateMillis) > 12000) {
+            Device::word = WORDS[random(0, 119)];
+        }
         if (Device::word != mainWord) {
             mainWord = Device::word;
-            wordProgress = 0;
-            lastWordUpdateMillis = currMillis;
-        }
-        if ((currMillis - lastWordUpdateMillis) > 12000) {
-            mainWord = WORDS[random(0, 119)];
             wordProgress = 0;
             lastWordUpdateMillis = currMillis;
         }
@@ -109,8 +107,8 @@ void loop() {
             delay(50);
         } else {
             if (wordProgress == WORD_TRANSITION_COUNT) {
-                Display::drawText(Device::word);
-                Matrices::drawWord(Device::word);
+                Display::drawText(mainWord);
+                Matrices::drawWord(mainWord);
             }
             delay(100);
         }

@@ -19,24 +19,57 @@ import com.shazam.shazamkit.ShazamKit
 import com.shazam.shazamkit.ShazamKitResult
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
+import java.util.EnumMap
 
 class WordPairWorker(appContext: Context, workerParams: WorkerParameters): Worker(appContext, workerParams) {
+
+    val WORDS: List<Pair<String, String>> = listOf(
+        Pair("LOVE", "HATE"),
+        Pair("REAL", "FAKE"),
+        Pair("WARM", "COLD"),
+        Pair("MANY", "NONE"),
+        Pair("FAST", "SLOW"),
+        Pair("KIND", "GRIM"),
+        Pair("GOOD", "EVIL"),
+        Pair("KEEP", "GIVE"),
+        Pair("WELL", "SICK"),
+        Pair("HOPE", "FEAR"),
+        Pair("FACT", "MYTH"),
+        Pair("RISE", "FALL"),
+        Pair("MORE", "LESS"),
+        Pair("MOVE", "STOP"),
+        Pair("REST", "WORK"),
+        Pair("HEAL", "HURT"),
+        Pair("LIFT", "DROP"),
+        Pair("SOFT", "HARD"),
+        Pair("CALM", "LOUD"),
+        Pair("RICH", "POOR"),
+        Pair("PURE", "FOUL"),
+        Pair("NICE", "MEAN"),
+        Pair("PEAK", "BASE"),
+        Pair("PULL", "PUSH"),
+        Pair("LAMB", "WOLF"),
+        Pair("HUGE", "TINY"),
+        Pair("FULL", "VOID"),
+        Pair("STAY", "FLEE"),
+        Pair("UNDO", "REDO"),
+        Pair("LIVE", "PASS"),
+        Pair("EARN", "LOSE"),
+        Pair("GAIN", "LOSS")
+    );
 
     @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
     override fun doWork(): Result {
 
         Log.d(WORK_LOG_TAG, "do word pair work")
 
-        var wordL = "WEST"
-        var wordR = "EAST"
+        val randomWords = WORDS.random();
 
-        // TODO :: pick a new pair of words
-
-        Log.d(WORK_LOG_TAG, "wordL ($wordL), wordR ($wordL)")
+        Log.d(WORK_LOG_TAG, "wordL ($randomWords.first), wordR ($randomWords.second)")
 
         // let the WorkHandler know that this instance is done working, must be async or there are issues cancelling instances
         Handler(Looper.getMainLooper()).postDelayed(  {
-            WorkHandler.onDoWordPairWork(wordL, wordR) // let WorkHandler take further action
+            WorkHandler.onDoWordPairWork(randomWords.first, randomWords.second) // let WorkHandler take further action
         }, 100)
 
         return Result.success()
