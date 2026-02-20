@@ -3,6 +3,8 @@
 // Adafruit_8x8matrix Matrix::baseMatrix();
 modus_________e Device::modus = MODUS________LABEL;
 orientation___e Device::orientation = ORIENTATION______UP;
+String Device::label = "LABEL";
+String Device::word = "WORD";
 
 bool Device::powerup() {
     // nothing

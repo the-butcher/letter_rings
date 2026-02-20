@@ -12,6 +12,7 @@
 #endif
 
 #define COMMAND_LABEL_____UUID "067c3c93-eb63-4905-b292-478642f8ae99"
+#define COMMAND_WORD______UUID "3dfde050-8432-4f2f-9366-de27c430c05c"
 #define COMMAND_MODUS_____UUID "a8792ef9-c01c-47ee-a063-f8712bf8dd67"  // for remote reading/writing the modus
 #define COMMAND_MODUS_DSC_UUID "ad965bf4-c9fc-4a29-94b0-c443259a06f6"  // for remote reading/writing the modus (description)
 #define COMMAND_LIGHT_____UUID "28c64d42-4958-43f0-8845-5a106498bf1d"  // for remote reading/writing the light

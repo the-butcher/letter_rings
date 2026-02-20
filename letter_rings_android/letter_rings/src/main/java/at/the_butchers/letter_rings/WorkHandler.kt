@@ -15,12 +15,32 @@ object WorkHandler {
 
     // https://www.tothenew.com/blog/using-work-managers-periodic-work-for-less-than-15-minutes/
 
-    fun scheduleWork() {
+    fun scheduleWordPairWork() {
 
-        cancelPreviousWork()
+        cancelPreviousWork(WORK___WORDS)
 
         val constraints = Constraints.Builder()
-//            .setRequiresBatteryNotLow(true)
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val workRequest = OneTimeWorkRequestBuilder<WordPairWorker>()
+            .setInitialDelay(10, TimeUnit.SECONDS)
+            .setConstraints(constraints)
+            .addTag(WORK___WORDS)
+            .build()
+
+        val workManagerInstance = WorkManager.getInstance(MainActivity.instance.get() as Context)
+        workManagerInstance.enqueue(workRequest)
+
+        Log.i(WORK_LOG_TAG, "... word pair work scheduled")
+
+    }
+
+    fun scheduleShazamWork() {
+
+        cancelPreviousWork(WORK__SHAZAM)
+
+        val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
@@ -33,19 +53,34 @@ object WorkHandler {
         val workManagerInstance = WorkManager.getInstance(MainActivity.instance.get() as Context)
         workManagerInstance.enqueue(workRequest)
 
-        Log.i(WORK_LOG_TAG, "... work scheduled")
+        Log.i(WORK_LOG_TAG, "... shazam work scheduled")
 
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun onDoWork(title: String, artist: String, valid: Boolean) {
+    fun onDoWordPairWork(wordL: String, wordR: String) {
         try {
 
             val activityState = MainActivity.instance.get()?.lifecycle?.currentState
 
-            MainActivity.instance.get()?.updateTxRecognition(title, artist, valid)
-            Log.i(WORK_LOG_TAG, "scheduling work (state: $activityState) ...")
-            scheduleWork()
+            MainActivity.instance.get()?.updateWords(wordL, wordR)
+            Log.i(WORK_LOG_TAG, "scheduling word pair work (state: $activityState) ...")
+            scheduleWordPairWork()
+
+        } catch (ex: Exception) {
+            Log.e(WORK_LOG_TAG, ex.toString())
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun onDoShazamWork(title: String, artist: String, valid: Boolean) {
+        try {
+
+            val activityState = MainActivity.instance.get()?.lifecycle?.currentState
+
+            MainActivity.instance.get()?.updateLabels(title, artist, valid)
+            Log.i(WORK_LOG_TAG, "scheduling shazam work (state: $activityState) ...")
+            scheduleShazamWork()
 
 //            if (activityState?.isAtLeast(Lifecycle.State.RESUMED) == true) {
 //
@@ -79,10 +114,10 @@ object WorkHandler {
 
     }
 
-    fun cancelPreviousWork() {
+    fun cancelPreviousWork(workTag: String) {
 
         val workManagerInstance = WorkManager.getInstance(MainActivity.instance.get() as Context)
-        workManagerInstance.cancelAllWorkByTag(WORK__SHAZAM)
+        workManagerInstance.cancelAllWorkByTag(workTag)
         Log.i(WORK_LOG_TAG, "... work cancelled")
 
     }

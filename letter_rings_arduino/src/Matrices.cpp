@@ -5,7 +5,6 @@ Matrix Matrices::matrixB(0x71);
 Matrix Matrices::matrixC(0x72);
 Matrix Matrices::matrixD(0x73);
 
-String Matrices::label = "TEST";
 uint8_t Matrices::brightness = 0;
 bool Matrices::needsBrightnessUpdate = true;
 

@@ -3,6 +3,7 @@
 BLEServer* Blesrv::pServer;
 BLEService* Blesrv::pService;
 BLECharacteristic* Blesrv::pLabelCharacteristic;
+BLECharacteristic* Blesrv::pWordCharacteristic;
 BLECharacteristic* Blesrv::pModusCharacteristic;
 BLECharacteristic* Blesrv::pLightCharacteristic;
 String Blesrv::macAdress;
@@ -50,7 +51,26 @@ class LabelCallbacks : public BLECharacteristicCallbacks {
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         String newString = (char*)newValue;
         // newString.toUpperCase();
-        Matrices::label = newString;
+        Device::label = newString;
+
+        Display::needsStatusRedraw = true;
+    }
+};
+
+class WordsCallbacks : public BLECharacteristicCallbacks {
+
+    void onWrite(BLECharacteristic* pCharacteristic) {
+
+        size_t pDataLength = pCharacteristic->getLength();
+        Serial.print("pDataLength: ");
+        Serial.print(String(pDataLength));
+        Serial.print(", core: ");
+        Serial.println(xPortGetCoreID());
+
+        uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
+        String newString = (char*)newValue;
+        // newString.toUpperCase();
+        Device::word = newString;
 
         Display::needsStatusRedraw = true;
     }
@@ -117,6 +137,9 @@ bool Blesrv::begin() {
     Blesrv::pLabelCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_LABEL_____UUID, BLECharacteristic::PROPERTY_WRITE);
     Blesrv::pLabelCharacteristic->setCallbacks(new LabelCallbacks());
 
+    Blesrv::pWordCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_WORD______UUID, BLECharacteristic::PROPERTY_WRITE);
+    Blesrv::pWordCharacteristic->setCallbacks(new WordsCallbacks());
+
     Blesrv::pModusCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_MODUS_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
     Blesrv::pModusCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_MODUS_DSC_UUID, sizeof(modus_________e)));
     Blesrv::pModusCharacteristic->addDescriptor(new BLE2902());
@@ -138,6 +161,7 @@ bool Blesrv::begin() {
     BLEAdvertising* pAdvertising = BLEDevice::getAdvertising();
     pAdvertising->addServiceUUID(COMMAND_SERVICE___UUID);
     pAdvertising->addServiceUUID(COMMAND_LABEL_____UUID);
+    pAdvertising->addServiceUUID(COMMAND_WORD______UUID);
     pAdvertising->addServiceUUID(COMMAND_MODUS_____UUID);
     pAdvertising->addServiceUUID(COMMAND_MODUS_DSC_UUID);
     pServer->getAdvertising()->start();

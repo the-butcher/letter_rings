@@ -77,7 +77,7 @@ class ShazamWorker(appContext: Context, workerParams: WorkerParameters): Worker(
 
         // let the WorkHandler know that this instance is done working, must be async or there are issues cancelling instances
         Handler(Looper.getMainLooper()).postDelayed( {
-            WorkHandler.onDoWork(title, artist, valid) // let WorkHandler take further action
+            WorkHandler.onDoShazamWork(title, artist, valid) // let WorkHandler take further action
         }, 100)
 
         return Result.success()

@@ -78,7 +78,7 @@ class BleScanner(private val bluetoothAdapter: BluetoothAdapter, private val sid
                 Log.d("BLE", "new device found: ${device.address ?: "no address"}")
                 addressSet.add(device.address)
                 val bleDevice = BleDevice(device, side)
-                MainActivity.instance.get()?.checkBleState(side)
+//                MainActivity.instance.get()?.checkBleState(side)
                 MainActivity.instance.get()?.setBleDevice(bleDevice, side)
 
                 stopScan()

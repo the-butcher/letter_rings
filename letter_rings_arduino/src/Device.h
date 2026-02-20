@@ -12,6 +12,8 @@ class Device {
 
    public:
     static modus_________e modus;
+    static String label;  // a label to be shown running through all letters of the matrix, depending on hand orienation
+    static String word;
     static bool powerup();
     static bool depower();
     static orientation___e getOrientation();

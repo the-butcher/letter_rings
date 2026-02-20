@@ -18,7 +18,7 @@ class Matrices {
     static Matrix matrixB;
     static Matrix matrixC;
     static Matrix matrixD;
-    static String label;  // a label to be shown running through all letters of the matrix, depending on hand orienation
+
     static bool powerup();
     static bool depower();
     static void drawBars();

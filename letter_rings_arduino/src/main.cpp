@@ -10,12 +10,13 @@
 
 uint64_t counter = 0;
 int16_t basePos = 33;
-String label = "";
+String mainLabel = "";
 uint16_t runWidth = 32;  // start value, will be recalculated upon first text change
 
+String mainWord = "";
+const uint8_t WORD_TRANSITION_COUNT = 10;
 uint8_t wordProgress = 0;
 uint64_t lastWordUpdateMillis = 0;
-uint64_t wordIndex = 0;
 
 uint64_t lastOrientationUpdateMillis = 0;
 
@@ -89,33 +90,43 @@ void loop() {
 
     if (Device::modus == MODUS________WORDS) {
 
-        if ((currMillis - lastWordUpdateMillis) > 10000) {
+        if (Device::word != mainWord) {
+            mainWord = Device::word;
+            wordProgress = 0;
+            lastWordUpdateMillis = currMillis;
+        }
+        if ((currMillis - lastWordUpdateMillis) > 12000) {
+            mainWord = WORDS[random(0, 119)];
             wordProgress = 0;
             lastWordUpdateMillis = currMillis;
         }
 
-        if (wordProgress < 10) {
+        if (wordProgress < WORD_TRANSITION_COUNT) {
             wordProgress++;
             String word = WORDS[random(0, 119)];
             Display::drawText(word);
             Matrices::drawWord(word);
             delay(50);
         } else {
+            if (wordProgress == WORD_TRANSITION_COUNT) {
+                Display::drawText(Device::word);
+                Matrices::drawWord(Device::word);
+            }
             delay(100);
         }
 
     } else if (Device::modus == MODUS________LABEL) {
 
-        if (Matrices::label != label) {  // width needs to be calculated
-            runWidth = Matrices::matrixA.getLabelWidth(Matrices::label);
-            label = Matrices::label;
+        if (Device::label != mainLabel) {  // width needs to be calculated
+            runWidth = Matrices::matrixA.getLabelWidth(Device::label);
+            mainLabel = Device::label;
             Serial.print("runwidth: ");
             Serial.println(String(runWidth));
             Serial.print("label: ");
-            Serial.println(String(label));
+            Serial.println(String(mainLabel));
         }
 
-        Matrices::drawLabel(label, basePos);
+        Matrices::drawLabel(mainLabel, basePos);
 
         if (Orientation::getOrientation().z * Device::getOrientation() < -25) {
             if (basePos < -runWidth) {  // all the way out to the left

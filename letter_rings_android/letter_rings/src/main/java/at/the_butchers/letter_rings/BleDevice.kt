@@ -18,15 +18,23 @@ import java.util.UUID
 class BleDevice(val device: BluetoothDevice, private val side: Side) {
 
     val address: String? = device.address
-    var gattInstance: BluetoothGatt? = null;
-    var labelCharacteristic: BluetoothGattCharacteristic? = null
-    var modusCharacteristic: BluetoothGattCharacteristic? = null
-    var lightCharacteristic: BluetoothGattCharacteristic? = null
+    var gattInstance: BluetoothGatt? = null
+    var labelCharacteristic: BluetoothGattCharacteristic? = null // set label
+    var wordCharacteristic: BluetoothGattCharacteristic? = null // set word
+    var modusCharacteristic: BluetoothGattCharacteristic? = null // get/set modus
+    var lightCharacteristic: BluetoothGattCharacteristic? = null // get/set light
 
     @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
     fun writeLabelValue(value: String) {
         if (gattInstance != null && labelCharacteristic != null) {
             gattInstance!!.writeCharacteristic(labelCharacteristic!!, value.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+        }
+    }
+
+    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    fun writeWordValue(value: String) {
+        if (gattInstance != null && wordCharacteristic != null) {
+            gattInstance!!.writeCharacteristic(wordCharacteristic!!, value.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
         }
     }
 
@@ -101,8 +109,11 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun disconnectGatt(context: Context) {
-        gattInstance?.close();
-        gattInstance?.disconnect();
+        gattInstance?.close()
+        gattInstance?.disconnect()
+        gattInstance = null
+        Log.i("BLE", "disconnect-gatt (side: ${side})")
+        MainActivity.instance.get()?.checkBleState(side)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -113,59 +124,56 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    Log.d("BLE", "connected to GATT")
+                    Log.i("BLE", "connection-state-change (side: ${side}, STATE_CONNECTED)")
                     gatt.discoverServices()
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    Log.d("BLE", "disconnected from GATT")
-                    // TODO :: reset connection
-                    gattInstance = null;
+                    Log.i("BLE", "connection-state-change (side: ${side}, STATE_DISCONNECTED)")
+                    MainActivity.instance.get()?.removeBleDevice(side)
                     MainActivity.instance.get()?.checkBleState(side)
                 }
             }
 
             override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) {
-                Log.i("BLE", "read characteristic (status: ${status})")
+                Log.i("BLE", "read-characteristic (side: ${side}, status: ${status})")
                 val uuid = characteristic.uuid
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
                         if (characteristic.uuid.toString() == COMMAND_MODUS_____UUID) {
                             val modus = value[0]
                             MainActivity.instance.get()?.setModus(modus, side)
-                            Log.i("BLE", "received modus change (${modus})")
+                            Log.i("BLE", "read-characteristic (side: ${side}, modus: ${modus})")
                         } else if (characteristic.uuid.toString() == COMMAND_LIGHT_____UUID) {
                             val light = value[0]
                             MainActivity.instance.get()?.setLight(light, side)
-                            Log.i("BLE", "received light change (${light})")
+                            Log.i("BLE", "read-characteristic (side: ${side}, light: ${light})")
                         } else {
-                            Log.i("BLE", "received unknown characteristic change (${characteristic.uuid})")
+                            Log.w("BLE", "read-characteristic (side: ${side}, unknown characteristic)")
                         }
                     }
                     BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
-                        Log.e("BLE", "read not permitted for $uuid!")
+                        Log.e("BLE", "read-characteristic (side: ${side}, GATT_READ_NOT_PERMITTED)")
                     }
                     else -> {
-                        Log.e("BLE", "characteristic read failed for $uuid, error: $status")
+                        Log.e("BLE", "read-characteristic (side: ${side}, error: $status))")
                     }
                 }
             }
 
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             public override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) {
-                Log.i("BLE", "received characteristics changed event: " + characteristic.uuid)
+                Log.i("BLE", "read-characteristic (side: ${side}, uuid: ${characteristic.uuid})")
                 if (characteristic.uuid.toString() == COMMAND_MODUS_____UUID) {
+                    Log.i("BLE", "trigger read-characteristic (side: ${side}, modus")
                     readModusValue()
-//                    val readResult = gattInstance?.readCharacteristic(characteristic);
-//                    Log.i("BLE","modus characteristic read (${gattInstance}, ${characteristic}, ${readResult})") // returns true
-                    Log.i("BLE","modus characteristic changed") // returns true
                 } else if (characteristic.uuid.toString() == COMMAND_LIGHT_____UUID) {
+                    Log.i("BLE", "trigger read-characteristic (side: ${side}, light")
                     readLightValue()
-//                    val readResult = gattInstance?.readCharacteristic(characteristic);
-                    Log.i("BLE","light characteristic changed") // returns true
                 }
             }
 
             @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
             override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+
                 if (status == BluetoothGatt.GATT_SUCCESS) {
 
                     val services = gatt.services
@@ -173,8 +181,8 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                     val service = gatt.getService(UUID.fromString(side.serviceUuid))
                     if (service != null) {
 
-                        Log.d("BLE", "letter-rings service bind (${service.toString()} ${address ?: "none"})")
                         labelCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_LABEL_____UUID))
+                        wordCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_WORD______UUID))
                         modusCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_MODUS_____UUID))
                         lightCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_LIGHT_____UUID))
 
@@ -208,11 +216,12 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
 
                         } ?: Log.i("BLE","light characteristic not found") // returns true
 
+                        Log.i("BLE", "services-discovered (side: ${side})")
                         MainActivity.instance.get()?.checkBleState(side)
 
                     } else {
 
-                        Log.d("BLE", "letter-rings service lost (${service.toString()} ${address ?: "none"})")
+                        Log.i("BLE", "services-lost (side: ${side})")
                         // TODO :: reset connection
                         gattInstance = null;
                         MainActivity.instance.get()?.checkBleState(side)

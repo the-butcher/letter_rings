@@ -35,7 +35,7 @@ void Display::drawStatus() {
     Display::drawConnection();
     Display::drawOrientation();
     if (Device::modus == MODUS________LABEL) {
-        Display::drawText(Matrices::label);
+        Display::drawText(Device::label);
     }
     Display::drawMatrixState();
 

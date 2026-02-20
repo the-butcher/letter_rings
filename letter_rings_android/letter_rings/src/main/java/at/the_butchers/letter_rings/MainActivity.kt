@@ -9,9 +9,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, 60, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, 80, systemBars.right, systemBars.bottom)
             insets
         }
 
@@ -87,6 +87,9 @@ class MainActivity : AppCompatActivity() {
         setupSeekBar(Side.LEFT)
         setupSeekBar(Side.RIGHT)
 
+        setupConnButton(Side.LEFT)
+        setupConnButton(Side.RIGHT)
+
         // set up bluetooth and find devices ====================
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
@@ -95,6 +98,20 @@ class MainActivity : AppCompatActivity() {
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+    }
+
+    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_SCAN)
+    fun setupConnButton(side: Side) {
+
+        Log.i("BLE", "set up conn button (${side})")
+
+        val btConn: Button =  findViewById ( side.idBtConn)
+        btConn.setOnClickListener  {
+            Log.i("BLE", "conn button clicked (${side})")
+            val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+            val bluetoothAdapter = bluetoothManager.adapter
+            BleScanner(bluetoothAdapter, side).startScan()
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -138,21 +155,38 @@ class MainActivity : AppCompatActivity() {
 
         bleDeviceInstanceMap[side] = bleDevice
 
-        val bleDeviceLSwitch: Switch =  findViewById (side.idSwConn)
-        val txAddrL: TextView =  findViewById (side.idTxAddr)
-        bleDeviceLSwitch.isEnabled = true
-        txAddrL.visibility = View.VISIBLE
-        txAddrL.text = bleDeviceInstanceMap[side]?.address
+        Log.i("BLE", "set ble-device (${side}, ${bleDevice.address})")
+
+        val bleDeviceSwitch: Switch =  findViewById (side.idSwConn)
+        val txAddr: TextView =  findViewById (side.idTxAddr)
+        this@MainActivity.runOnUiThread { txAddr.setText(bleDeviceInstanceMap[side]?.address) }
+
+        val llConn: LinearLayout =  findViewById ( side.idLlConn)
+        this@MainActivity.runOnUiThread { llConn.setVisibility(View.VISIBLE) }
+
+        val btConn: Button =  findViewById ( side.idBtConn)
+        this@MainActivity.runOnUiThread { btConn.setVisibility(View.GONE) }
 
         val context = this
-        bleDeviceLSwitch.setOnCheckedChangeListener  { _, isChecked ->
+        bleDeviceSwitch.setOnCheckedChangeListener  { _, isChecked ->
             if (isChecked) {
                 bleDeviceInstanceMap[side]?.connectGatt(context)
-
             } else {
                 bleDeviceInstanceMap[side]?.disconnectGatt(context)
             }
         }
+
+    }
+
+    fun removeBleDevice(side: Side) {
+
+        bleDeviceInstanceMap[side] = null
+
+        val llConn: LinearLayout =  findViewById ( side.idLlConn)
+        this@MainActivity.runOnUiThread { llConn.setVisibility(View.GONE) }
+
+        val btConn: Button =  findViewById ( side.idBtConn)
+        this@MainActivity.runOnUiThread { btConn.setVisibility(View.VISIBLE) }
 
     }
 
@@ -185,7 +219,8 @@ class MainActivity : AppCompatActivity() {
 
     fun checkBleState(side: Side) {
 
-        Log.d("BLE", "unchecking BLE connection")
+        Log.i("BLE", "check ble-state (side: ${side}, gatt: ${bleDeviceInstanceMap[side]?.gattInstance})")
+
         val bleDeviceSwitch: Switch =  findViewById (side.idSwConn)
         val llContr: LinearLayout =  findViewById ( side.idLlContr)
         if (bleDeviceInstanceMap[side]?.gattInstance == null) {
@@ -208,9 +243,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun updateTxRecognition(title: String, artist: String, valid: Boolean) {
+    fun updateLabels(title: String, artist: String, valid: Boolean) {
 
-        Log.i("MAIN", "update tx (title: $title) (artist: $artist)")
+        Log.i("MAIN", "update tx (textL: $title) (textR: $artist)")
 
         val txTitle = findViewById<View?>(R.id.txTitle) as TextView
         val txArtist = findViewById<View?>(R.id.txArtist) as TextView
@@ -227,6 +262,21 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun updateWords(wordL: String, wordR: String) {
+
+        Log.i("MAIN", "update words (wordL: $wordL) (wordR: $wordR)")
+
+        val txWordL = findViewById<View?>(R.id.txWordL) as TextView
+        val txWordR = findViewById<View?>(R.id.txWordR) as TextView
+        txWordL.text = wordL
+        txWordR.text = wordR
+
+        bleDeviceInstanceMap[Side.LEFT]?.writeWordValue(wordL)
+        bleDeviceInstanceMap[Side.RIGHT]?.writeWordValue(wordR)
+
+    }
+
     override fun onResume() {
 
         super.onResume()
@@ -235,7 +285,8 @@ class MainActivity : AppCompatActivity() {
 
         //keep current activity instance and use to perform any UI related task on work completion
         instance = WeakReference(this)
-        WorkHandler.scheduleWork()
+        WorkHandler.scheduleShazamWork()
+        WorkHandler.scheduleWordPairWork()
 
     }
 

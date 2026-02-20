@@ -18,6 +18,7 @@ class Blesrv {
     static BLEServer* pServer;
     static BLEService* pService;
     static BLECharacteristic* pLabelCharacteristic;
+    static BLECharacteristic* pWordCharacteristic;
     static BLECharacteristic* pModusCharacteristic;
     static BLECharacteristic* pLightCharacteristic;
 
