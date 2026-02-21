@@ -20,7 +20,7 @@ class Display {
    public:
     static bool needsStatusRedraw;
     static bool powerup();
-    static void drawStatus();
+    static void drawStatus(modus_________e modus);
     static void drawConfig();
 
     static void clearModus();

@@ -26,12 +26,13 @@ double Microphone::curvValues[AUDIO________NUM_BANDS];
 
 bool Microphone::powerup() {
 
-    Serial.print("sampling period us: ");
-    Serial.println(Microphone::sampling_period_us);
+    // Serial.print("sampling period us: ");
+    // Serial.println(Microphone::sampling_period_us);
 
     // https://www.desmos.com/calculator/o8ajvpoceu?lang=de
-    double c = 5;
-    double b = 12;
+    double c = 7.5;
+    double b = 10.0;
+
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
         Microphone::buckValues[i] = 2 + round(pow(i * 1.0 / AUDIO________NUM_BANDS, 1.75) * (AUDIO__________SAMPLES / 2));  // no buckets on the lower end if the exponent gets too high
         Microphone::curvValues[i] = 1 - pow((i - c) / b, 2);
@@ -103,7 +104,12 @@ void Microphone::sample() {
     Microphone::fitFAverag = 0;
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
         double x = i;
+        // double y;
+        // if (AUDIO________NUM_ORDER == 2) {
+        //     y = Microphone::coefValues[0] * pow(x, 2) + Microphone::coefValues[1] * x + Microphone::coefValues[2];
+        // } else if (AUDIO________NUM_ORDER == 3) {
         double y = Microphone::coefValues[0] * pow(x, 3) + Microphone::coefValues[1] * pow(x, 2) + Microphone::coefValues[2] * x + Microphone::coefValues[3];
+        // }
         Microphone::fitFValues[i] = Microphone::fitFValues[i] * (1 - f) + y * f;  // low pass
         Microphone::fitFAverag += Microphone::fitFValues[i];
     }

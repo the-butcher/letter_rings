@@ -21,3 +21,4 @@ const val WAKELOCK_TIMEOUT: Long = 1000 * 60 * 60 // 1 hour
 const val MODUS________WORDS = 0
 const val MODUS________LABEL = 1
 const val MODUS________FREQU = 2
+const val MODUS________PARTY = 3

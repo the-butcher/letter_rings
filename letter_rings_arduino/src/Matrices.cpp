@@ -10,16 +10,16 @@ bool Matrices::needsBrightnessUpdate = true;
 
 bool Matrices::powerup() {
     if (!Matrices::matrixA.powerup()) {
-        Serial.println("failed to power up matrix A");
+        // Serial.println("failed to power up matrix A");
     }
     if (!Matrices::matrixB.powerup()) {
-        Serial.println("failed to power up matrix B");
+        // Serial.println("failed to power up matrix B");
     }
     if (!Matrices::matrixC.powerup()) {
-        Serial.println("failed to power up matrix C");
+        // Serial.println("failed to power up matrix C");
     }
     if (!Matrices::matrixD.powerup()) {
-        Serial.println("failed to power up matrix D");
+        // Serial.println("failed to power up matrix D");
     }
     // Matrices::canvas.getBuffer();
     return true;

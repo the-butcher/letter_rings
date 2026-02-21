@@ -13,6 +13,8 @@ void Buttons::handleInterruptA() {
                 Device::modus = MODUS________LABEL;
             } else if (Device::modus == MODUS________LABEL) {
                 Device::modus = MODUS________FREQU;
+            } else if (Device::modus == MODUS________FREQU) {
+                Device::modus = MODUS________PARTY;
             } else {
                 Device::modus = MODUS________WORDS;
             }
@@ -48,12 +50,14 @@ void Buttons::handleInterruptC() {
     uint64_t interruptMillis = millis();
     if (digitalRead(Buttons::buttonC.gpin) == HIGH && (interruptMillis - Buttons::buttonC.lastInterruptMillis) > BUTTON_DEBOUNCE_MILLIS) {
         if (Buttons::buttonActionA == BUTTON_ACTION_MODUS) {
-            if (Device::modus == MODUS________FREQU) {
+            if (Device::modus == MODUS________PARTY) {
+                Device::modus = MODUS________FREQU;
+            } else if (Device::modus == MODUS________FREQU) {
                 Device::modus = MODUS________LABEL;
             } else if (Device::modus == MODUS________LABEL) {
                 Device::modus = MODUS________WORDS;
             } else {
-                Device::modus = MODUS________FREQU;
+                Device::modus = MODUS________PARTY;
             }
             Blesrv::writeModus();  // send the new value over BLE (when connected)
         } else if (Buttons::buttonActionA == BUTTON_ACTION_DECAY && Microphone::decay > 5) {

@@ -43,10 +43,10 @@ class LabelCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
 
         size_t pDataLength = pCharacteristic->getLength();
-        Serial.print("pDataLength: ");
-        Serial.print(String(pDataLength));
-        Serial.print(", core: ");
-        Serial.println(xPortGetCoreID());
+        // Serial.print("pDataLength: ");
+        // Serial.print(String(pDataLength));
+        // Serial.print(", core: ");
+        // Serial.println(xPortGetCoreID());
 
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         String newString = (char*)newValue;
@@ -62,10 +62,10 @@ class WordsCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
 
         size_t pDataLength = pCharacteristic->getLength();
-        Serial.print("pDataLength: ");
-        Serial.print(String(pDataLength));
-        Serial.print(", core: ");
-        Serial.println(xPortGetCoreID());
+        // Serial.print("pDataLength: ");
+        // Serial.print(String(pDataLength));
+        // Serial.print(", core: ");
+        // Serial.println(xPortGetCoreID());
 
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         String newString = (char*)newValue;
@@ -83,15 +83,15 @@ class ModusCallbacks : public BLECharacteristicCallbacks {
         size_t pDataLength = pCharacteristic->getLength();
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
 
-        Serial.print("pDataLength: ");
-        Serial.print(String(pDataLength));
-        Serial.print(", core: ");
-        Serial.print(xPortGetCoreID());
-        Serial.print(", newValue: ");
-        Serial.println(String(newValue[0]));
+        // Serial.print("pDataLength: ");
+        // Serial.print(String(pDataLength));
+        // Serial.print(", core: ");
+        // Serial.print(xPortGetCoreID());
+        // Serial.print(", newValue: ");
+        // Serial.println(String(newValue[0]));
 
         uint8_t bModus = newValue[0];
-        if (bModus >= MODUS________WORDS && bModus <= MODUS________FREQU) {
+        if (bModus >= MODUS________WORDS && bModus <= MODUS________PARTY) {
             Device::modus = (modus_________e)bModus;
             Display::needsStatusRedraw = true;
         }
@@ -105,12 +105,12 @@ class LightCallbacks : public BLECharacteristicCallbacks {
         size_t pDataLength = pCharacteristic->getLength();
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
 
-        Serial.print("pDataLength: ");
-        Serial.print(String(pDataLength));
-        Serial.print(", core: ");
-        Serial.print(xPortGetCoreID());
-        Serial.print(", newValue: ");
-        Serial.println(String(newValue[0]));
+        // Serial.print("pDataLength: ");
+        // Serial.print(String(pDataLength));
+        // Serial.print(", core: ");
+        // Serial.print(xPortGetCoreID());
+        // Serial.print(", newValue: ");
+        // Serial.println(String(newValue[0]));
 
         uint8_t bLight = newValue[0];
         if (bLight >= 0 && bLight <= 15) {

@@ -26,7 +26,7 @@ bool Display::depower() {
     return true;
 }
 
-void Display::drawStatus() {
+void Display::drawStatus(modus_________e modus) {
 
     // Display::baseDisplay.fillScreen(ST77XX_BLACK);
     Display::baseDisplay.setTextWrap(true);
@@ -34,7 +34,7 @@ void Display::drawStatus() {
     Display::drawConfig();  // buttons labels
     Display::drawConnection();
     Display::drawOrientation();
-    if (Device::modus == MODUS________LABEL) {
+    if (modus == MODUS________LABEL) {
         Display::drawText(Device::label);
     }
     Display::drawMatrixState();
@@ -84,8 +84,12 @@ void Display::drawConfig() {
             value = "WORDS";
         } else if (Device::modus == MODUS________LABEL) {
             value = "LABEL";
-        } else {
+        } else if (Device::modus == MODUS________FREQU) {
             value = "FREQU";
+        } else if (Device::modus == MODUS________PARTY) {
+            value = "PARTY";
+        } else {
+            value = "ERROR";
         }
     } else if (Buttons::buttonActionA == BUTTON_ACTION_DECAY) {
         value = String(Microphone::decay);
@@ -200,16 +204,16 @@ void Display::drawOrientation() {
     uint8_t yPosOffset = DISPLAY_HEIGHT - 20;
 
     uint16_t yPosX = yPosOffset - 17 * 5;
+    Display::drawString(String(orientation.x, 2), xPosValue + getXLabelOffset(orientation.x), yPosX, TEXT_HALIGN___LEFT, 36);
     Display::drawString("X: ", 0, yPosX, TEXT_HALIGN___LEFT);
-    Display::drawString(String(orientation.x, 2), xPosValue + getXLabelOffset(orientation.x), yPosX, TEXT_HALIGN___LEFT);
 
     uint16_t yPosY = yPosOffset - 17 * 4;
+    Display::drawString(String(orientation.y, 2), xPosValue + getXLabelOffset(orientation.y), yPosY, TEXT_HALIGN___LEFT, 36);
     Display::drawString("Y: ", 0, yPosY, TEXT_HALIGN___LEFT);
-    Display::drawString(String(orientation.y, 2), xPosValue + getXLabelOffset(orientation.y), yPosY, TEXT_HALIGN___LEFT);
 
     uint16_t yPosZ = yPosOffset - 17 * 3;
+    Display::drawString(String(orientation.z, 2), xPosValue + getXLabelOffset(orientation.z), yPosZ, TEXT_HALIGN___LEFT, 36);
     Display::drawString("Z: ", 0, yPosZ, TEXT_HALIGN___LEFT);
-    Display::drawString(String(orientation.z, 2), xPosValue + getXLabelOffset(orientation.z), yPosZ, TEXT_HALIGN___LEFT);
 
     uint16_t yPosO = yPosOffset - 17 * 2;
     Display::drawString("O: ", 0, yPosO, TEXT_HALIGN___LEFT);
