@@ -58,7 +58,7 @@ bitmaps_______t Device::getSendBitmaps() {
 }
 
 void Device::setCurrModus(modus_________e currModus) {
-    if (currModus != MODUS________ACCEL) {
+    if (Device::currModus != MODUS________ACCEL) {
         Device::prevModus = Device::currModus;
     }
     Device::currModus = currModus;

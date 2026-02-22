@@ -117,9 +117,10 @@ void loop() {
     if (modus == MODUS________ACCEL) {
         if (Device::getDeviceRole() == DEVICE_ROLE_____ANY) {  // (not primary, not secondary) = below coefficient threshold
             modus = Device::getPrevModus();
-            // Serial.println("modus accel, falling back to prev");
+            Serial.print("modus accel, falling back to prev: ");
+            Serial.println(modus);
         } else {
-            // Serial.println("modus accel, keeping due to pri or sec role");
+            Serial.println("modus accel, keeping due to pri or sec role");
         }
     }
 

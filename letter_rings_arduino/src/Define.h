@@ -1,4 +1,4 @@
-#define DEVICE____________LEFT false
+#define DEVICE____________LEFT true
 // #define DEVICE___________RIGHT !DEVICE____________LEFT
 
 #if DEVICE____________LEFT == true
