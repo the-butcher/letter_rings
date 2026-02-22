@@ -80,14 +80,17 @@ void Display::drawConfig() {
 
     String value;
     if (Buttons::buttonActionA == BUTTON_ACTION_MODUS) {
-        if (Device::modus == MODUS________WORDS) {
+        modus_________e currModus = Device::getCurrModus();
+        if (currModus == MODUS________WORDS) {
             value = "WORDS";
-        } else if (Device::modus == MODUS________LABEL) {
+        } else if (currModus == MODUS________LABEL) {
             value = "LABEL";
-        } else if (Device::modus == MODUS________FREQU) {
+        } else if (currModus == MODUS________FREQU) {
             value = "FREQU";
-        } else if (Device::modus == MODUS________PARTY) {
+        } else if (currModus == MODUS________PARTY) {
             value = "PARTY";
+        } else if (currModus == MODUS________ACCEL) {
+            value = "ACCEL";
         } else {
             value = "ERROR";
         }
@@ -158,13 +161,30 @@ void Display::drawMatrixState() {
 
     uint8_t rectXPos = 0;
     uint8_t rectYPos = DISPLAY_HEIGHT - 27;
-    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixA.hasBegun ? 0xad55 : ST77XX_RED);
+    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixA.hasBegun ? ST77XX_GREEN : ST77XX_RED);
     rectXPos += 8;
-    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixB.hasBegun ? 0xad55 : ST77XX_RED);
+    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixB.hasBegun ? ST77XX_GREEN : ST77XX_RED);
     rectXPos += 8;
-    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixC.hasBegun ? 0xad55 : ST77XX_RED);
+    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixC.hasBegun ? ST77XX_GREEN : ST77XX_RED);
     rectXPos += 8;
-    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixD.hasBegun ? 0xad55 : ST77XX_RED);
+    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixD.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+}
+
+void Display::drawDeviceRole() {
+
+    device_role___e deviceRole = Device::getDeviceRole();
+
+    uint8_t rectXPos = DISPLAY__WIDTH - 38;
+    uint8_t rectYPos = DISPLAY_HEIGHT - 27;
+    for (uint8_t i = DEVICE_ROLE_____ANY; i <= DEVICE_ROLE_____SEC; i++) {
+        Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, ST77XX_BLACK);
+        if (deviceRole == i) {
+            Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, ST77XX_GREEN);
+        } else {
+            Display::baseDisplay.drawRect(rectXPos, rectYPos, 6, 6, 0x9cd3);
+        }
+        rectXPos += 8;
+    }
 }
 
 void Display::drawConnection() {
@@ -195,7 +215,7 @@ uint8_t getXLabelOffset(double value) {
 void Display::drawOrientation() {
 
     Display::baseDisplay.setTextSize(2);
-    Display::baseDisplay.setTextColor(Orientation::hasBegun ? 0xad55 : 0xdc30);  // #adaaad : #de8684
+    Display::baseDisplay.setTextColor(Orientation::hasBegun ? 0xad55 : 0xdc30);  // #adaaad : #de8684 // https://rgbcolorpicker.com/565
 
     vector________t orientation = Orientation::getOrientation();
 
@@ -218,6 +238,28 @@ void Display::drawOrientation() {
     uint16_t yPosO = yPosOffset - 17 * 2;
     Display::drawString("O: ", 0, yPosO, TEXT_HALIGN___LEFT);
     Display::drawString(Device::getOrientation() == ORIENTATION______UP ? "UP  " : "DOWN", xPosValue, yPosO, TEXT_HALIGN___LEFT);
+}
+
+void Display::drawAcceleration() {
+
+    Display::baseDisplay.setTextSize(2);
+    Display::baseDisplay.setTextColor(Orientation::coefficient > ACCELERATION_THRESHOLD ? 0xad55 : 0xf800);  // #adaaad : #ff0000
+
+    // acceleration__t accelerarion = Orientation::acceleration;
+
+    // int x;
+    // int h;
+    // int y = 124;
+    // int m = 112;
+
+    // Display::clearModus();
+    // for (int i = 0; i < ACCELERATION___SAMPLES; i++) {
+    //     x = i * 4 + 3;
+    //     h = min(m, (int)round(Orientation::acceleration.values[i] * 32));
+    //     Display::baseDisplay.fillRect(x, y - h, 3, h, 0x9cd3);  // #9c9a9c - draw fresh bar
+    // }
+
+    Display::drawString(String(Orientation::coefficient, 3), 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
 }
 
 void Display::drawSignal() {

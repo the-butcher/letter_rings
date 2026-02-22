@@ -30,6 +30,8 @@ class Display {
     static void drawOrientation();
     static void drawConnection();
     static void drawMatrixState();
+    static void drawDeviceRole();
+    static void drawAcceleration();
 
     static void drawSignal();
     static bool depower();

@@ -27,6 +27,9 @@ class Orientation {
     static vector________t getGyroscope();  // radians per seconds
     static bool powerup();
     static bool depower();
+    static acceleration__t acceleration;
+    static void calculateCoefficient(acceleration__t accelA, acceleration__t accelB);
+    static double coefficient;
 };
 
 #endif

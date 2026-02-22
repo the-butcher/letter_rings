@@ -6,6 +6,7 @@
 #include "Display.h"
 #include "Matrices.h"
 #include "Microphone.h"
+#include "Nowsrv.h"
 #include "Orientation.h"
 
 uint64_t counter = 0;
@@ -25,6 +26,32 @@ uint64_t lastWordUpdateMillis = 0;
 uint64_t lastLabelUpdateMillis = 0;
 uint64_t lastOrientationUpdateMillis = 0;
 
+int16_t bitmapPos = -8;
+
+/**
+ * power up orientation, then reads new values every 10 milliseconds
+ */
+void orientationBegin(void* pvParameters) {
+
+    Orientation::powerup();
+    delay(100);
+
+    // const TickType_t delayMs = 25 / portTICK_PERIOD_MS;
+    // Serial.print("delayMs: ");
+    // Serial.println(delayMs);
+
+    uint32_t millisA;
+    uint32_t millisB;
+    while (true) {
+        millisA = millis();
+        Orientation::readval();
+        millisB = millis();
+        vTaskDelay(25 - (millisB - millisA));
+    }
+
+    vTaskDelete(NULL);
+}
+
 void setup(void) {
 
     Serial.begin(9600);
@@ -35,7 +62,9 @@ void setup(void) {
     // result each time we run this program
     randomSeed(analogRead(A0));
 
-    Serial.println("setup ...");
+    Serial.print("setup ");
+    Serial.print(BLE_DEVICE_NAME);
+    Serial.println(" ...");
 
     Display::powerup();
     delay(100);
@@ -49,11 +78,13 @@ void setup(void) {
     Microphone::powerup();
     delay(100);
 
-    Orientation::powerup();
-    delay(100);
-
     Buttons::powerup();
     delay(100);
+
+    Nowsrv::begin();
+    delay(100);
+
+    xTaskCreatePinnedToCore(orientationBegin, "orientation-begin", 100000, NULL, 1, NULL, 0);
 
     Serial.println("... setup");
 }
@@ -82,7 +113,16 @@ void loop() {
     }
 
     // if in party mode, make a decision for either label or frequency
-    modus_________e modus = Device::modus;
+    modus_________e modus = Device::getCurrModus();
+    if (modus == MODUS________ACCEL) {
+        if (Device::getDeviceRole() == DEVICE_ROLE_____ANY) {  // (not primary, not secondary) = below coefficient threshold
+            modus = Device::getPrevModus();
+            // Serial.println("modus accel, falling back to prev");
+        } else {
+            // Serial.println("modus accel, keeping due to pri or sec role");
+        }
+    }
+
     if (modus == MODUS________PARTY) {
         modus = exceedsPartyLabelDuration(currMillis) ? MODUS________FREQU : MODUS________LABEL;
     }
@@ -98,7 +138,7 @@ void loop() {
 
     // update position (max update count/second = 10)
     if ((currMillis - lastOrientationUpdateMillis) > 100) {
-        Orientation::readval();
+
         orientation___e matricesOrientation = Device::getOrientation();
         if (matricesOrientation == ORIENTATION______UP && Orientation::getOrientation().y > 20) {
             Device::setOrientation(ORIENTATION____DOWN);
@@ -111,9 +151,20 @@ void loop() {
         }
         Display::drawSignal();
 
+        if (Device::getCurrModus() == MODUS________ACCEL) {  // must refer to actual curr device modus
+            Display::drawAcceleration();
+            Nowsrv::sendAcceleration();  // consumes ~1 millisecond
+            Nowsrv::sendBitmaps(Device::getSendBitmaps());
+        }
+
         if (modus == MODUS________FREQU) {
             Display::drawFrequ();
         }
+
+        Display::drawDeviceRole();
+
+        // uint64_t millisB = millis();
+        // Serial.println(String(millisB - millisA));
 
         lastOrientationUpdateMillis = currMillis;
     }
@@ -152,16 +203,6 @@ void loop() {
 
     } else if (modus == MODUS________LABEL) {
 
-        // if (Device::label != mainLabel) {  // width needs to be calculated
-        //     labelWidth = Matrices::matrixA.getLabelWidth(Device::label);
-        //     mainLabel = Device::label;
-        //     lastLabelUpdateMillis = currMillis;
-        //     // Serial.print("labelWidth: ");
-        //     // Serial.println(String(labelWidth));
-        //     // Serial.print("label: ");
-        //     // Serial.println(String(mainLabel));
-        // }
-
         Matrices::drawLabel(mainLabel, labelPos);
 
         if (labelPos < -labelWidth) {  // all the way out to the left
@@ -189,8 +230,25 @@ void loop() {
 
         delay(1);
 
+    } else if (modus == MODUS________ACCEL) {
+
+        Matrices::clear();
+
+        bitmaps_______t bitmaps = Device::currBitmaps;
+        bitmaps.bitmapA.bitmap = (bitmap________e)(bitmapPos % 2);  // mouth open or closed
+
+        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmapPos + bitmaps.bitmapA.offset);
+        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapB.bitmap], bitmapPos + bitmaps.bitmapB.offset);
+
+        if (bitmapPos > 64) {
+            bitmapPos = -8;
+        }
+        bitmapPos++;
+
+        delay(100);
+
     } else {
-        // TODO :: warn about unknown modus
+        // TODO :: warn about unknown modus on display
         Serial.print("unknown modus: ");
         Serial.println(String(modus));
         delay(100);

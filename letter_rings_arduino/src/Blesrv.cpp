@@ -83,16 +83,16 @@ class ModusCallbacks : public BLECharacteristicCallbacks {
         size_t pDataLength = pCharacteristic->getLength();
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
 
-        // Serial.print("pDataLength: ");
-        // Serial.print(String(pDataLength));
-        // Serial.print(", core: ");
-        // Serial.print(xPortGetCoreID());
-        // Serial.print(", newValue: ");
-        // Serial.println(String(newValue[0]));
+        Serial.print("pDataLength: ");
+        Serial.print(String(pDataLength));
+        Serial.print(", core: ");
+        Serial.print(xPortGetCoreID());
+        Serial.print(", newValue: ");
+        Serial.println(String(newValue[0]));
 
         uint8_t bModus = newValue[0];
-        if (bModus >= MODUS________WORDS && bModus <= MODUS________PARTY) {
-            Device::modus = (modus_________e)bModus;
+        if (bModus >= MODUS________WORDS && bModus <= MODUS________ACCEL) {
+            Device::setCurrModus((modus_________e)bModus);
             Display::needsStatusRedraw = true;
         }
     }
@@ -145,7 +145,7 @@ bool Blesrv::begin() {
     Blesrv::pModusCharacteristic->addDescriptor(new BLE2902());
     Blesrv::pModusCharacteristic->setCallbacks(new ModusCallbacks());
     // initial value
-    int cModus = Device::modus;
+    int cModus = Device::getCurrModus();
     Blesrv::pModusCharacteristic->setValue(cModus);
 
     Blesrv::pLightCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_LIGHT_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
@@ -166,17 +166,27 @@ bool Blesrv::begin() {
     pAdvertising->addServiceUUID(COMMAND_MODUS_DSC_UUID);
     pServer->getAdvertising()->start();
 
-    const uint8_t* point = esp_bt_dev_get_address();
-    char str[32];
-    sprintf(str, "%02X:%02X:%02X:%02X:%02X:%02X", (int)point[0], (int)point[1], (int)point[2], (int)point[3], (int)point[4], (int)point[5]);
-    Blesrv::macAdress = String(str);
+    const uint8_t* bleAdress = esp_bt_dev_get_address();
+    char bleStr[32];
+    sprintf(bleStr, "%02X:%02X:%02X:%02X:%02X:%02X", (int)bleAdress[0], (int)bleAdress[1], (int)bleAdress[2], (int)bleAdress[3], (int)bleAdress[4], (int)bleAdress[5]);
+    Blesrv::macAdress = String(bleStr);
+
+    Serial.print("bleAddress: ");
+    Serial.println(Blesrv::macAdress);
+
+    // WiFi.mode(WIFI_STA);
+    // WiFi.begin();
+    // String staString = WiFi.macAddress();
+
+    // Serial.print("staAddress: ");
+    // Serial.println(staString);
 
     return true;
 }
 
 bool Blesrv::writeModus() {
     // if (Blesrv::isConnected()) {
-    int cModus = Device::modus;
+    int cModus = Device::getCurrModus();
     Blesrv::pModusCharacteristic->setValue(cModus);
     Blesrv::pModusCharacteristic->notify();
     return Blesrv::isConnected();

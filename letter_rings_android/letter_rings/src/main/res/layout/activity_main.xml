@@ -210,6 +210,17 @@
                             android:paddingEnd="8sp"
                             android:text="party"
                             android:textSize="20sp" />
+							
+														                        <RadioButton
+                            android:id="@+id/radio_accelL"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/consola"
+                            android:padding="4sp"
+                            android:paddingStart="8sp"
+                            android:paddingEnd="8sp"
+                            android:text="accel"
+                            android:textSize="20sp" />
                     </RadioGroup>
 
                     <View
@@ -336,6 +347,17 @@
                             android:paddingEnd="8sp"
                             android:text="party"
                             android:textSize="20sp" />
+						<RadioButton
+                            android:id="@+id/radio_accelR"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/consola"
+                            android:padding="4sp"
+                            android:paddingStart="8sp"
+                            android:paddingEnd="8sp"
+                            android:text="accel"
+                            android:textSize="20sp" />
+							
                     </RadioGroup>
 
                     <View

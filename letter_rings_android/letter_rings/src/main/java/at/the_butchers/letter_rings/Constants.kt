@@ -22,3 +22,4 @@ const val MODUS________WORDS = 0
 const val MODUS________LABEL = 1
 const val MODUS________FREQU = 2
 const val MODUS________PARTY = 3
+const val MODUS________ACCEL = 4

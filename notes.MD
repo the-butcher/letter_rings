@@ -23,8 +23,8 @@
   ✔ it seems like high frequencies are over-represented in the spectrum
   ✔ check if order 3 regression on frequencies is OK :: seems to work better than order 2
   ✔ separate word sets for left and right
-  - have a mode (name?) where after a new label and some timeout it goes back to frequ
-    - could be standard, labels do not make much sense without recognition, therefore a new label could just put the decive in temp label mode
+  ✔ have a mode (name?) where after a new label and some timeout it goes back to frequ
+    ❌ could be standard, labels do not make much sense without recognition, therefore a new label could just put the decive in temp label mode
   - any mode where altering brightness would add value?
   ✔ have proper matrix UP/DOWN flip in all modes
   ✔ unify method names Matrices vs. Matrix
@@ -34,7 +34,7 @@
   - be able to switch modes
     ✔ through display
     - through gesture (?)
-      ✔ through bluetooth / mobile
+    ✔ through bluetooth / mobile
   - any other attractive modes?
     - "collab" mode where people can "inject" labels
     - would there be a non-backend solution?
@@ -42,11 +42,24 @@
     - app fetches label and
     - could this be a simple php solution working with a text or json file for storage?
     - "kitt mode"
-    - a single dot travelling left to right and back
-    - any way to synchronize left and right?
+      - a single dot travelling left to right and back
     - any way to determine when left and right are held in alignment?
-      ❌ voice recognition for 4 letter words ;)
-      ✔ ignore invalid titles for the runLabel
+	  ✔ setup task to read orientation in short intervals and keep track of the last n (some power of 2, maybe 32) acceleration vectors
+	  ✔ create esp-now connection between left and right
+	  ✔ send acceleration vectors to other device in regular intervals
+	  ❌ align vectors time-wise (how?)
+	  ✔ calculate pearson correlation coefficient between incoming acceleration data and own acceleration data
+	  ✔ see if this produces usable similarity results
+	  ❌ if both devices agree to have similar acceleration values unlock some (yet to be defines) two device mode
+	  - should both devices always have the same mode?
+	  - first device detecting similarity takes the lead
+	    - other device will not need to check for similarity while paired
+		- leading device sends drawing codes, ie. kitt bar signal
+		- non-leading device needs to know when similarity was lost
+	    ❌ could be a kitt style animation (which device will be in charge of position?)
+		- could be a pacman style animation (which device will be in charge of position?)
+    ❌ voice recognition for 4 letter words ;)
+    ✔ ignore invalid titles for the runLabel
   - maybe have a "song" mode that will show artist and title for a given time, then go back to frequencies
     ✔ any way to synchronize left and right in word mode?
     ✔ let the android app have the central role in words mode (only if connected)

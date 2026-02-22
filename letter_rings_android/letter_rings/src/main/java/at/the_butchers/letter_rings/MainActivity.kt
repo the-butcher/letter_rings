@@ -120,6 +120,7 @@ class MainActivity : AppCompatActivity() {
         setupRadioButton(side, side.idRbLabel, MODUS________LABEL)
         setupRadioButton(side, side.idRbFrequ, MODUS________FREQU)
         setupRadioButton(side, side.idRbParty, MODUS________PARTY)
+        setupRadioButton(side, side.idRbAccel, MODUS________ACCEL)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -210,6 +211,10 @@ class MainActivity : AppCompatActivity() {
             val rgModusParty: RadioButton =  findViewById (side.idRbParty)
             Log.d("BLE", "rgModusParty will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusParty.setChecked(true) }
+        } else if (modus.toInt() == MODUS________ACCEL) {
+            val rgModusAccel: RadioButton =  findViewById (side.idRbAccel)
+            Log.d("BLE", "rgModusAccel will be checked on ui-thread")
+            this@MainActivity.runOnUiThread { rgModusAccel.setChecked(true) }
         }
 
     }

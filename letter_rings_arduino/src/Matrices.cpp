@@ -97,6 +97,22 @@ void Matrices::drawLabel(String label, int16_t offset) {
     }
 }
 
+void Matrices::clear() {
+    Matrices::matrixA.clear();
+    Matrices::matrixB.clear();
+    Matrices::matrixC.clear();
+    Matrices::matrixD.clear();
+}
+
+void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset) {
+    // TODO :: account for increased width when paired
+    // TODO :: account for UP/DOWN
+    Matrices::matrixA.drawBitmap(bitmap, offset);
+    Matrices::matrixB.drawBitmap(bitmap, offset - 8);
+    Matrices::matrixC.drawBitmap(bitmap, offset - 16);
+    Matrices::matrixD.drawBitmap(bitmap, offset - 24);
+}
+
 // void Matrices::copyCanvasAtoCanvasB(uint8_t progress, bool skipPrevious) {
 //     Matrices::matrixA.copyCanvasAtoCanvasB(progress, skipPrevious);
 //     Matrices::matrixB.copyCanvasAtoCanvasB(progress, skipPrevious);

@@ -36,26 +36,26 @@ bool Microphone::powerup() {
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
         Microphone::buckValues[i] = 2 + round(pow(i * 1.0 / AUDIO________NUM_BANDS, 1.75) * (AUDIO__________SAMPLES / 2));  // no buckets on the lower end if the exponent gets too high
         Microphone::curvValues[i] = 1 - pow((i - c) / b, 2);
-        Serial.print(i);
-        Serial.print(" -> ");
-        Serial.println(String(Microphone::curvValues[i], 2));
+        // Serial.print(i);
+        // Serial.print(" -> ");
+        // Serial.println(String(Microphone::curvValues[i], 2));
         Microphone::fitXValues[i] = i;  // initialize fit-x values
     }
 
     return true;
 }
 
-// https://forum.arduino.cc/t/sorting-an-array/49201/9
-void isort(double* a, int n) {
-    for (int i = 1; i < n; ++i) {
-        int j = a[i];
-        int k;
-        for (k = i - 1; (k >= 0) && (j < a[k]); k--) {
-            a[k + 1] = a[k];
-        }
-        a[k + 1] = j;
-    }
-}
+// // https://forum.arduino.cc/t/sorting-an-array/49201/9
+// void isort(double* a, int n) {
+//     for (int i = 1; i < n; ++i) {
+//         int j = a[i];
+//         int k;
+//         for (k = i - 1; (k >= 0) && (j < a[k]); k--) {
+//             a[k + 1] = a[k];
+//         }
+//         a[k + 1] = j;
+//     }
+// }
 
 void Microphone::sample() {
 

@@ -78,8 +78,8 @@ uint16_t Matrix::getLabelWidth(String label) {
 }
 
 void Matrix::drawBars(uint8_t indexMin) {
+    Matrix::clear();
     if (this->hasBegun) {
-        this->baseMatrix.clear();
 
         double val1;
         double val2;
@@ -101,8 +101,8 @@ void Matrix::drawBars(uint8_t indexMin) {
 }
 
 void Matrix::drawWord(String word, int16_t offset) {
+    Matrix::clear();
     if (this->hasBegun) {
-        this->baseMatrix.clear();
         this->baseMatrix.setCursor(offset, 7);  // y-offset 7 is specifically for the 7x8 font
         this->baseMatrix.setFont(&Font7x8FixedMono);
         this->baseMatrix.setTextWrap(false);
@@ -114,8 +114,8 @@ void Matrix::drawWord(String word, int16_t offset) {
 }
 
 void Matrix::drawLabel(String label, int16_t offset) {
+    Matrix::clear();
     if (this->hasBegun) {
-        this->baseMatrix.clear();
         this->baseMatrix.setCursor(offset, 0);  // y-offset 7 is specifically for the 7x8 font
         this->baseMatrix.setFont();
         this->baseMatrix.setTextWrap(false);
@@ -123,6 +123,12 @@ void Matrix::drawLabel(String label, int16_t offset) {
         this->baseMatrix.setTextColor(LED_ON);
         this->baseMatrix.print(label);
         this->baseMatrix.writeDisplay();
+    }
+}
+
+void Matrix::clear() {
+    if (this->hasBegun) {
+        this->baseMatrix.clear();
     }
 }
 
@@ -169,17 +175,15 @@ void Matrix::drawLabel(String label, int16_t offset) {
 //     // }
 //     // Serial.println("-----------------");
 //     this->canvasB.drawBitmap(0, 0, bitmapB, 8, 8, LED_ON);
-//     // TODO :: copy bytes as defined in transition from cnavasA to canvasB
 // }
 
 // void Matrix::flushCanvasBtoMatrix() {
 //     this->drawBitmap(this->canvasB.getBuffer());
 // }
 
-void Matrix::drawBitmap(const uint8_t* bitmap) {
+void Matrix::drawBitmap(const uint8_t* bitmap, int16_t offset) {
     if (this->hasBegun) {
-        this->baseMatrix.clear();
-        this->baseMatrix.drawBitmap(0, 0, bitmap, 8, 8, LED_ON);
+        this->baseMatrix.drawBitmap(offset, 0, bitmap, 8, 8, LED_ON);
         this->baseMatrix.writeDisplay();
     }
 }

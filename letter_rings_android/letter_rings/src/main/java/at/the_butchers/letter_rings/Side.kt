@@ -13,6 +13,7 @@ enum class Side(
     @IdRes val idRbLabel: Int,
     @IdRes val idRbFrequ: Int,
     @IdRes val idRbParty: Int,
+    @IdRes val idRbAccel: Int,
     @IdRes val idSbLight: Int
 ) {
 
@@ -27,6 +28,7 @@ enum class Side(
         R.id.radio_labelL,
         R.id.radio_frequL,
         R.id.radio_partyL,
+        R.id.radio_accelL,
         R.id.sbLightL
     ),
     RIGHT(
@@ -40,6 +42,7 @@ enum class Side(
         R.id.radio_labelR,
         R.id.radio_frequR,
         R.id.radio_partyR,
+        R.id.radio_accelR,
         R.id.sbLightR
     )
 

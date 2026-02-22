@@ -26,11 +26,12 @@ class Matrix {
     uint16_t getLabelWidth(String label);
     void drawWord(String word, int16_t offset);
     void drawLabel(String label, int16_t offset);
+    void clear();
     // void drawTextToCanvasA(String text, int16_t offset);
     // void copyCanvasAtoCanvasB(uint8_t progress, bool skipPrevious);
     // void flushCanvasBtoMatrix();
     void drawBars(uint8_t indexMin);
-    void drawBitmap(const uint8_t* bitmap);
+    void drawBitmap(const uint8_t* bitmap, int16_t offset);
     void setBrightness(uint8_t brightness);  // 0 - 15
     bool depower();
 };

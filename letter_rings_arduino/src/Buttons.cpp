@@ -9,14 +9,17 @@ void Buttons::handleInterruptA() {
     uint64_t interruptMillis = millis();
     if (digitalRead(Buttons::buttonA.gpin) == LOW && (interruptMillis - Buttons::buttonA.lastInterruptMillis) > BUTTON_DEBOUNCE_MILLIS) {
         if (Buttons::buttonActionA == BUTTON_ACTION_MODUS) {
-            if (Device::modus == MODUS________WORDS) {
-                Device::modus = MODUS________LABEL;
-            } else if (Device::modus == MODUS________LABEL) {
-                Device::modus = MODUS________FREQU;
-            } else if (Device::modus == MODUS________FREQU) {
-                Device::modus = MODUS________PARTY;
+            modus_________e currModus = Device::getCurrModus();
+            if (currModus == MODUS________WORDS) {
+                Device::setCurrModus(MODUS________LABEL);
+            } else if (currModus == MODUS________LABEL) {
+                Device::setCurrModus(MODUS________FREQU);
+            } else if (currModus == MODUS________FREQU) {
+                Device::setCurrModus(MODUS________PARTY);
+            } else if (currModus == MODUS________PARTY) {
+                Device::setCurrModus(MODUS________ACCEL);
             } else {
-                Device::modus = MODUS________WORDS;
+                Device::setCurrModus(MODUS________WORDS);
             }
             Blesrv::writeModus();  // send the new value over BLE (when connected)
         } else if (Buttons::buttonActionA == BUTTON_ACTION_DECAY && Microphone::decay < 80) {
@@ -50,14 +53,17 @@ void Buttons::handleInterruptC() {
     uint64_t interruptMillis = millis();
     if (digitalRead(Buttons::buttonC.gpin) == HIGH && (interruptMillis - Buttons::buttonC.lastInterruptMillis) > BUTTON_DEBOUNCE_MILLIS) {
         if (Buttons::buttonActionA == BUTTON_ACTION_MODUS) {
-            if (Device::modus == MODUS________PARTY) {
-                Device::modus = MODUS________FREQU;
-            } else if (Device::modus == MODUS________FREQU) {
-                Device::modus = MODUS________LABEL;
-            } else if (Device::modus == MODUS________LABEL) {
-                Device::modus = MODUS________WORDS;
+            modus_________e currModus = Device::getCurrModus();
+            if (currModus == MODUS________ACCEL) {
+                Device::setCurrModus(MODUS________PARTY);
+            } else if (currModus == MODUS________PARTY) {
+                Device::setCurrModus(MODUS________FREQU);
+            } else if (currModus == MODUS________FREQU) {
+                Device::setCurrModus(MODUS________LABEL);
+            } else if (currModus == MODUS________LABEL) {
+                Device::setCurrModus(MODUS________WORDS);
             } else {
-                Device::modus = MODUS________PARTY;
+                Device::setCurrModus(MODUS________ACCEL);
             }
             Blesrv::writeModus();  // send the new value over BLE (when connected)
         } else if (Buttons::buttonActionA == BUTTON_ACTION_DECAY && Microphone::decay > 5) {
