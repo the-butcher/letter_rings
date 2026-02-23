@@ -24,14 +24,10 @@ void deserializeData(const uint8_t* inputBytes, uint16_t offset, T& outputStruct
 
 class BlesrvCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
-        // do nothing
         Serial.println("something connected");
         Display::needsStatusRedraw = true;
-        // Blesrv::writeModus();
-        // Blesrv::writeLight();
     };
     void onDisconnect(BLEServer* pServer) {
-        // do nothing
         pServer->getAdvertising()->start();
         Serial.println("something disconnected");
         Display::needsStatusRedraw = true;
@@ -42,7 +38,7 @@ class LabelCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
 
-        size_t pDataLength = pCharacteristic->getLength();
+        // size_t pDataLength = pCharacteristic->getLength();
         // Serial.print("pDataLength: ");
         // Serial.print(String(pDataLength));
         // Serial.print(", core: ");
@@ -61,7 +57,7 @@ class WordsCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
 
-        size_t pDataLength = pCharacteristic->getLength();
+        // size_t pDataLength = pCharacteristic->getLength();
         // Serial.print("pDataLength: ");
         // Serial.print(String(pDataLength));
         // Serial.print(", core: ");
@@ -69,7 +65,6 @@ class WordsCallbacks : public BLECharacteristicCallbacks {
 
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         String newString = (char*)newValue;
-        // newString.toUpperCase();
         Device::word = newString;
 
         Display::needsStatusRedraw = true;
@@ -80,16 +75,15 @@ class ModusCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
 
-        size_t pDataLength = pCharacteristic->getLength();
+        // size_t pDataLength = pCharacteristic->getLength();
+        // Serial.print("pDataLength: ");
+        // Serial.print(String(pDataLength));
+        // Serial.print(", core: ");
+        // Serial.print(xPortGetCoreID());
+        // Serial.print(", newValue: ");
+        // Serial.println(String(newValue[0]));
+
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
-
-        Serial.print("pDataLength: ");
-        Serial.print(String(pDataLength));
-        Serial.print(", core: ");
-        Serial.print(xPortGetCoreID());
-        Serial.print(", newValue: ");
-        Serial.println(String(newValue[0]));
-
         uint8_t bModus = newValue[0];
         if (bModus >= MODUS________WORDS && bModus <= MODUS________ACCEL) {
             Device::setCurrModus((modus_________e)bModus);
@@ -102,9 +96,7 @@ class LightCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
 
-        size_t pDataLength = pCharacteristic->getLength();
-        uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
-
+        // size_t pDataLength = pCharacteristic->getLength();
         // Serial.print("pDataLength: ");
         // Serial.print(String(pDataLength));
         // Serial.print(", core: ");
@@ -112,6 +104,7 @@ class LightCallbacks : public BLECharacteristicCallbacks {
         // Serial.print(", newValue: ");
         // Serial.println(String(newValue[0]));
 
+        uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         uint8_t bLight = newValue[0];
         if (bLight >= 0 && bLight <= 15) {
             Matrices::brightness = bLight;
@@ -171,8 +164,8 @@ bool Blesrv::begin() {
     sprintf(bleStr, "%02X:%02X:%02X:%02X:%02X:%02X", (int)bleAdress[0], (int)bleAdress[1], (int)bleAdress[2], (int)bleAdress[3], (int)bleAdress[4], (int)bleAdress[5]);
     Blesrv::macAdress = String(bleStr);
 
-    Serial.print("bleAddress: ");
-    Serial.println(Blesrv::macAdress);
+    // Serial.print("bleAddress: ");
+    // Serial.println(Blesrv::macAdress);
 
     // WiFi.mode(WIFI_STA);
     // WiFi.begin();

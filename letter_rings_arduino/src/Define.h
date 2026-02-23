@@ -1,5 +1,4 @@
-#define DEVICE____________LEFT true
-// #define DEVICE___________RIGHT !DEVICE____________LEFT
+#define DEVICE____________LEFT false
 
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"
@@ -26,7 +25,7 @@
 #define BUTTON_DEBOUNCE_MILLIS 100
 
 #define ACCELERATION___SAMPLES 32
-#define ACCELERATION_THRESHOLD 0.8
+#define ACCELERATION_THRESHOLD 0.8  // threshold for the correlation value to be considered to be good enough
 
 #ifndef Define_h
 #define Define_h
@@ -49,23 +48,29 @@ static const char* WORDS[] PROGMEM = {"LOVE", "ICON", "GAIN", "HYPE", "UNDO", "C
                                       "PAIR", "LIST", "NOTE", "SELF", "BASS", "FINE", "BLUE", "HALF", "LIVE", "LONG", "HOUR", "LOOK", "MARK", "MOVE", "LIFT", "GOAL", "BAND", "SOFT", "CARE", "PURE", "FUND", "STAY", "MORE", "WARM", "LAMB", "TEAM", "VIEW", "REAL", "HAVE", "LINK", "RISE", "RELY", "WISH", "WAIT", "TALK", "REST", "MANY", "RICH", "KNOW", "JOIN", "RIDE", "TIDY", "HUGE", "HEAL", "NICE", "OKAY", "FAIR", "NEAT", "TRUE", "LIFE"};
 static const uint8_t WORD_COUNT = 100;
 static const uint8_t STA_ADDRESS_OUT[] = {0x64, 0xE8, 0x33, 0x73, 0xF1, 0x48};  // sta address of right device
-static const uint8_t LEDBAR_OFF = 0;
+static const uint8_t BITMAPS_OFF = 0;
 #else
 static const char* WORDS[] PROGMEM = {"HATE", "FAIL", "GANG", "JUNK", "FAKE", "BAIT", "CAGE", "SCAR", "SLOW", "WOLF", "PAIN", "TINY", "LUSH", "FIRE", "FUCK", "LESS", "LOSS", "BURN", "DENY", "FALL", "FEAR", "HURT", "KILL", "NONE", "EVIL", "DULL", "FOUL", "GRIM", "DAMN", "GORE", "GOSH", "HELL", "LATE", "DUST", "DARK", "DUTY", "RISK", "WARN", "SLIP", "UGLY", "WILD", "VAIN", "POOR", "MEAN", "RUDE", "SORE", "VOID", "ANTI", "DIRE", "COPE",
                                       "COST", "PUSH", "MYTH", "URGE", "RAIN", "REDO", "NEED", "SEEM", "LONE", "VAST", "PALE", "SICK", "RARE", "BEEF", "FOOL", "DEAF", "DRUG", "ITCH", "PITY", "LACK", "WANT", "SEEK", "TRIP", "DOWN", "GREY", "RULE", "WORK", "TASK", "STOP", "LOUD", "MUST", "GIVE", "LOSE", "TORN", "ONLY", "SOLO", "TRAP", "FLOP", "QUIT", "SUNK", "HOWL", "ENVY", "CYST", "COLD", "DROP", "BASE", "FLEE", "OVER", "HARD", "PASS"};
 static const uint8_t WORD_COUNT = 100;
 static const uint8_t STA_ADDRESS_OUT[] = {0xD0, 0xCF, 0x13, 0x0A, 0xE1, 0xC8};  // sta address of left device
-static const uint8_t LEDBAR_OFF = 32;
+static const uint8_t BITMAPS_OFF = 32;
 #endif
 
 const gpio_num_t AUDIO______________PIN = GPIO_NUM_8;  // A5
 
+// when FORCE_ACCEL = true, the decive does not have to be PRI to show the bitmap animation
+const bool FORCE_ACCEL = false;
+
 typedef enum : uint8_t {
     BITMAP_PAC____OPEN_R = 0,
-    BITMAP_PAC_____CLOSE = 1
+    BITMAP_PAC_____CLOSE = 1,
+    BITMAP_GHOST_____A_R = 2,
+    BITMAP_GHOST_____B_R = 3,
+    BITMAP_GHOST_____C_R = 4
 } bitmap________e;
 
-const uint8_t PROGMEM BITMAP_STORE[2][8] = {{
+const uint8_t PROGMEM BITMAP_STORE[5][8] = {{
                                                 B00111100,  // PACMAN_______OPEN_R
                                                 B01111110,  //
                                                 B11111000,  //
@@ -84,9 +89,37 @@ const uint8_t PROGMEM BITMAP_STORE[2][8] = {{
                                                 B11111111,  //
                                                 B01111110,  //
                                                 B00111100   //
+                                            },
+                                            {
+                                                B00111100,  // BITMAP_GHOST_____A_R
+                                                B01111110,  //
+                                                B11011011,  //
+                                                B11001001,  //
+                                                B11111111,  //
+                                                B11111111,  //
+                                                B11111111,  //
+                                                B11011011   //
+                                            },
+                                            {
+                                                B00111100,  // BITMAP_GHOST_____B_R
+                                                B01111110,  //
+                                                B11011011,  //
+                                                B11001001,  //
+                                                B11111111,  //
+                                                B11111111,  //
+                                                B11111111,  //
+                                                B10110110   //
+                                            },
+                                            {
+                                                B00111100,  // BITMAP_GHOST_____C_R
+                                                B01111110,  //
+                                                B11011011,  //
+                                                B11001001,  //
+                                                B11111111,  //
+                                                B11111111,  //
+                                                B11111111,  //
+                                                B01101101   //
                                             }};
-
-// matrix.drawBitmap(0, 0, neutral_bmp, 8, 8, LED_ON);
 
 typedef enum : int8_t {
     ORIENTATION______UP = -1,  // fingers pointing up, matrix bottom is where the pins are
@@ -113,20 +146,6 @@ typedef enum : uint8_t {
     TEXT_HALIGN__RIGHT
 } text_halign___e;
 
-typedef enum : uint32_t {
-    COLOR____WHITE = 0x333333,
-    COLOR______RED = 0xFF0000,
-    COLOR___ORANGE = 0x375A00,
-    COLOR____GREEN = 0x00FF00,
-    COLOR___YELLOW = 0x333300,
-    COLOR_____BLUE = 0x0000FF,
-    COLOR____OCEAN = 0x000011,
-    COLOR_____CYAN = 0x003333,
-    COLOR__MAGENTA = 0x660066,
-    COLOR____BLACK = 0x000000,
-    COLOR_____GRAY = 0x060606
-} color_________e;
-
 typedef struct {
     double x;
     double y;
@@ -141,11 +160,12 @@ typedef struct {
 typedef struct {
     bitmap________e bitmap;
     int8_t offset;
+    uint16_t color;
 } bitmap________t;
 
 typedef struct {
-    bitmap________t bitmapA;
-    bitmap________t bitmapB;
+    bitmap________t bitmapA;  // erasing
+    bitmap________t bitmapB;  // drawing
 } bitmaps_______t;
 // 4 - const b = sizeof(bitmaps_______t);
 

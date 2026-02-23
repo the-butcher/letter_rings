@@ -80,7 +80,6 @@ uint16_t Matrix::getLabelWidth(String label) {
 void Matrix::drawBars(uint8_t indexMin) {
     Matrix::clear();
     if (this->hasBegun) {
-
         double val1;
         double val2;
         double bar1;
@@ -95,9 +94,8 @@ void Matrix::drawBars(uint8_t indexMin) {
             this->baseMatrix.drawFastVLine(bar2, 8 - val1, val1, LED_ON);
             this->baseMatrix.drawFastVLine(bar2, 8 - val2, 1, LED_ON);
         }
-
-        this->baseMatrix.writeDisplay();
     }
+    Matrix::write();
 }
 
 void Matrix::drawWord(String word, int16_t offset) {
@@ -109,8 +107,8 @@ void Matrix::drawWord(String word, int16_t offset) {
         this->baseMatrix.setTextSize(1);
         this->baseMatrix.setTextColor(LED_ON);
         this->baseMatrix.print(word);
-        this->baseMatrix.writeDisplay();
     }
+    Matrix::write();
 }
 
 void Matrix::drawLabel(String label, int16_t offset) {
@@ -122,13 +120,19 @@ void Matrix::drawLabel(String label, int16_t offset) {
         this->baseMatrix.setTextSize(1);
         this->baseMatrix.setTextColor(LED_ON);
         this->baseMatrix.print(label);
-        this->baseMatrix.writeDisplay();
     }
+    Matrix::write();
 }
 
 void Matrix::clear() {
     if (this->hasBegun) {
         this->baseMatrix.clear();
+    }
+}
+
+void Matrix::write() {
+    if (this->hasBegun) {
+        this->baseMatrix.writeDisplay();
     }
 }
 
@@ -181,10 +185,9 @@ void Matrix::clear() {
 //     this->drawBitmap(this->canvasB.getBuffer());
 // }
 
-void Matrix::drawBitmap(const uint8_t* bitmap, int16_t offset) {
+void Matrix::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color) {
     if (this->hasBegun) {
-        this->baseMatrix.drawBitmap(offset, 0, bitmap, 8, 8, LED_ON);
-        this->baseMatrix.writeDisplay();
+        this->baseMatrix.drawBitmap(offset, 0, bitmap, 8, 8, color);
     }
 }
 

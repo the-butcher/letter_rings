@@ -26,7 +26,8 @@ uint64_t lastWordUpdateMillis = 0;
 uint64_t lastLabelUpdateMillis = 0;
 uint64_t lastOrientationUpdateMillis = 0;
 
-int16_t bitmapPos = -8;
+const int16_t BITMAP_RESET_POS = -10;
+int16_t bitmapPos = BITMAP_RESET_POS;
 
 /**
  * power up orientation, then reads new values every 10 milliseconds
@@ -115,13 +116,14 @@ void loop() {
     // if in party mode, make a decision for either label or frequency
     modus_________e modus = Device::getCurrModus();
     if (modus == MODUS________ACCEL) {
-        if (Device::getDeviceRole() == DEVICE_ROLE_____ANY) {  // (not primary, not secondary) = below coefficient threshold
+        if (Device::getDeviceRole() == DEVICE_ROLE_____ANY && !FORCE_ACCEL) {  // (not primary, not secondary) = below coefficient threshold
             modus = Device::getPrevModus();
-            Serial.print("modus accel, falling back to prev: ");
-            Serial.println(modus);
-        } else {
-            Serial.println("modus accel, keeping due to pri or sec role");
+            // Serial.print("modus accel, falling back to prev: ");
+            // Serial.println(modus);
         }
+        // else {
+        //     Serial.println("modus accel, keeping due to pri or sec role");
+        // }
     }
 
     if (modus == MODUS________PARTY) {
@@ -155,7 +157,26 @@ void loop() {
         if (Device::getCurrModus() == MODUS________ACCEL) {  // must refer to actual curr device modus
             Display::drawAcceleration();
             Nowsrv::sendAcceleration();  // consumes ~1 millisecond
-            Nowsrv::sendBitmaps(Device::getSendBitmaps());
+
+            if (FORCE_ACCEL || Device::getDeviceRole() == DEVICE_ROLE_____PRI) {
+
+                if (bitmapPos > 64) {
+                    bitmapPos = BITMAP_RESET_POS;
+                }
+                bitmapPos++;
+
+                // Device::currBitmaps.bitmapA.bitmap = (bitmap________e)(bitmapPos % 2);  // mouth open or closed
+                // Device::currBitmaps.bitmapA.offset = bitmapPos;
+                // Device::currBitmaps.bitmapB.bitmap = (bitmap________e)(bitmapPos % 3 + 2);  // bottom line variations
+                // Device::currBitmaps.bitmapB.offset = bitmapPos - 16;                        // trailing ghost
+
+                Device::currBitmaps.bitmapB.offset = bitmapPos;
+                Device::currBitmaps.bitmapB.bitmap = (bitmap________e)((bitmapPos + 64) % 2);  // open and close mouth, keep the number in positive range
+                Nowsrv::sendBitmaps(Device::currBitmaps);
+            }
+
+        } else {
+            bitmapPos = BITMAP_RESET_POS;
         }
 
         if (modus == MODUS________FREQU) {
@@ -233,20 +254,18 @@ void loop() {
 
     } else if (modus == MODUS________ACCEL) {
 
-        Matrices::clear();
+        // only the device in PRI role should be doing this
+        // Matrices::clear();
 
         bitmaps_______t bitmaps = Device::currBitmaps;
-        bitmaps.bitmapA.bitmap = (bitmap________e)(bitmapPos % 2);  // mouth open or closed
+        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - BITMAPS_OFF + 2, bitmaps.bitmapA.color);
+        // Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - BITMAPS_OFF - 1, bitmaps.bitmapA.color);
+        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - BITMAPS_OFF - 2, bitmaps.bitmapA.color);
+        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapB.bitmap], bitmaps.bitmapB.offset - BITMAPS_OFF, bitmaps.bitmapB.color);
 
-        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmapPos + bitmaps.bitmapA.offset);
-        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapB.bitmap], bitmapPos + bitmaps.bitmapB.offset);
+        Matrices::write();
 
-        if (bitmapPos > 64) {
-            bitmapPos = -8;
-        }
-        bitmapPos++;
-
-        delay(100);
+        delay(90);
 
     } else {
         // TODO :: warn about unknown modus on display

@@ -87,14 +87,6 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
         bitmaps_______t incomingBitmaps;
         memcpy(&incomingBitmaps, incomingData, sizeof(bitmaps_______t));
         Device::currBitmaps = incomingBitmaps;
-        // if (incomingBitmaps.bitmapA.bitmap == BITMAP_________NONE) {  // a reset from DEVICE_ROLE_____SEC to DEVICE_ROLE_____ANY
-        //     Device::setDeviceRole(DEVICE_ROLE_____ANY);
-        //     // Serial.print(DEVICE____________SIDE);
-        //     // Serial.println("received void bitmaps");
-        // } else {  // putting the device into DEVICE_ROLE_____SEC
-        //     Device::setDeviceRole(DEVICE_ROLE_____SEC);
-        //     Device::currBitmaps = incomingBitmaps;
-        // }
     } else if (len == sizeof(device_role___t)) {  // device mode from the other device
         device_role___t incomingDevciveRole;
         memcpy(&incomingDevciveRole, incomingData, sizeof(device_role___t));

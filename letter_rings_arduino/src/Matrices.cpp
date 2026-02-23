@@ -104,13 +104,20 @@ void Matrices::clear() {
     Matrices::matrixD.clear();
 }
 
-void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset) {
+void Matrices::write() {
+    Matrices::matrixA.write();
+    Matrices::matrixB.write();
+    Matrices::matrixC.write();
+    Matrices::matrixD.write();
+}
+
+void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color) {
     // TODO :: account for increased width when paired
     // TODO :: account for UP/DOWN
-    Matrices::matrixA.drawBitmap(bitmap, offset);
-    Matrices::matrixB.drawBitmap(bitmap, offset - 8);
-    Matrices::matrixC.drawBitmap(bitmap, offset - 16);
-    Matrices::matrixD.drawBitmap(bitmap, offset - 24);
+    Matrices::matrixA.drawBitmap(bitmap, offset, color);
+    Matrices::matrixB.drawBitmap(bitmap, offset - 8, color);
+    Matrices::matrixC.drawBitmap(bitmap, offset - 16, color);
+    Matrices::matrixD.drawBitmap(bitmap, offset - 24, color);
 }
 
 // void Matrices::copyCanvasAtoCanvasB(uint8_t progress, bool skipPrevious) {

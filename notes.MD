@@ -25,25 +25,25 @@
   ✔ separate word sets for left and right
   ✔ have a mode (name?) where after a new label and some timeout it goes back to frequ
     ❌ could be standard, labels do not make much sense without recognition, therefore a new label could just put the decive in temp label mode
-  - any mode where altering brightness would add value?
+  ❌ any mode where altering brightness would add value?
   ✔ have proper matrix UP/DOWN flip in all modes
   ✔ unify method names Matrices vs. Matrix
   ✔ clearXXX function, execute properly after modus switch
   - dim TFT a while after the last button press https://forums.adafruit.com/viewtopic.php?t=174096
   - test with high volume and noise as good as possible, experiment with gain settings on the microphone
-  - be able to switch modes
+  ✔ be able to switch modes
     ✔ through display
-    - through gesture (?)
+    ✔ through gesture (?)
     ✔ through bluetooth / mobile
-  - any other attractive modes?
-    - "collab" mode where people can "inject" labels
-    - would there be a non-backend solution?
-    - enter labels on a public website
-    - app fetches label and
-    - could this be a simple php solution working with a text or json file for storage?
-    - "kitt mode"
-      - a single dot travelling left to right and back
-    - any way to determine when left and right are held in alignment?
+  ❌ any other attractive modes?
+    ❌ "collab" mode where people can "inject" labels
+    ❌ would there be a non-backend solution?
+    ❌ enter labels on a public website
+    ❌ app fetches label and
+    ❌ could this be a simple php solution working with a text or json file for storage?
+    ❌ "kitt mode"
+      ❌ a single dot travelling left to right and back
+    ✔ any way to determine when left and right are held in alignment?
 	  ✔ setup task to read orientation in short intervals and keep track of the last n (some power of 2, maybe 32) acceleration vectors
 	  ✔ create esp-now connection between left and right
 	  ✔ send acceleration vectors to other device in regular intervals
@@ -51,16 +51,18 @@
 	  ✔ calculate pearson correlation coefficient between incoming acceleration data and own acceleration data
 	  ✔ see if this produces usable similarity results
 	  ❌ if both devices agree to have similar acceleration values unlock some (yet to be defines) two device mode
-	  - should both devices always have the same mode?
-	  - first device detecting similarity takes the lead
-	    - other device will not need to check for similarity while paired
-		- leading device sends drawing codes, ie. kitt bar signal
-		- non-leading device needs to know when similarity was lost
+	  ❌ should both devices always have the same mode?
+	  ✔ first device detecting similarity takes the lead
+	    ✔ other device will not need to check for similarity while paired
+		✔ leading device sends drawing codes, ie. kitt bar signal
+		✔ non-leading device needs to know when similarity was lost
 	    ❌ could be a kitt style animation (which device will be in charge of position?)
-		- could be a pacman style animation (which device will be in charge of position?)
+		✔ could be a pacman style animation (which device will be in charge of position?)
+		- full width of matrices needs to be accounted for when paired :: with proper rotation
+		- the PRI device will also have to be in charge of maintaining a unique up/down orientation
     ❌ voice recognition for 4 letter words ;)
     ✔ ignore invalid titles for the runLabel
-  - maybe have a "song" mode that will show artist and title for a given time, then go back to frequencies
+  ✔ maybe have a "song" mode that will show artist and title for a given time, then go back to frequencies
     ✔ any way to synchronize left and right in word mode?
     ✔ let the android app have the central role in words mode (only if connected)
     ✔ let the android app send pairs of words in regular intervals
@@ -89,7 +91,7 @@
     ❌ rotate display upon hand position using blend effect
     ❌ current buffers of A and D (and B and C) would have to be swapped and rotated
 
-- pcb
+✔ pcb
   ✔ order pcb after multi-matrix i2c validation
 
 LOVE ICON GAIN HYPE UNDO COOL HOPE KISS MOON FEEL HELP DEAL FACT GAME KIND MIND DARE EARN WELL GROW JUMP KEEP BOLD CALM DEEP EASY GOOD FULL GLAD HIGH NEAR PULL PLUS SAVE FAST LIKE FREE
