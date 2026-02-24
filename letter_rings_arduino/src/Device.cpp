@@ -36,12 +36,9 @@ orientation___e Device::getOrientation() {
 }
 
 void Device::setOrientation(orientation___e orientation) {
-    Device::orientation = orientation;
+    Device::orientation = orientation;  // remember
     // this should only be called when orientation actually changes
-    Matrices::matrixA.setOrientation(orientation);
-    Matrices::matrixB.setOrientation(orientation);
-    Matrices::matrixC.setOrientation(orientation);
-    Matrices::matrixD.setOrientation(orientation);
+    Matrices::setOrientation(orientation);  // apply
 }
 
 void Device::setCurrModus(modus_________e currModus) {

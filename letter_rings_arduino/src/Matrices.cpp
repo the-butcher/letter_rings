@@ -55,20 +55,6 @@ void Matrices::drawBars() {
     }
 }
 
-// void Matrices::drawTextToCanvasA(String text) {
-//     if (Matrices::orientation == ORIENTATION______UP) {
-//         Matrices::matrixA.drawTextToCanvasA(text, 0);
-//         Matrices::matrixB.drawTextToCanvasA(text, -8);
-//         Matrices::matrixC.drawTextToCanvasA(text, -16);
-//         Matrices::matrixD.drawTextToCanvasA(text, -24);
-//     } else {
-//         Matrices::matrixD.drawTextToCanvasA(text, 0);
-//         Matrices::matrixC.drawTextToCanvasA(text, -8);
-//         Matrices::matrixB.drawTextToCanvasA(text, -16);
-//         Matrices::matrixA.drawTextToCanvasA(text, -24);
-//     }
-// }
-
 void Matrices::drawWord(String word) {
     if (Device::getOrientation() == ORIENTATION______UP) {
         Matrices::matrixA.drawWord(word, 0);
@@ -111,14 +97,52 @@ void Matrices::write() {
     Matrices::matrixD.write();
 }
 
-void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color) {
-    // TODO :: account for increased width when paired
-    // TODO :: account for UP/DOWN
-    Matrices::matrixA.drawBitmap(bitmap, offset, color);
-    Matrices::matrixB.drawBitmap(bitmap, offset - 8, color);
-    Matrices::matrixC.drawBitmap(bitmap, offset - 16, color);
-    Matrices::matrixD.drawBitmap(bitmap, offset - 24, color);
+void Matrices::setOrientation(orientation___e orientation) {
+    Matrices::matrixA.setOrientation(orientation);
+    Matrices::matrixB.setOrientation(orientation);
+    Matrices::matrixC.setOrientation(orientation);
+    Matrices::matrixD.setOrientation(orientation);
 }
+
+void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color, orientation___e orientation) {
+
+    orientation___e orientationDevice = Device::getOrientation();
+    // if required, temporarily apply that orientation
+    if (orientation != orientationDevice) {
+        Matrices::setOrientation(orientation);
+    }
+    uint16_t sideOffset = BITMAPS_OFF * orientation * 16 + 16;  // either 0 or 32, depensing on side and orientation
+    if (orientation == ORIENTATION______UP) {
+        Matrices::matrixA.drawBitmap(bitmap, offset - sideOffset, color);
+        Matrices::matrixB.drawBitmap(bitmap, offset - sideOffset - 8, color);
+        Matrices::matrixC.drawBitmap(bitmap, offset - sideOffset - 16, color);
+        Matrices::matrixD.drawBitmap(bitmap, offset - sideOffset - 24, color);
+    } else {
+        Matrices::matrixD.drawBitmap(bitmap, offset - sideOffset, color);
+        Matrices::matrixC.drawBitmap(bitmap, offset - sideOffset - 8, color);
+        Matrices::matrixB.drawBitmap(bitmap, offset - sideOffset - 16, color);
+        Matrices::matrixA.drawBitmap(bitmap, offset - sideOffset - 24, color);
+    }
+
+    // if required, return to device orientation
+    if (orientation != orientationDevice) {
+        Matrices::setOrientation(orientationDevice);  // temporarily apply that orientation
+    }
+}
+
+// void Matrices::drawTextToCanvasA(String text) {
+//     if (Matrices::orientation == ORIENTATION______UP) {
+//         Matrices::matrixA.drawTextToCanvasA(text, 0);
+//         Matrices::matrixB.drawTextToCanvasA(text, -8);
+//         Matrices::matrixC.drawTextToCanvasA(text, -16);
+//         Matrices::matrixD.drawTextToCanvasA(text, -24);
+//     } else {
+//         Matrices::matrixD.drawTextToCanvasA(text, 0);
+//         Matrices::matrixC.drawTextToCanvasA(text, -8);
+//         Matrices::matrixB.drawTextToCanvasA(text, -16);
+//         Matrices::matrixA.drawTextToCanvasA(text, -24);
+//     }
+// }
 
 // void Matrices::copyCanvasAtoCanvasB(uint8_t progress, bool skipPrevious) {
 //     Matrices::matrixA.copyCanvasAtoCanvasB(progress, skipPrevious);

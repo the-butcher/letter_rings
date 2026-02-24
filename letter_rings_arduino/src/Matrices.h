@@ -24,12 +24,13 @@ class Matrices {
     static void drawBars();
     static void clear();
     static void write();
+    static void setOrientation(orientation___e orientation);
+    static void drawWord(String word);
+    static void drawLabel(String label, int16_t offset);
+    static void drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color, orientation___e orientation);
     // static void drawTextToCanvasA(String text);
     // static void copyCanvasAtoCanvasB(uint8_t progress, bool skipPrevious);
     // static void flushCanvasBtoMatrix();
-    static void drawWord(String word);
-    static void drawLabel(String label, int16_t offset);
-    static void drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color);
 };
 
 #endif

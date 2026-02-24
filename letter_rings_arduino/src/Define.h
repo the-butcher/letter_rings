@@ -1,4 +1,4 @@
-#define DEVICE____________LEFT false
+#define DEVICE____________LEFT true
 
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"
@@ -48,13 +48,13 @@ static const char* WORDS[] PROGMEM = {"LOVE", "ICON", "GAIN", "HYPE", "UNDO", "C
                                       "PAIR", "LIST", "NOTE", "SELF", "BASS", "FINE", "BLUE", "HALF", "LIVE", "LONG", "HOUR", "LOOK", "MARK", "MOVE", "LIFT", "GOAL", "BAND", "SOFT", "CARE", "PURE", "FUND", "STAY", "MORE", "WARM", "LAMB", "TEAM", "VIEW", "REAL", "HAVE", "LINK", "RISE", "RELY", "WISH", "WAIT", "TALK", "REST", "MANY", "RICH", "KNOW", "JOIN", "RIDE", "TIDY", "HUGE", "HEAL", "NICE", "OKAY", "FAIR", "NEAT", "TRUE", "LIFE"};
 static const uint8_t WORD_COUNT = 100;
 static const uint8_t STA_ADDRESS_OUT[] = {0x64, 0xE8, 0x33, 0x73, 0xF1, 0x48};  // sta address of right device
-static const uint8_t BITMAPS_OFF = 0;
+static const int8_t BITMAPS_OFF = 1;                                            // 1 * ORIENTATION * 16 + 16 -> 0 when UP, 32 when DOWN
 #else
 static const char* WORDS[] PROGMEM = {"HATE", "FAIL", "GANG", "JUNK", "FAKE", "BAIT", "CAGE", "SCAR", "SLOW", "WOLF", "PAIN", "TINY", "LUSH", "FIRE", "FUCK", "LESS", "LOSS", "BURN", "DENY", "FALL", "FEAR", "HURT", "KILL", "NONE", "EVIL", "DULL", "FOUL", "GRIM", "DAMN", "GORE", "GOSH", "HELL", "LATE", "DUST", "DARK", "DUTY", "RISK", "WARN", "SLIP", "UGLY", "WILD", "VAIN", "POOR", "MEAN", "RUDE", "SORE", "VOID", "ANTI", "DIRE", "COPE",
                                       "COST", "PUSH", "MYTH", "URGE", "RAIN", "REDO", "NEED", "SEEM", "LONE", "VAST", "PALE", "SICK", "RARE", "BEEF", "FOOL", "DEAF", "DRUG", "ITCH", "PITY", "LACK", "WANT", "SEEK", "TRIP", "DOWN", "GREY", "RULE", "WORK", "TASK", "STOP", "LOUD", "MUST", "GIVE", "LOSE", "TORN", "ONLY", "SOLO", "TRAP", "FLOP", "QUIT", "SUNK", "HOWL", "ENVY", "CYST", "COLD", "DROP", "BASE", "FLEE", "OVER", "HARD", "PASS"};
 static const uint8_t WORD_COUNT = 100;
 static const uint8_t STA_ADDRESS_OUT[] = {0xD0, 0xCF, 0x13, 0x0A, 0xE1, 0xC8};  // sta address of left device
-static const uint8_t BITMAPS_OFF = 32;
+static const int8_t BITMAPS_OFF = -1;                                           // -1 * ORIENTATION * 16 + 16 -> 32 when UP, 0 when DOWN
 #endif
 
 const gpio_num_t AUDIO______________PIN = GPIO_NUM_8;  // A5
@@ -164,8 +164,9 @@ typedef struct {
 } bitmap________t;
 
 typedef struct {
-    bitmap________t bitmapA;  // erasing
-    bitmap________t bitmapB;  // drawing
+    bitmap________t bitmapA;      // erasing
+    bitmap________t bitmapB;      // drawing
+    orientation___e orientation;  // the orientation of the primary device
 } bitmaps_______t;
 // 4 - const b = sizeof(bitmaps_______t);
 

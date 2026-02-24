@@ -172,6 +172,7 @@ void loop() {
 
                 Device::currBitmaps.bitmapB.offset = bitmapPos;
                 Device::currBitmaps.bitmapB.bitmap = (bitmap________e)((bitmapPos + 64) % 2);  // open and close mouth, keep the number in positive range
+                Device::currBitmaps.orientation = Device::getOrientation();
                 Nowsrv::sendBitmaps(Device::currBitmaps);
             }
 
@@ -258,10 +259,10 @@ void loop() {
         // Matrices::clear();
 
         bitmaps_______t bitmaps = Device::currBitmaps;
-        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - BITMAPS_OFF + 2, bitmaps.bitmapA.color);
+        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset + 2, bitmaps.bitmapA.color, bitmaps.orientation);
         // Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - BITMAPS_OFF - 1, bitmaps.bitmapA.color);
-        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - BITMAPS_OFF - 2, bitmaps.bitmapA.color);
-        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapB.bitmap], bitmaps.bitmapB.offset - BITMAPS_OFF, bitmaps.bitmapB.color);
+        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - 2, bitmaps.bitmapA.color, bitmaps.orientation);
+        Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapB.bitmap], bitmaps.bitmapB.offset, bitmaps.bitmapB.color, bitmaps.orientation);
 
         Matrices::write();
 
