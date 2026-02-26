@@ -56,16 +56,25 @@ void Matrices::drawBars() {
 }
 
 void Matrices::drawWord(String word) {
+    uint32_t wordDelayMillis = 3;
     if (Device::getOrientation() == ORIENTATION______UP) {
         Matrices::matrixA.drawWord(word, 0);
+        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixB.drawWord(word, -8);
+        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixC.drawWord(word, -16);
+        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixD.drawWord(word, -24);
+        if (wordDelayMillis > 0) delay(wordDelayMillis);
     } else {
         Matrices::matrixD.drawWord(word, 0);
+        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixC.drawWord(word, -8);
+        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixB.drawWord(word, -16);
+        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixA.drawWord(word, -24);
+        if (wordDelayMillis > 0) delay(wordDelayMillis);
     }
 }
 

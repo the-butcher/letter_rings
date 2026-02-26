@@ -11,7 +11,7 @@
 class Buttons {
    private:
    public:
-    static button_action_e buttonActionA;
+    static button_action_e buttonActionA;  // TODO :: should not have the "A" postfix
     static Button buttonA;
     static Button buttonB;
     static Button buttonC;

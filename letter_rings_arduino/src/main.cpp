@@ -30,7 +30,7 @@ const int16_t BITMAP_RESET_POS = -10;
 int16_t bitmapPos = BITMAP_RESET_POS;
 
 /**
- * power up orientation, then reads new values every 10 milliseconds
+ * power up orientation, then read new values every 25 milliseconds
  */
 void orientationBegin(void* pvParameters) {
 
@@ -85,6 +85,7 @@ void setup(void) {
     Nowsrv::begin();
     delay(100);
 
+    // start taking orientation samples
     xTaskCreatePinnedToCore(orientationBegin, "orientation-begin", 100000, NULL, 1, NULL, 0);
 
     Serial.println("... setup");
@@ -102,36 +103,27 @@ void loop() {
 
     uint64_t currMillis = millis();
 
-    // label needs to be checks outside of MODUS________LABEL, so a correct decision can be made when in MODUS________PARTY
-    if (Device::label != mainLabel) {  // width needs to be calculated
+    // label needs to be checked outside of MODUS________LABEL clause, so a correct decision can be made when in MODUS________PARTY
+    if (Device::label != mainLabel) {
         labelWidth = Matrices::matrixA.getLabelWidth(Device::label);
         mainLabel = Device::label;
         lastLabelUpdateMillis = currMillis;
-        // Serial.print("labelWidth: ");
-        // Serial.println(String(labelWidth));
-        // Serial.print("label: ");
-        // Serial.println(String(mainLabel));
     }
 
-    // if in party mode, make a decision for either label or frequency
     modus_________e modus = Device::getCurrModus();
+    // if in accel mode and paired -> run pacman, fallback to previous mode otherwise
     if (modus == MODUS________ACCEL) {
         if (Device::getDeviceRole() == DEVICE_ROLE_____ANY && !FORCE_ACCEL) {  // (not primary, not secondary) = below coefficient threshold
             modus = Device::getPrevModus();
-            // Serial.print("modus accel, falling back to prev: ");
-            // Serial.println(modus);
         }
-        // else {
-        //     Serial.println("modus accel, keeping due to pri or sec role");
-        // }
     }
 
+    // if in party mode, make a decision for either label or frequency
     if (modus == MODUS________PARTY) {
         modus = exceedsPartyLabelDuration(currMillis) ? MODUS________FREQU : MODUS________LABEL;
     }
 
     if (Display::needsStatusRedraw) {
-        // Serial.println("drawStatus");
         Display::drawStatus(modus);
     }
 
@@ -154,7 +146,7 @@ void loop() {
         }
         Display::drawSignal();
 
-        if (Device::getCurrModus() == MODUS________ACCEL) {  // must refer to actual curr device modus
+        if (Device::getCurrModus() == MODUS________ACCEL) {  // must refer to actual curr device modus or it will not happen due to prevMode
             Display::drawAcceleration();
             Nowsrv::sendAcceleration();  // consumes ~1 millisecond
 
@@ -165,11 +157,6 @@ void loop() {
                 }
                 bitmapPos++;
 
-                // Device::currBitmaps.bitmapA.bitmap = (bitmap________e)(bitmapPos % 2);  // mouth open or closed
-                // Device::currBitmaps.bitmapA.offset = bitmapPos;
-                // Device::currBitmaps.bitmapB.bitmap = (bitmap________e)(bitmapPos % 3 + 2);  // bottom line variations
-                // Device::currBitmaps.bitmapB.offset = bitmapPos - 16;                        // trailing ghost
-
                 Device::currBitmaps.bitmapB.offset = bitmapPos;
                 Device::currBitmaps.bitmapB.bitmap = (bitmap________e)((bitmapPos + 64) % 2);  // open and close mouth, keep the number in positive range
                 Device::currBitmaps.orientation = Device::getOrientation();
@@ -177,14 +164,14 @@ void loop() {
             }
 
         } else {
-            bitmapPos = BITMAP_RESET_POS;
+            bitmapPos = BITMAP_RESET_POS;  // TODO :: this could be done when "modus", not "Device::getCurrModus()" != ACCEL, so it also resets when in fallback mode
         }
 
         if (modus == MODUS________FREQU) {
             Display::drawFrequ();
         }
 
-        Display::drawDeviceRole();
+        Display::drawDeviceRole();  // little box indicators (TODO :: different colors for better readability)
 
         // uint64_t millisB = millis();
         // Serial.println(String(millisB - millisA));
@@ -219,7 +206,7 @@ void loop() {
             if (wordProgress == WORD_TRANSITION_COUNT) {
                 wordProgress++;
                 Display::drawText(mainWord);
-                Matrices::drawWord(mainWord);
+                Matrices::drawWord(mainWord);  // TODO :: check if it is smoother to first draw all, then flush all
             }
             delay(100);
         }
@@ -251,19 +238,19 @@ void loop() {
         Microphone::sample();
         Matrices::drawBars();
 
-        delay(1);
+        delay(1);  // draw as often as possible
 
     } else if (modus == MODUS________ACCEL) {
 
-        // only the device in PRI role should be doing this
-        // Matrices::clear();
-
         bitmaps_______t bitmaps = Device::currBitmaps;
+
+        // first two calls clear the bitmap ahead and behind
         Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset + 2, bitmaps.bitmapA.color, bitmaps.orientation);
-        // Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - BITMAPS_OFF - 1, bitmaps.bitmapA.color);
         Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - 2, bitmaps.bitmapA.color, bitmaps.orientation);
+        // third call draw in the space cleared by the previous calls
         Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapB.bitmap], bitmaps.bitmapB.offset, bitmaps.bitmapB.color, bitmaps.orientation);
 
+        // once all leds are set by clearing and drawing, flush the matrices
         Matrices::write();
 
         delay(90);

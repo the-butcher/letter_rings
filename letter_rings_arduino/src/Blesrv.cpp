@@ -8,20 +8,23 @@ BLECharacteristic* Blesrv::pModusCharacteristic;
 BLECharacteristic* Blesrv::pLightCharacteristic;
 String Blesrv::macAdress;
 
-// Function to convert a struct to a byte array
-// https://wokwi.com/projects/384215584338530305
-template <typename T>
-void serializeData(const T& inputStruct, uint8_t* outputBytes) {
-    memcpy(outputBytes, &inputStruct, sizeof(T));
-}
+// // Function to convert a struct to a byte array
+// // https://wokwi.com/projects/384215584338530305
+// template <typename T>
+// void serializeData(const T& inputStruct, uint8_t* outputBytes) {
+//     memcpy(outputBytes, &inputStruct, sizeof(T));
+// }
 
-// Function to convert a byte array to a struct
-// https://wokwi.com/projects/384215584338530305
-template <typename T>
-void deserializeData(const uint8_t* inputBytes, uint16_t offset, T& outputStruct) {
-    memcpy(&outputStruct, inputBytes + offset, sizeof(T));
-}
+// // Function to convert a byte array to a struct
+// // https://wokwi.com/projects/384215584338530305
+// template <typename T>
+// void deserializeData(const uint8_t* inputBytes, uint16_t offset, T& outputStruct) {
+//     memcpy(&outputStruct, inputBytes + offset, sizeof(T));
+// }
 
+/**
+ * bluetooth connection callbacks
+ */
 class BlesrvCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
         Serial.println("something connected");
@@ -34,6 +37,9 @@ class BlesrvCallbacks : public BLEServerCallbacks {
     }
 };
 
+/**
+ * label write callback (incoming label values)
+ */
 class LabelCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
@@ -53,6 +59,9 @@ class LabelCallbacks : public BLECharacteristicCallbacks {
     }
 };
 
+/**
+ * word write callback (incoming word values)
+ */
 class WordsCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
@@ -71,6 +80,9 @@ class WordsCallbacks : public BLECharacteristicCallbacks {
     }
 };
 
+/**
+ * modus write callback (incoming modus values)
+ */
 class ModusCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
@@ -92,6 +104,9 @@ class ModusCallbacks : public BLECharacteristicCallbacks {
     }
 };
 
+/**
+ * light write callback (incoming light values)
+ */
 class LightCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
@@ -127,12 +142,15 @@ bool Blesrv::begin() {
 
     Blesrv::pService = pServer->createService(COMMAND_SERVICE___UUID);
 
+    // setup label characteristic, write only
     Blesrv::pLabelCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_LABEL_____UUID, BLECharacteristic::PROPERTY_WRITE);
     Blesrv::pLabelCharacteristic->setCallbacks(new LabelCallbacks());
 
+    // setup word characteristic, write only
     Blesrv::pWordCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_WORD______UUID, BLECharacteristic::PROPERTY_WRITE);
     Blesrv::pWordCharacteristic->setCallbacks(new WordsCallbacks());
 
+    // setup modus characteristic, read and write, can be changed from both device and app
     Blesrv::pModusCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_MODUS_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
     Blesrv::pModusCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_MODUS_DSC_UUID, sizeof(modus_________e)));
     Blesrv::pModusCharacteristic->addDescriptor(new BLE2902());
@@ -141,6 +159,7 @@ bool Blesrv::begin() {
     int cModus = Device::getCurrModus();
     Blesrv::pModusCharacteristic->setValue(cModus);
 
+    // setup light characteristic, read and write, can be changed from both device and app
     Blesrv::pLightCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_LIGHT_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
     Blesrv::pLightCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_LIGHT_DSC_UUID, sizeof(uint8_t)));
     Blesrv::pLightCharacteristic->addDescriptor(new BLE2902());
@@ -151,6 +170,7 @@ bool Blesrv::begin() {
 
     Blesrv::pService->start();
 
+    // add service and all characteristics to advertising
     BLEAdvertising* pAdvertising = BLEDevice::getAdvertising();
     pAdvertising->addServiceUUID(COMMAND_SERVICE___UUID);
     pAdvertising->addServiceUUID(COMMAND_LABEL_____UUID);
@@ -178,25 +198,15 @@ bool Blesrv::begin() {
 }
 
 bool Blesrv::writeModus() {
-    // if (Blesrv::isConnected()) {
     int cModus = Device::getCurrModus();
     Blesrv::pModusCharacteristic->setValue(cModus);
     Blesrv::pModusCharacteristic->notify();
     return Blesrv::isConnected();
-    //     return true;
-    // } else {
-    //     return false;
-    // }
 }
 
 bool Blesrv::writeLight() {
-    // if (Blesrv::isConnected()) {
     int cLight = Matrices::brightness;
     Blesrv::pLightCharacteristic->setValue(cLight);
     Blesrv::pLightCharacteristic->notify();
     return Blesrv::isConnected();
-    //     return true;
-    // } else {
-    //     return false;
-    // }
 }

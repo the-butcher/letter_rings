@@ -1,4 +1,4 @@
-#define DEVICE____________LEFT true
+#define DEVICE____________LEFT false
 
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"
@@ -25,7 +25,7 @@
 #define BUTTON_DEBOUNCE_MILLIS 100
 
 #define ACCELERATION___SAMPLES 32
-#define ACCELERATION_THRESHOLD 0.8  // threshold for the correlation value to be considered to be good enough
+#define ACCELERATION_THRESHOLD 0.8  // threshold for the correlation value considered to be good enough
 
 #ifndef Define_h
 #define Define_h
@@ -133,11 +133,26 @@ typedef enum : uint8_t {
 } button_action_e;
 
 typedef enum : uint8_t {
+    /**
+     * show single 4-digit words
+     */
     MODUS________WORDS,
+    /**
+     * show a label running across the screen
+     */
     MODUS________LABEL,
+    /**
+     * show frequency bars
+     */
     MODUS________FREQU,
-    MODUS________PARTY,  // show label for a while then go back to frequency
-    MODUS________ACCEL   // check for acceleration similarity and display some combined animation in that case, prev modus otherwise
+    /**
+     * show label for a while then go back to frequency
+     */
+    MODUS________PARTY,
+    /**
+     * check for acceleration similarity and display some combined animation in that case, prev modus otherwise
+     */
+    MODUS________ACCEL
 } modus_________e;
 
 typedef enum : uint8_t {
@@ -158,8 +173,19 @@ typedef struct {
 // 128 - const a = sizeof(acceleration__t);
 
 typedef struct {
+    /**
+     * a reference to a bitmap enum
+     */
     bitmap________e bitmap;
+    /**
+     * the offset at which the bitmap is to be drawn
+     * when paired the device will add additional offset to account for left or right
+     */
     int8_t offset;
+    /**
+     * the color with which the bitmap should be drawn
+     * here the color can only by LED_ON (=turn on pixels) or LED_OFF (=turn off pixels)
+     */
     uint16_t color;
 } bitmap________t;
 
@@ -171,9 +197,18 @@ typedef struct {
 // 4 - const b = sizeof(bitmaps_______t);
 
 typedef enum : uint8_t {
-    DEVICE_ROLE_____ANY = 0,  // upon detection of correlation send ledbar signal
-    DEVICE_ROLE_____PRI = 1,  // upon loss of correlation terminate ledbar signal
-    DEVICE_ROLE_____SEC = 2   // do not send ledbar signals
+    /**
+     * the device is not paired
+     */
+    DEVICE_ROLE_____ANY = 0,
+    /**
+     * the device is paired and has the primary role, meaning it is in charge of sending bitmaps
+     */
+    DEVICE_ROLE_____PRI = 1,
+    /**
+     * the device is paired and has the secondary role, meaning it does receive bitmaps
+     */
+    DEVICE_ROLE_____SEC = 2
 } device_role___e;
 
 typedef struct {

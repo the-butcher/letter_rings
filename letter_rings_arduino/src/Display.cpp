@@ -13,6 +13,7 @@ bool Display::powerup() {
     Display::baseDisplay.init(DISPLAY__WIDTH, DISPLAY_HEIGHT);  // Init ST7789 240x135
     Display::baseDisplay.setRotation(0);                        // buttons at the bottom
     Display::baseDisplay.fillScreen(ST77XX_BLACK);
+    Display::baseDisplay.setTextWrap(true);
     return true;
 }
 
@@ -28,16 +29,13 @@ bool Display::depower() {
 
 void Display::drawStatus(modus_________e modus) {
 
-    // Display::baseDisplay.fillScreen(ST77XX_BLACK);
-    Display::baseDisplay.setTextWrap(true);
-
     Display::drawConfig();  // buttons labels
     Display::drawConnection();
     Display::drawOrientation();
     if (modus == MODUS________LABEL) {
         Display::drawText(Device::label);
     }
-    Display::drawMatrixState();
+    Display::drawMatrixState();  // I2C init states of matrices
 
     Display::needsStatusRedraw = false;
 }

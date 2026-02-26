@@ -9,9 +9,9 @@
   ✔️ have continous parsing at specific intervals (i.e. 1 minute)
   ✔️ gatt connection to 2(!) devices, if that does not work maybe one device being server, one being client could be an alternative
   ✔️ find out about message size and how to split texts if needed
-  - try to identify code that can fail and handle errors accordingly, read more BLE tutorials
-    - when the device disconnects before the gatt-services are in place there is no event or other notification
-    - attempting to connect from this state returns the app to a stable state (gatt connect fails and the UI shows the button again after that)
+  ! try to identify code that can fail and handle errors accordingly, read more BLE tutorials
+    ? when the device disconnects before the gatt-services are in place there is no event or other notification
+    ? attempting to connect from this state returns the app to a stable state (gatt connect fails and the UI shows the button again after that)
       ✔ handle GATT disconnect (update UI), roughly in place, but needs revisit,
       ✔ a switch disconnect in the app does not disconnect the device!
       ✔ map raw bands to screen/matrix space
@@ -19,7 +19,18 @@
       ✔ display delta from current measurement to average (aka less or more volume than previously)
 
 - esp
-  - check any thinkable maximum in terms of device orientation
+  - documentation
+    - github readme
+	- pictures, video for github and twitter
+  - make correlation threshold (0.80 currently) configurable to prevent weird behaviour when actually at the party
+  ! there is occasional lag when drawing matrices, where it seems the bitmap pos has proceeded multiple steps (~3) before an actual redraw
+  ! check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
+  - print new ring holders
+    - ring holders could be more modular
+	- a single ring holder would offer better hold and protection for a single ring
+	
+  ? mabe use the free 23mm for the right ring-finer (22 is a bit tight there)
+  ✔ need another 24mm ring for left index finger (23 wont fit)
   ✔ it seems like high frequencies are over-represented in the spectrum
   ✔ check if order 3 regression on frequencies is OK :: seems to work better than order 2
   ✔ separate word sets for left and right
@@ -29,13 +40,15 @@
   ✔ have proper matrix UP/DOWN flip in all modes
   ✔ unify method names Matrices vs. Matrix
   ✔ clearXXX function, execute properly after modus switch
-  - dim TFT a while after the last button press https://forums.adafruit.com/viewtopic.php?t=174096
-  - test with high volume and noise as good as possible, experiment with gain settings on the microphone
+  ? dim TFT a while after the last button press https://forums.adafruit.com/viewtopic.php?t=174096
+  ! test with high volume and noise as good as possible, experiment with gain settings on the microphone
   ✔ be able to switch modes
     ✔ through display
     ✔ through gesture (?)
     ✔ through bluetooth / mobile
-  ❌ any other attractive modes?
+  ? any other attractive modes?
+    - a mode "shaking" random chars by acceleration / position
+	- a mode that would write the word "beer" when lifting a bottle, would have to be a specific orientation change in a specific amount of time
     ❌ "collab" mode where people can "inject" labels
     ❌ would there be a non-backend solution?
     ❌ enter labels on a public website
@@ -58,8 +71,8 @@
 		✔ non-leading device needs to know when similarity was lost
 	    ❌ could be a kitt style animation (which device will be in charge of position?)
 		✔ could be a pacman style animation (which device will be in charge of position?)
-		- full width of matrices needs to be accounted for when paired :: with proper rotation
-		- the PRI device will also have to be in charge of maintaining a unique up/down orientation
+		✔ full width of matrices needs to be accounted for when paired :: with proper rotation
+		✔ the PRI device will also have to be in charge of maintaining a unique up/down orientation
     ❌ voice recognition for 4 letter words ;)
     ✔ ignore invalid titles for the runLabel
   ✔ maybe have a "song" mode that will show artist and title for a given time, then go back to frequencies

@@ -23,15 +23,21 @@ class Blesrv {
     static BLECharacteristic* pLightCharacteristic;
 
    public:
+    /**
+     * the device's bluetooth mac address
+     */
     static String macAdress;
     static bool begin();
+    /**
+     * check if the device is currently connected (has at least 1 connection)
+     */
     static bool isConnected();
     /**
-     * for when the modus was changed on the device
+     * write new modus value when changed on the device
      */
     static bool writeModus();
     /**
-     * for when the brightness changes
+     * write new light value when changed on the device
      */
     static bool writeLight();
 };
