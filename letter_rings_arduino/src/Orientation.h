@@ -24,7 +24,7 @@ class Orientation {
 
    public:
     static bool hasBegun;
-    static bool readval();
+    static bool read();
     static vector________t getOrientation();
     static vector________t getGyroscope();  // radians per seconds
     static bool powerup();

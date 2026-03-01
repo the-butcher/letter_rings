@@ -1,8 +1,8 @@
 #include <Device.h>
 
 // Adafruit_8x8matrix Matrix::baseMatrix();
-modus_________e Device::prevModus = MODUS________WORDS;
-modus_________e Device::currModus = MODUS________ACCEL;
+modus_________e Device::prevModus = MODUS________FREQU;  // MODUS________WORDS;
+modus_________e Device::currModus = MODUS________FREQU;  // MODUS________ACCEL;
 
 orientation___e Device::orientation = ORIENTATION______UP;
 
@@ -66,7 +66,7 @@ bool Device::setDeviceRole(device_role___e deviceRole) {
         return true;
     } else if (deviceRole == DEVICE_ROLE_____ANY) {
         if (Device::deviceRole == DEVICE_ROLE_____PRI) {  // when in PRI only accept ANY after a while
-            if ((millis() - Device::lastRolePriAssignmentMillis) > ROLE_PRI__MIN_DURATION) {
+            if ((millis() - Device::lastRolePriAssignmentMillis) > ROLE_PRI____DURATION_MS) {
                 Device::deviceRole = deviceRole;
                 return true;
             } else {

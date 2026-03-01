@@ -11,6 +11,7 @@ bool Orientation::hasBegun = false;
 
 bool Orientation::powerup() {
     Orientation::hasBegun = Orientation::baseSensor.begin();
+    Orientation::gyroscope = {0, 0, 0};
     return Orientation::hasBegun;
 }
 
@@ -19,24 +20,27 @@ bool Orientation::depower() {
     return true;
 }
 
-bool Orientation::readval() {
+/**
+ * consumes ~ 5ms for orientation, gyroscope, linearaccel
+ * consumes ~ 1.8ms for acceleration only
+ */
+bool Orientation::read() {
 
     sensors_event_t orientationData;
-    sensors_event_t gyroscopeData;
     sensors_event_t accelerationData;
+    // sensors_event_t gyroscopeData;
 
-    Orientation::baseSensor.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
-    Orientation::baseSensor.getEvent(&gyroscopeData, Adafruit_BNO055::VECTOR_GYROSCOPE);
     Orientation::baseSensor.getEvent(&accelerationData, Adafruit_BNO055::VECTOR_LINEARACCEL);
-    Orientation::orientation = {orientationData.orientation.x, orientationData.orientation.y, orientationData.orientation.z};
-    Orientation::gyroscope = {gyroscopeData.gyro.x, gyroscopeData.gyro.y, gyroscopeData.gyro.z};
+    Orientation::baseSensor.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+    // Orientation::baseSensor.getEvent(&gyroscopeData, Adafruit_BNO055::VECTOR_GYROSCOPE);
 
     for (uint8_t i = 0; i < ACCELERATION___SAMPLES - 1; i++) {
         Orientation::accelA.values[i] = Orientation::accelA.values[i + 1];
     }
     float accelerationMagnitude = sqrt(pow(accelerationData.acceleration.x, 2) + pow(accelerationData.acceleration.y, 2) + pow(accelerationData.acceleration.z, 2));
-
     Orientation::accelA.values[ACCELERATION___SAMPLES - 1] = accelerationMagnitude;
+    Orientation::orientation = {orientationData.orientation.x, orientationData.orientation.y, orientationData.orientation.z};
+    // {gyroscopeData.gyro.x, gyroscopeData.gyro.y, gyroscopeData.gyro.z};
 
     return true;
 }

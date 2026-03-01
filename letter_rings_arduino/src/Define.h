@@ -1,4 +1,4 @@
-#define DEVICE____________LEFT false
+#define DEVICE____________LEFT true
 
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"
@@ -62,7 +62,10 @@ const gpio_num_t AUDIO______________PIN = GPIO_NUM_8;  // A5
 
 // when FORCE_ACCEL = true, the decive does not have to be PRI to show the bitmap animation
 const bool FORCE_ACCEL = false;
-const uint64_t ROLE_PRI__MIN_DURATION = 15000;
+
+const uint64_t ROLE_PRI____DURATION_MS = 15000;
+const uint64_t WORD_UPDATE_INTERVAL_MS = 14000;
+const uint64_t PARTY_LABEL_DURATION_MS = 20000;
 
 typedef enum : uint8_t {
     BITMAP_PAC____OPEN_R = 0,

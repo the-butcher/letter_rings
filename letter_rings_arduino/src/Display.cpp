@@ -2,6 +2,8 @@
 
 Adafruit_ST7789 Display::baseDisplay(TFT_CS, TFT_DC, TFT_RST);
 bool Display::needsStatusRedraw = true;
+bool Display::needsWrite = false;
+GFXcanvas16 Display::canvas(DISPLAY__WIDTH, DISPLAY_HEIGHT);
 
 bool Display::powerup() {
     // turn on backlite
@@ -10,10 +12,13 @@ bool Display::powerup() {
     // turn on the TFT / I2C power supply
     pinMode(TFT_I2C_POWER, OUTPUT);
     digitalWrite(TFT_I2C_POWER, HIGH);
+
     Display::baseDisplay.init(DISPLAY__WIDTH, DISPLAY_HEIGHT);  // Init ST7789 240x135
     Display::baseDisplay.setRotation(0);                        // buttons at the bottom
     Display::baseDisplay.fillScreen(ST77XX_BLACK);
-    Display::baseDisplay.setTextWrap(true);
+
+    Display::canvas.setTextWrap(true);
+
     return true;
 }
 
@@ -38,13 +43,15 @@ void Display::drawStatus(modus_________e modus) {
     Display::drawMatrixState();  // I2C init states of matrices
 
     Display::needsStatusRedraw = false;
+
+    Display::needsWrite = true;
 }
 
 void Display::drawString(String text, uint16_t x, uint16_t y, text_halign___e halign, uint8_t hPadding, uint16_t color) {
-    Display::baseDisplay.setCursor(0, 0);
+    Display::canvas.setCursor(0, 0);
     int16_t x1, y1;
     uint16_t w, h, xAlign;
-    Display::baseDisplay.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+    Display::canvas.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
     if (halign == TEXT_HALIGN___LEFT) {
         xAlign = x;
     } else if (halign == TEXT_HALIGN_CENTER) {
@@ -52,15 +59,17 @@ void Display::drawString(String text, uint16_t x, uint16_t y, text_halign___e ha
     } else {
         xAlign = x - w;
     }
-    Display::baseDisplay.fillRect(xAlign - hPadding - 1, y - 1, w + hPadding * 2, h + 1, color);
-    Display::baseDisplay.setCursor(xAlign, y);
-    Display::baseDisplay.print(text);
+    Display::canvas.fillRect(xAlign - hPadding - 1, y - 1, w + hPadding * 2, h + 1, color);
+    Display::canvas.setCursor(xAlign, y);
+    Display::canvas.print(text);
+
+    Display::needsWrite = true;
 }
 
 void Display::drawConfig() {
 
-    Display::baseDisplay.setTextSize(2);
-    Display::baseDisplay.setTextColor(0xad55);  // #AAAAAA
+    Display::canvas.setTextSize(2);
+    Display::canvas.setTextColor(0xad55);  // #AAAAAA
 
     uint8_t configYPos = DISPLAY_HEIGHT - 14;
 
@@ -101,34 +110,41 @@ void Display::drawConfig() {
     Display::drawString(value, DISPLAY__WIDTH / 2, configYPos - 17, TEXT_HALIGN_CENTER, DISPLAY__WIDTH / 2);
 
     Display::drawString(DEVICE____________SIDE, DISPLAY__WIDTH, configYPos - 17, TEXT_HALIGN__RIGHT);
+
+    Display::needsWrite = true;
 }
 
 void Display::clearModus() {
-    Display::baseDisplay.fillRect(0, 12, DISPLAY__WIDTH, 120, ST77XX_BLACK);
+    Display::canvas.fillRect(0, 12, DISPLAY__WIDTH, 120, ST77XX_BLACK);
+    Display::needsWrite = true;
 }
 
 void Display::drawText(String label) {
 
     Display::clearModus();
 
-    Display::baseDisplay.setTextSize(2);
-    Display::baseDisplay.setTextColor(ST77XX_WHITE);
+    Display::canvas.setTextSize(2);
+    Display::canvas.setTextColor(ST77XX_WHITE);
 
     Display::drawString(label, 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
+
+    Display::needsWrite = true;
 }
 
 void Display::drawFrequ() {
 
     int x;
     int h;
-    int y = 124;
-    int m = 112;
+    const int y = 124;
+    const int m = 112;
 
     Display::clearModus();
+
+    // actual band values
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
         x = i * 8 + 3;
         h = min(m, (int)round(Microphone::bandValues[i] / 256.0));
-        Display::baseDisplay.fillRect(x, y - h, 7, h, 0x9cd3);  // #9c9a9c - draw fresh bar
+        Display::canvas.fillRect(x, y - h, 7, h, 0x9cd3);  // #9c9a9c - draw fresh bar
     }
 
     double x0;
@@ -139,7 +155,8 @@ void Display::drawFrequ() {
         x1 = i;
         y1 = Microphone::fitFValues[i];
         if (i > 0) {
-            Display::baseDisplay.drawLine(round(x0 * 8 + 6), round(y - min(h * 1.0, y0 / 256.0)), round(x1 * 8 + 6), round(y - min(h * 1.0, y1 / 256.0)), ST77XX_YELLOW);
+            Display::canvas.drawLine(round(x0 * 8 + 6), round(y - min(m * 1.0, y0 / 256.0)), round(x1 * 8 + 6), round(y - min(m * 1.0, y1 / 256.0)), ST77XX_YELLOW);
+            // Display::canvas.drawLine(round(x0 * 8 + 6), round(y - y0 / 256.0), round(x1 * 8 + 6), round(y - y1 / 256.0), ST77XX_YELLOW);
         }
         x0 = x1;
         y0 = y1;
@@ -148,52 +165,62 @@ void Display::drawFrequ() {
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
         x = i * 8 + 3;
         h = min(m, (int)round(Microphone::bandScaled[i] / 256.0));
-        Display::baseDisplay.drawRect(x, y - h, 7, h, 0xdefb);  // #dddddd - draw scaled bar
+        Display::canvas.drawRect(x, y - h, 7, h, 0xdefb);  // #dddddd - draw scaled bar
     }
 
-    Display::baseDisplay.drawFastHLine(0, y - (int)round(Microphone::basis / 256.0), DISPLAY__WIDTH, ST77XX_YELLOW);
-    // Display::baseDisplay.drawFastHLine(0, y - (int)round(Microphone::fitFAverag / 256.0), DISPLAY__WIDTH, ST77XX_MAGENTA);
+    Display::canvas.drawFastHLine(0, y - (int)round(Microphone::basis / 256.0), DISPLAY__WIDTH, ST77XX_YELLOW);
+    // Display::canvas.drawFastHLine(0, y - (int)round(Microphone::fitFAverag / 256.0), DISPLAY__WIDTH, ST77XX_MAGENTA);
+
+    Display::needsWrite = true;
 }
 
 void Display::drawMatrixState() {
 
     uint8_t rectXPos = 0;
     uint8_t rectYPos = DISPLAY_HEIGHT - 27;
-    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixA.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+    Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixA.hasBegun ? ST77XX_GREEN : ST77XX_RED);
     rectXPos += 8;
-    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixB.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+    Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixB.hasBegun ? ST77XX_GREEN : ST77XX_RED);
     rectXPos += 8;
-    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixC.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+    Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixC.hasBegun ? ST77XX_GREEN : ST77XX_RED);
     rectXPos += 8;
-    Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixD.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+    Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixD.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+
+    Display::needsWrite = true;
 }
 
 void Display::drawDeviceRole() {
 
     device_role___e deviceRole = Device::getDeviceRole();
 
+    uint16_t roleColors[3] = {0xce59, ST77XX_YELLOW, ST77XX_MAGENTA};
+
     uint8_t rectXPos = DISPLAY__WIDTH - 38;
     uint8_t rectYPos = DISPLAY_HEIGHT - 27;
     for (uint8_t i = DEVICE_ROLE_____ANY; i <= DEVICE_ROLE_____SEC; i++) {
-        Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, ST77XX_BLACK);
+        Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, ST77XX_BLACK);
         if (deviceRole == i) {
-            Display::baseDisplay.fillRect(rectXPos, rectYPos, 6, 6, ST77XX_GREEN);
+            Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, roleColors[i]);
         } else {
-            Display::baseDisplay.drawRect(rectXPos, rectYPos, 6, 6, 0x9cd3);
+            Display::canvas.drawRect(rectXPos, rectYPos, 6, 6, 0x9cd3);
         }
         rectXPos += 8;
     }
+
+    Display::needsWrite = true;
 }
 
 void Display::drawConnection() {
 
     bool connected = Blesrv::isConnected();
 
-    Display::baseDisplay.setTextSize(1);
-    Display::baseDisplay.setTextColor(connected ? ST77XX_WHITE : 0x73ae);  // https://rgbcolorpicker.com/565
+    Display::canvas.setTextSize(1);
+    Display::canvas.setTextColor(connected ? ST77XX_WHITE : 0x73ae);  // https://rgbcolorpicker.com/565
 
     uint16_t yPosC = 1;
     Display::drawString(Blesrv::macAdress, DISPLAY__WIDTH / 2, yPosC, TEXT_HALIGN_CENTER, 20, connected ? ST77XX_BLUE : 0x31a6);
+
+    Display::needsWrite = true;
 }
 
 uint8_t getXLabelOffset(double value) {
@@ -212,8 +239,8 @@ uint8_t getXLabelOffset(double value) {
 
 void Display::drawOrientation() {
 
-    Display::baseDisplay.setTextSize(2);
-    Display::baseDisplay.setTextColor(Orientation::hasBegun ? 0xad55 : 0xdc30);  // #adaaad : #de8684 // https://rgbcolorpicker.com/565
+    Display::canvas.setTextSize(2);
+    Display::canvas.setTextColor(Orientation::hasBegun ? 0xad55 : 0xdc30);  // #adaaad : #de8684 // https://rgbcolorpicker.com/565
 
     vector________t orientation = Orientation::getOrientation();
 
@@ -236,14 +263,16 @@ void Display::drawOrientation() {
     uint16_t yPosO = yPosOffset - 17 * 2;
     Display::drawString("O: ", 0, yPosO, TEXT_HALIGN___LEFT);
     Display::drawString(Device::getOrientation() == ORIENTATION______UP ? "UP  " : "DOWN", xPosValue, yPosO, TEXT_HALIGN___LEFT);
+
+    Display::needsWrite = true;
 }
 
 void Display::drawAcceleration() {
 
     Display::clearModus();
 
-    Display::baseDisplay.setTextSize(2);
-    Display::baseDisplay.setTextColor(Orientation::coefficient > ACCELERATION_THRESHOLD ? 0xad55 : 0xf800);  // #adaaad : #ff0000
+    Display::canvas.setTextSize(2);
+    Display::canvas.setTextColor(Orientation::coefficient > ACCELERATION_THRESHOLD ? 0xad55 : 0xf800);  // #adaaad : #ff0000
     Display::drawString(String(Orientation::coefficient, 3), 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
 
     int x;
@@ -255,23 +284,23 @@ void Display::drawAcceleration() {
     for (int i = 0; i < ACCELERATION___SAMPLES; i++) {
         x = i * 4 + 3;
         h = min(m, (int)round(accelA.values[i] * 32));
-        Display::baseDisplay.fillRect(x, y - h, 3, h, 0x9cd3);  // #9c9a9c - draw fresh bar (grey)
+        Display::canvas.fillRect(x, y - h, 3, h, 0x9cd3);  // #9c9a9c - draw fresh bar (grey)
     }
 
     acceleration__t accelB = Orientation::getAccelB();
     for (int i = 0; i < ACCELERATION___SAMPLES; i++) {
         x = i * 4 + 3;
         h = min(m, (int)round(accelB.values[i] * 32));
-        Display::baseDisplay.drawRect(x, y - h, 3, h, 0xdefb);  // #dddddd - draw scaled bar
+        Display::canvas.drawRect(x, y - h, 3, h, 0xdefb);  // #dddddd - draw scaled bar
     }
+
+    Display::needsWrite = true;
 }
 
 void Display::drawSignal() {
 
-    // Serial.println(Microphone::signal);
-
-    Display::baseDisplay.setTextSize(2);
-    Display::baseDisplay.setTextColor(0xad55);  // #AAAAAA
+    Display::canvas.setTextSize(2);
+    Display::canvas.setTextColor(0xad55);  // #AAAAAA
 
     uint8_t barHeight = 70;
     uint8_t yPosOffset = DISPLAY_HEIGHT - 20 - 17;
@@ -281,20 +310,27 @@ void Display::drawSignal() {
     uint16_t yPosO = yPosOffset - 17;  // same as o label
     String signalString;
     if (Microphone::signal >= 1000) {
-        signalString = String(Microphone::signal);
-    } else if (Microphone::signal >= 100) {
         signalString = " " + String(Microphone::signal);
-    } else if (Microphone::signal >= 10) {
+    } else if (Microphone::signal >= 100) {
         signalString = "  " + String(Microphone::signal);
-    } else {
+    } else if (Microphone::signal >= 10) {
         signalString = "   " + String(Microphone::signal);
+    } else {
+        signalString = "    " + String(Microphone::signal);
     }
     Display::drawString(signalString, DISPLAY__WIDTH - 10, yPosO, TEXT_HALIGN__RIGHT);
 
-    Display::baseDisplay.fillRect(DISPLAY__WIDTH - 3, yPosOffset - barHeight, 3, barHeight, ST77XX_BLACK);  // remove previous line
-    Display::baseDisplay.fillRect(DISPLAY__WIDTH - 2, yPosOffset - barHeight, 1, barHeight, 0x632c);        // #666666
-    Display::baseDisplay.fillRect(DISPLAY__WIDTH - 3, yPosOffset - signal, 3, signal, 0xad55);              // signal line
-    Display::baseDisplay.drawFastHLine(DISPLAY__WIDTH - 8, yPosOffset - barHeight, 8, ST77XX_CYAN);
-    Display::baseDisplay.drawFastHLine(DISPLAY__WIDTH - 8, yPosOffset - barHeight / 2, 8, ST77XX_CYAN);
-    Display::baseDisplay.drawFastHLine(DISPLAY__WIDTH - 8, yPosOffset, 8, ST77XX_CYAN);
+    Display::canvas.fillRect(DISPLAY__WIDTH - 3, yPosOffset - barHeight, 3, barHeight, ST77XX_BLACK);  // remove previous line
+    Display::canvas.fillRect(DISPLAY__WIDTH - 2, yPosOffset - barHeight, 1, barHeight, 0x632c);        // #666666
+    Display::canvas.fillRect(DISPLAY__WIDTH - 3, yPosOffset - signal, 3, signal, 0xad55);              // signal line
+    Display::canvas.drawFastHLine(DISPLAY__WIDTH - 8, yPosOffset - barHeight, 8, ST77XX_CYAN);
+    Display::canvas.drawFastHLine(DISPLAY__WIDTH - 8, yPosOffset - barHeight / 2, 8, ST77XX_CYAN);
+    Display::canvas.drawFastHLine(DISPLAY__WIDTH - 8, yPosOffset, 8, ST77XX_CYAN);
+
+    Display::needsWrite = true;
+}
+
+void Display::write() {
+    Display::baseDisplay.drawRGBBitmap(0, 0, Display::canvas.getBuffer(), DISPLAY__WIDTH, DISPLAY_HEIGHT);
+    Display::needsWrite = false;
 }

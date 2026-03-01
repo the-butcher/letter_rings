@@ -26,8 +26,8 @@ double Microphone::curvValues[AUDIO________NUM_BANDS];
 
 bool Microphone::powerup() {
 
-    // Serial.print("sampling period us: ");
-    // Serial.println(Microphone::sampling_period_us);
+    Serial.print("sampling period us: ");
+    Serial.println(Microphone::sampling_period_us);
 
     // https://www.desmos.com/calculator/o8ajvpoceu?lang=de
     double c = 7.5;
@@ -42,10 +42,16 @@ bool Microphone::powerup() {
         Microphone::fitXValues[i] = i;  // initialize fit-x values
     }
 
+https:  // github.com/stg/ESP32-S3-FastAnalogRead/blob/master/ESP32-S3-FastAnalogRead.ino
+    fadcInit(1, AUDIO______________PIN);
+
     return true;
 }
 
-void Microphone::sample() {
+/**
+ * consumes 48ms (=max 20 samples / second)
+ */
+void Microphone::read() {
 
     // Reset bandValues[]
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
@@ -53,24 +59,29 @@ void Microphone::sample() {
     }
 
     // collect samples
-    Microphone::signal = 0;
+    uint64_t signalSum = 0;
     uint16_t analogValue;
     for (int i = 0; i < AUDIO__________SAMPLES; i++) {
         Microphone::newTime = micros();
-        analogValue = analogRead(AUDIO______________PIN);  // A conversion takes about 9.7uS on an ESP32
-        Microphone::signal += analogValue;
+        analogValue = analogReadFast(7);  // analogRead(AUDIO______________PIN);  // A conversion takes about 9.7uS on an ESP32
+        signalSum += analogValue;
         Microphone::vReal[i] = analogValue;
         Microphone::vImag[i] = 0;
-        while ((micros() - Microphone::newTime) < Microphone::sampling_period_us) { /* chill */
+        while ((micros() - Microphone::newTime) < Microphone::sampling_period_us) {
+            // do nothing, just let time pass
         }
     }
-    Microphone::signal /= AUDIO__________SAMPLES;
+    Microphone::signal = signalSum / AUDIO__________SAMPLES;
+
+    // 13ms to here
 
     // compute FFT
     Microphone::FFT.dcRemoval();
     Microphone::FFT.windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
     Microphone::FFT.compute(FFT_FORWARD);
     Microphone::FFT.complexToMagnitude();
+
+    // 26ms to here
 
     // associate samples with bands
     int minSampleIndex;
@@ -83,6 +94,8 @@ void Microphone::sample() {
         }
     }
 
+    // 27ms to here
+
     // get a shape along frequency bands
     // this is done to get a curve fit that still allows for local variation
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
@@ -90,22 +103,21 @@ void Microphone::sample() {
     }
     fitCurve(AUDIO________NUM_ORDER, AUDIO________NUM_BANDS, Microphone::fitXValues, Microphone::fitYValues, AUDIO________NUM_ORDER + 1, Microphone::coefValues);
 
+    // 27ms to here
+
     double f = 0.001;  // the speed at which the low pass filter adapts
     Microphone::fitFAverag = 0;
     double x;
     double y;
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
-        x = i;
-        // double y;
-        // if (AUDIO________NUM_ORDER == 2) {
-        //     y = Microphone::coefValues[0] * pow(x, 2) + Microphone::coefValues[1] * x + Microphone::coefValues[2];
-        // } else if (AUDIO________NUM_ORDER == 3) {
+        x = i * 1.0;
         y = Microphone::coefValues[0] * pow(x, 3) + Microphone::coefValues[1] * pow(x, 2) + Microphone::coefValues[2] * x + Microphone::coefValues[3];
-        // }
         Microphone::fitFValues[i] = Microphone::fitFValues[i] * (1 - f) + y * f;  // low pass
         Microphone::fitFAverag += Microphone::fitFValues[i];
     }
     Microphone::fitFAverag /= AUDIO________NUM_BANDS;
+
+    // 28ms to here
 
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
         Microphone::bandScaled[i] = Microphone::bandValues[i] * Microphone::curvValues[i] * Microphone::fitFAverag / Microphone::fitFValues[i];
@@ -124,6 +136,8 @@ void Microphone::sample() {
         Microphone::lineValues[i] = round(Microphone::dlt1Values[i] * Microphone::scale);
         Microphone::peakValues[i] = round(Microphone::dlt2Values[i] * Microphone::scale);
     }
+
+    // 28ms to here
 
     uint8_t numOutliers0015U = 0;
     uint8_t numOutliers0015L = 0;
@@ -156,6 +170,8 @@ void Microphone::sample() {
     } else {
         Microphone::basis *= 1.01;
     }
+
+    // 28ms to here
 }
 
 bool Microphone::depower() {

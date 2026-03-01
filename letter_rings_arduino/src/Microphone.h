@@ -6,6 +6,7 @@
 #include <curveFitting.h>
 
 #include "Define.h"
+#include "analog.h"
 
 class Microphone {
    private:
@@ -48,7 +49,7 @@ class Microphone {
      */
     static uint8_t decay;
     static bool powerup();
-    static void sample();
+    static void read();
     static bool depower();
 };
 

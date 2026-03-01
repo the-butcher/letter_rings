@@ -12,6 +12,7 @@ class Matrices {
    public:
     static bool needsBrightnessUpdate;
     static void updateBrightness();
+    static bool needsWrite;
 
     static uint8_t brightness;
     static Matrix matrixA;

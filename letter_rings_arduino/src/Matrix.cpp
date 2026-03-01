@@ -1,25 +1,9 @@
 #include <Matrix.h>
 
-// Adafruit_8x8matrix Matrix::baseMatrix();
-
 Matrix::Matrix(uint8_t addr) : canvasA(8, 8), canvasB(8, 8) {
     this->baseMatrix = Adafruit_8x8matrix();
     this->addr = addr;
     this->hasBegun = false;
-
-    // initialize before scrambling
-    // for (uint8_t i = 0; i < 64; i++) {
-    //     this->copyOrder[i] = i;
-    // }
-
-    // Start from the last element and swap one by one. We don't
-    // need to run for the first element that's why i > 0
-    // for (int i = 63; i > 0; i--) {
-    //     long j = random(0, 64);
-    //     int temp = this->copyOrder[i];
-    //     this->copyOrder[i] = this->copyOrder[j];
-    //     this->copyOrder[j] = temp;
-    // }
 }
 
 bool Matrix::powerup() {
@@ -51,14 +35,6 @@ uint16_t Matrix::getWordWidth(String word) {
     int16_t x1, y1;
     uint16_t w, h;
     this->baseMatrix.getTextBounds(word, 0, 0, &x1, &y1, &w, &h);
-
-    // Serial.print(x1);
-    // Serial.print(", ");
-    // Serial.print(y1);
-    // Serial.print(", ");
-    // Serial.print(w);
-    // Serial.print(", ");
-    // Serial.println(h);
 
     return w;
 }
@@ -95,7 +71,6 @@ void Matrix::drawBars(uint8_t indexMin) {
             this->baseMatrix.drawFastVLine(bar2, 8 - val2, 1, LED_ON);
         }
     }
-    Matrix::write();
 }
 
 void Matrix::drawWord(String word, int16_t offset) {
@@ -108,7 +83,6 @@ void Matrix::drawWord(String word, int16_t offset) {
         this->baseMatrix.setTextColor(LED_ON);
         this->baseMatrix.print(word);
     }
-    Matrix::write();
 }
 
 void Matrix::drawLabel(String label, int16_t offset) {
@@ -121,7 +95,12 @@ void Matrix::drawLabel(String label, int16_t offset) {
         this->baseMatrix.setTextColor(LED_ON);
         this->baseMatrix.print(label);
     }
-    Matrix::write();
+}
+
+void Matrix::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color) {
+    if (this->hasBegun) {
+        this->baseMatrix.drawBitmap(offset, 0, bitmap, 8, 8, color);
+    }
 }
 
 void Matrix::clear() {
@@ -133,61 +112,6 @@ void Matrix::clear() {
 void Matrix::write() {
     if (this->hasBegun) {
         this->baseMatrix.writeDisplay();
-    }
-}
-
-// void Matrix::drawTextToCanvasA(String text, int16_t offset) {
-//     if (this->hasBegun) {
-//         this->canvasA.fillRect(0, 0, 8, 8, LED_OFF);
-//         this->canvasA.setCursor(offset, 7);  // y-offset 7 is specifically for the 7x8 font
-//         this->canvasA.setFont(&Font7x8FixedMono);
-//         this->canvasA.setTextWrap(false);
-//         this->canvasA.setTextSize(1);
-//         this->canvasA.setTextColor(LED_ON);
-//         this->canvasA.print(text);
-//         // uint8_t* bitmapA = this->canvasA.getBuffer();
-//         // for (uint8_t i = 0; i < 8; i++) {
-//         //     Serial.println(String(bitmapA[i], 2));
-//         // }
-//     }
-// }
-
-// void Matrix::copyCanvasAtoCanvasB(uint8_t progress, bool skipPrevious) {
-//     // Serial.println(progress);
-//     // uint8_t* bitmapA = this->canvasA.getBuffer();
-//     // for (uint8_t i = 0; i < 8; i++) {
-//     //     Serial.println(String(bitmapA[i], 2));
-//     // }
-//     // Serial.println("-----------------");
-//     uint8_t byteIndex;
-//     uint8_t bitIndex;
-//     uint8_t* bitmapB = this->canvasB.getBuffer();
-//     uint8_t byteA;
-//     uint8_t byteB;
-//     for (uint8_t i = skipPrevious ? progress - 1 : 0; i < progress; i++) {
-//         byteIndex = this->copyOrder[i] / 8;
-//         bitIndex = this->copyOrder[i] % 8;
-//         byteA = this->canvasA.getBuffer()[byteIndex];
-//         // Serial.println(String(byteA, 2));
-//         byteB = bitmapB[byteIndex];
-//         bitWrite(byteB, bitIndex, bitRead(byteA, bitIndex));
-//         bitmapB[byteIndex] = byteB;
-//     }
-//     // Serial.println("-----------------");
-//     // for (uint8_t i = 0; i < 8; i++) {
-//     //     Serial.println(String(bitmapB[i], 2));
-//     // }
-//     // Serial.println("-----------------");
-//     this->canvasB.drawBitmap(0, 0, bitmapB, 8, 8, LED_ON);
-// }
-
-// void Matrix::flushCanvasBtoMatrix() {
-//     this->drawBitmap(this->canvasB.getBuffer());
-// }
-
-void Matrix::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color) {
-    if (this->hasBegun) {
-        this->baseMatrix.drawBitmap(offset, 0, bitmap, 8, 8, color);
     }
 }
 
