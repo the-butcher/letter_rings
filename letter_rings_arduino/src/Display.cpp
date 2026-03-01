@@ -240,24 +240,30 @@ void Display::drawOrientation() {
 
 void Display::drawAcceleration() {
 
+    Display::clearModus();
+
     Display::baseDisplay.setTextSize(2);
     Display::baseDisplay.setTextColor(Orientation::coefficient > ACCELERATION_THRESHOLD ? 0xad55 : 0xf800);  // #adaaad : #ff0000
-
-    // acceleration__t accelerarion = Orientation::acceleration;
-
-    // int x;
-    // int h;
-    // int y = 124;
-    // int m = 112;
-
-    // Display::clearModus();
-    // for (int i = 0; i < ACCELERATION___SAMPLES; i++) {
-    //     x = i * 4 + 3;
-    //     h = min(m, (int)round(Orientation::acceleration.values[i] * 32));
-    //     Display::baseDisplay.fillRect(x, y - h, 3, h, 0x9cd3);  // #9c9a9c - draw fresh bar
-    // }
-
     Display::drawString(String(Orientation::coefficient, 3), 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
+
+    int x;
+    int h;
+    int y = 124;
+    int m = 112;
+
+    acceleration__t accelA = Orientation::getAccelA();
+    for (int i = 0; i < ACCELERATION___SAMPLES; i++) {
+        x = i * 4 + 3;
+        h = min(m, (int)round(accelA.values[i] * 32));
+        Display::baseDisplay.fillRect(x, y - h, 3, h, 0x9cd3);  // #9c9a9c - draw fresh bar (grey)
+    }
+
+    acceleration__t accelB = Orientation::getAccelB();
+    for (int i = 0; i < ACCELERATION___SAMPLES; i++) {
+        x = i * 4 + 3;
+        h = min(m, (int)round(accelB.values[i] * 32));
+        Display::baseDisplay.drawRect(x, y - h, 3, h, 0xdefb);  // #dddddd - draw scaled bar
+    }
 }
 
 void Display::drawSignal() {

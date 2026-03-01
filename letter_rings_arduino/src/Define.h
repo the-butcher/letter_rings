@@ -26,6 +26,7 @@
 
 #define ACCELERATION___SAMPLES 32
 #define ACCELERATION_THRESHOLD 0.8  // threshold for the correlation value considered to be good enough
+#define ACCELERATION_OFFSET_AB 0
 
 #ifndef Define_h
 #define Define_h
@@ -61,6 +62,7 @@ const gpio_num_t AUDIO______________PIN = GPIO_NUM_8;  // A5
 
 // when FORCE_ACCEL = true, the decive does not have to be PRI to show the bitmap animation
 const bool FORCE_ACCEL = false;
+const uint64_t ROLE_PRI__MIN_DURATION = 15000;
 
 typedef enum : uint8_t {
     BITMAP_PAC____OPEN_R = 0,

@@ -3,7 +3,8 @@
 Adafruit_BNO055 Orientation::baseSensor(55, 0x28);
 vector________t Orientation::orientation = {0, 0, 0};
 vector________t Orientation::gyroscope = {0, 0, 0};
-acceleration__t Orientation::acceleration;
+acceleration__t Orientation::accelA;
+acceleration__t Orientation::accelB;
 double Orientation::coefficient;
 
 bool Orientation::hasBegun = false;
@@ -31,11 +32,11 @@ bool Orientation::readval() {
     Orientation::gyroscope = {gyroscopeData.gyro.x, gyroscopeData.gyro.y, gyroscopeData.gyro.z};
 
     for (uint8_t i = 0; i < ACCELERATION___SAMPLES - 1; i++) {
-        Orientation::acceleration.values[i] = Orientation::acceleration.values[i + 1];
+        Orientation::accelA.values[i] = Orientation::accelA.values[i + 1];
     }
     float accelerationMagnitude = sqrt(pow(accelerationData.acceleration.x, 2) + pow(accelerationData.acceleration.y, 2) + pow(accelerationData.acceleration.z, 2));
 
-    Orientation::acceleration.values[ACCELERATION___SAMPLES - 1] = accelerationMagnitude;
+    Orientation::accelA.values[ACCELERATION___SAMPLES - 1] = accelerationMagnitude;
 
     return true;
 }
@@ -48,23 +49,43 @@ vector________t Orientation::getGyroscope() {
     return Orientation::gyroscope;
 }
 
+acceleration__t Orientation::getAccelA() {
+    return Orientation::accelA;
+}
+
+acceleration__t Orientation::getAccelB() {
+    return Orientation::accelB;
+}
+
+void Orientation::setAccelB(acceleration__t accelB) {
+    for (uint8_t i = 0; i < ACCELERATION___SAMPLES; i++) {
+        Orientation::accelB.values[i] = 0.0f;
+    }
+    uint8_t coeffSamples = ACCELERATION___SAMPLES - ACCELERATION_OFFSET_AB;
+    for (uint8_t i = 0; i < coeffSamples; i++) {
+        Orientation::accelB.values[i] = accelB.values[i + ACCELERATION_OFFSET_AB];
+    }
+}
+
 // https://unacademy.com/content/jee/study-material/mathematics/pearson-correlation-coefficient/
-void Orientation::calculateCoefficient(acceleration__t accelA, acceleration__t accelB) {
+void Orientation::calculateCoefficient() {
+
+    uint8_t coeffSamples = ACCELERATION___SAMPLES - ACCELERATION_OFFSET_AB;
 
     double sumA = 0;
     double sumB = 0;
     double sumAB = 0;
     double sumAS = 0;
     double sumBS = 0;
-    for (int i = 0; i < ACCELERATION___SAMPLES; i++) {
-        sumA += accelA.values[i];
-        sumB += accelB.values[i];
-        sumAB += accelA.values[i] * accelB.values[i];
-        sumAS += accelA.values[i] * accelA.values[i];
-        sumBS += accelB.values[i] * accelB.values[i];
+    for (uint8_t i = 0; i < coeffSamples; i++) {
+        sumA += Orientation::accelA.values[i];
+        sumB += Orientation::accelB.values[i];
+        sumAB += Orientation::accelA.values[i] * Orientation::accelB.values[i];
+        sumAS += Orientation::accelA.values[i] * Orientation::accelA.values[i];
+        sumBS += Orientation::accelB.values[i] * Orientation::accelB.values[i];
     }
-    double r0 = ACCELERATION___SAMPLES * sumAB - sumA * sumB;
-    double r1 = sqrt((ACCELERATION___SAMPLES * sumAS - sumA * sumA) * (ACCELERATION___SAMPLES * sumBS - sumB * sumB));
+    double r0 = coeffSamples * sumAB - sumA * sumB;
+    double r1 = sqrt((coeffSamples * sumAS - sumA * sumA) * (coeffSamples * sumBS - sumB * sumB));
     double coefficient = r0 / r1;
 
     if (!isnan(coefficient)) {

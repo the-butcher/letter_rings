@@ -19,6 +19,8 @@ class Orientation {
     static Adafruit_BNO055 baseSensor;
     static vector________t orientation;
     static vector________t gyroscope;
+    static acceleration__t accelA;
+    static acceleration__t accelB;
 
    public:
     static bool hasBegun;
@@ -27,8 +29,10 @@ class Orientation {
     static vector________t getGyroscope();  // radians per seconds
     static bool powerup();
     static bool depower();
-    static acceleration__t acceleration;
-    static void calculateCoefficient(acceleration__t accelA, acceleration__t accelB);
+    static acceleration__t getAccelA();
+    static acceleration__t getAccelB();
+    static void setAccelB(acceleration__t accelB);
+    static void calculateCoefficient();
     static double coefficient;
 };
 

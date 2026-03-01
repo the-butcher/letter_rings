@@ -45,18 +45,6 @@ bool Microphone::powerup() {
     return true;
 }
 
-// // https://forum.arduino.cc/t/sorting-an-array/49201/9
-// void isort(double* a, int n) {
-//     for (int i = 1; i < n; ++i) {
-//         int j = a[i];
-//         int k;
-//         for (k = i - 1; (k >= 0) && (j < a[k]); k--) {
-//             a[k + 1] = a[k];
-//         }
-//         a[k + 1] = j;
-//     }
-// }
-
 void Microphone::sample() {
 
     // Reset bandValues[]
@@ -95,6 +83,8 @@ void Microphone::sample() {
         }
     }
 
+    // get a shape along frequency bands
+    // this is done to get a curve fit that still allows for local variation
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
         Microphone::fitYValues[i] = Microphone::bandValues[i] * 1.0;
     }
@@ -102,13 +92,15 @@ void Microphone::sample() {
 
     double f = 0.001;  // the speed at which the low pass filter adapts
     Microphone::fitFAverag = 0;
+    double x;
+    double y;
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
-        double x = i;
+        x = i;
         // double y;
         // if (AUDIO________NUM_ORDER == 2) {
         //     y = Microphone::coefValues[0] * pow(x, 2) + Microphone::coefValues[1] * x + Microphone::coefValues[2];
         // } else if (AUDIO________NUM_ORDER == 3) {
-        double y = Microphone::coefValues[0] * pow(x, 3) + Microphone::coefValues[1] * pow(x, 2) + Microphone::coefValues[2] * x + Microphone::coefValues[3];
+        y = Microphone::coefValues[0] * pow(x, 3) + Microphone::coefValues[1] * pow(x, 2) + Microphone::coefValues[2] * x + Microphone::coefValues[3];
         // }
         Microphone::fitFValues[i] = Microphone::fitFValues[i] * (1 - f) + y * f;  // low pass
         Microphone::fitFAverag += Microphone::fitFValues[i];
@@ -129,8 +121,8 @@ void Microphone::sample() {
         Microphone::dlt1Values[i] = max(Microphone::dlt1Values[i], delta);
         Microphone::dlt2Values[i] = max(Microphone::dlt2Values[i], delta);
 
-        Microphone::lineValues[i] = round(0.0 + round(Microphone::dlt1Values[i] * Microphone::scale));
-        Microphone::peakValues[i] = round(0.0 + round(Microphone::dlt2Values[i] * Microphone::scale));
+        Microphone::lineValues[i] = round(Microphone::dlt1Values[i] * Microphone::scale);
+        Microphone::peakValues[i] = round(Microphone::dlt2Values[i] * Microphone::scale);
     }
 
     uint8_t numOutliers0015U = 0;

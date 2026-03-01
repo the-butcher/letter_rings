@@ -19,17 +19,19 @@
       ✔ display delta from current measurement to average (aka less or more volume than previously)
 
 - esp
+  - darken the green led with black edding
   - documentation
     - github readme
 	- pictures, video for github and twitter
   - make correlation threshold (0.80 currently) configurable to prevent weird behaviour when actually at the party
-  ! there is occasional lag when drawing matrices, where it seems the bitmap pos has proceeded multiple steps (~3) before an actual redraw
-  ! check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
+  - there is occasional lag when drawing matrices, where it seems the bitmap pos has proceeded multiple steps (~3) before an actual redraw
+  - check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
   - print new ring holders
     - ring holders could be more modular
 	- a single ring holder would offer better hold and protection for a single ring
-	
-  ? mabe use the free 23mm for the right ring-finer (22 is a bit tight there)
+    - right hand is 23-24-23-20
+    - left  hand is 24-24-22-20
+  ✔ mabe use the free 23mm for the right ring-finer (22 is a bit tight there)
   ✔ need another 24mm ring for left index finger (23 wont fit)
   ✔ it seems like high frequencies are over-represented in the spectrum
   ✔ check if order 3 regression on frequencies is OK :: seems to work better than order 2
@@ -40,15 +42,15 @@
   ✔ have proper matrix UP/DOWN flip in all modes
   ✔ unify method names Matrices vs. Matrix
   ✔ clearXXX function, execute properly after modus switch
-  ? dim TFT a while after the last button press https://forums.adafruit.com/viewtopic.php?t=174096
+  ❌ dim TFT a while after the last button press https://forums.adafruit.com/viewtopic.php?t=174096
   ! test with high volume and noise as good as possible, experiment with gain settings on the microphone
   ✔ be able to switch modes
     ✔ through display
     ✔ through gesture (?)
     ✔ through bluetooth / mobile
-  ? any other attractive modes?
-    - a mode "shaking" random chars by acceleration / position
-	- a mode that would write the word "beer" when lifting a bottle, would have to be a specific orientation change in a specific amount of time
+  ❌ any other attractive modes?
+    ❌ a mode "shaking" random chars by acceleration / position
+	❌ a mode that would write the word "beer" when lifting a bottle, would have to be a specific orientation change in a specific amount of time
     ❌ "collab" mode where people can "inject" labels
     ❌ would there be a non-backend solution?
     ❌ enter labels on a public website

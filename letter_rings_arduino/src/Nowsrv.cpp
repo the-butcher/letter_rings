@@ -40,7 +40,8 @@ bool Nowsrv::begin() {
 }
 
 bool Nowsrv::sendAcceleration() {
-    esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&Orientation::acceleration, sizeof(acceleration__t));
+    acceleration__t accelA = Orientation::getAccelA();
+    esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&accelA, sizeof(acceleration__t));
     return result == ESP_OK;
 }
 
@@ -69,17 +70,16 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
     if (len == sizeof(acceleration__t)) {  // acceleration data from the other device
         acceleration__t incomingAcceleration;
         memcpy(&incomingAcceleration, incomingData, sizeof(acceleration__t));
-        Orientation::calculateCoefficient(Orientation::acceleration, incomingAcceleration);
-        if (Device::getDeviceRole() != DEVICE_ROLE_____SEC) {          // can not range role when in SEC, must remain passive
-            if (Orientation::coefficient >= ACCELERATION_THRESHOLD) {  // should be PRI
-                if (Device::getDeviceRole() != DEVICE_ROLE_____PRI) {  // but is not
-                    Device::setDeviceRole(DEVICE_ROLE_____PRI);
-                    Nowsrv::sendDeviceRole({DEVICE_ROLE_____SEC});  // tell other device to be SEC
+        Orientation::setAccelB(incomingAcceleration);
+        Orientation::calculateCoefficient();
+        if (Device::getDeviceRole() != DEVICE_ROLE_____SEC) {                                                        // can not change role when in SEC, must remain passive
+            if (Orientation::coefficient >= ACCELERATION_THRESHOLD) {                                                // should be PRI
+                if (Device::getDeviceRole() != DEVICE_ROLE_____PRI && Device::setDeviceRole(DEVICE_ROLE_____PRI)) {  // but is not and accepts PRI
+                    Nowsrv::sendDeviceRole({DEVICE_ROLE_____SEC});                                                   // tell other device to be SEC
                 }
-            } else {                                                   // should be ANY
-                if (Device::getDeviceRole() != DEVICE_ROLE_____ANY) {  // but is not
-                    Device::setDeviceRole(DEVICE_ROLE_____ANY);
-                    Nowsrv::sendDeviceRole({DEVICE_ROLE_____ANY});  // reset other device to ANY
+            } else {                                                                                                 // should be ANY
+                if (Device::getDeviceRole() != DEVICE_ROLE_____ANY && Device::setDeviceRole(DEVICE_ROLE_____ANY)) {  // but is not and accepts ANY
+                    Nowsrv::sendDeviceRole({DEVICE_ROLE_____ANY});                                                   // reset other device to ANY
                 }
             }
         }
@@ -87,7 +87,7 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
         bitmaps_______t incomingBitmaps;
         memcpy(&incomingBitmaps, incomingData, sizeof(bitmaps_______t));
         Device::currBitmaps = incomingBitmaps;
-    } else if (len == sizeof(device_role___t)) {  // device mode from the other device
+    } else if (len == sizeof(device_role___t)) {  // device role from the other device
         device_role___t incomingDevciveRole;
         memcpy(&incomingDevciveRole, incomingData, sizeof(device_role___t));
         Device::setDeviceRole(incomingDevciveRole.deviceRole);

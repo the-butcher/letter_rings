@@ -20,6 +20,7 @@ bitmaps_______t Device::currBitmaps = {{
                                        }};
 
 device_role___e Device::deviceRole = DEVICE_ROLE_____ANY;
+uint64_t Device::lastRolePriAssignmentMillis = 0;
 
 bool Device::powerup() {
     // nothing
@@ -58,9 +59,31 @@ device_role___e Device::getDeviceRole() {
     return Device::deviceRole;
 }
 
-void Device::setDeviceRole(device_role___e deviceRole) {
-    Device::deviceRole = deviceRole;
-    // if (Device::deviceRole == DEVICE_ROLE_____PRI) {
-    //     Device::deviceRoleMessagePending = true;
-    // }
+bool Device::setDeviceRole(device_role___e deviceRole) {
+    if (deviceRole == DEVICE_ROLE_____PRI) {  // always accept PRI
+        Device::deviceRole = deviceRole;
+        Device::lastRolePriAssignmentMillis = millis();
+        return true;
+    } else if (deviceRole == DEVICE_ROLE_____ANY) {
+        if (Device::deviceRole == DEVICE_ROLE_____PRI) {  // when in PRI only accept ANY after a while
+            if ((millis() - Device::lastRolePriAssignmentMillis) > ROLE_PRI__MIN_DURATION) {
+                Device::deviceRole = deviceRole;
+                return true;
+            } else {
+                return false;
+            }
+        } else {  // when in ANY or SEC or UNKNOWN always accept ANY
+            Device::deviceRole = deviceRole;
+            return true;
+        }
+    } else if (deviceRole == DEVICE_ROLE_____SEC) {
+        if (Device::getDeviceRole() == DEVICE_ROLE_____PRI) {  // when in PRI never accept SEC, in rare cases both devices go to PRI simultaneously, and they would also turn the other respective device into SEC simultaneously
+            return false;
+        } else {
+            Device::deviceRole = deviceRole;
+            return true;
+        }
+    } else {  // unknown role, dont accept
+        return false;
+    }
 }

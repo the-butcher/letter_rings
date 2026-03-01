@@ -59,8 +59,8 @@ void setup(void) {
     delay(2000);
 
     // https// forum.arduino.cc/t/shuffle-an-array-of-ints/333494/6
-    // use a different seed value so that we don't get same
-    // result each time we run this program
+    // use a different seed value so that we don't get same result each time we run this program
+    // this is an attempt to have different random word orders across device starts
     randomSeed(analogRead(A0));
 
     Serial.print("setup ");
@@ -85,7 +85,7 @@ void setup(void) {
     Nowsrv::begin();
     delay(100);
 
-    // start taking orientation samples
+    // start taking orientation samples, TODO :: see how deep the stack has to be
     xTaskCreatePinnedToCore(orientationBegin, "orientation-begin", 100000, NULL, 1, NULL, 0);
 
     Serial.println("... setup");
@@ -158,7 +158,7 @@ void loop() {
                 bitmapPos++;
 
                 Device::currBitmaps.bitmapB.offset = bitmapPos;
-                Device::currBitmaps.bitmapB.bitmap = (bitmap________e)((bitmapPos + 64) % 2);  // open and close mouth, keep the number in positive range
+                Device::currBitmaps.bitmapB.bitmap = (bitmap________e)((bitmapPos + 64) % 2);  // open and close mouth, keep the number going into modulo in positive range
                 Device::currBitmaps.orientation = Device::getOrientation();
                 Nowsrv::sendBitmaps(Device::currBitmaps);
             }

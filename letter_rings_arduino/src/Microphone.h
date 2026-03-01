@@ -18,17 +18,17 @@ class Microphone {
     static double vImag[AUDIO__________SAMPLES];
     static unsigned long newTime;
     /**
-     * min/max indices to associate samples with bands, a simple quadratic curve built in powerup
+     * min/max indices to associate samples with bands, a simple quadratic curve built in the powerup call
      */
     static int buckValues[AUDIO________NUM_BANDS];
     static double dlt1Values[AUDIO________NUM_BANDS];
     static double dlt2Values[AUDIO________NUM_BANDS];
 
     static double fitFAverag;
-    static double fitXValues[AUDIO________NUM_BANDS];  // a list of ascending double values
-    static double fitYValues[AUDIO________NUM_BANDS];  // bandValues as double values
-    static double coefValues[AUDIO________NUM_ORDER + 1];
-    static double curvValues[AUDIO________NUM_BANDS];  // parabolic shape, visual only
+    static double fitXValues[AUDIO________NUM_BANDS];      // a list of ascending double values
+    static double fitYValues[AUDIO________NUM_BANDS];      //
+    static double coefValues[AUDIO________NUM_ORDER + 1];  // the curve coefficients
+    static double curvValues[AUDIO________NUM_BANDS];      // parabolic shape, visual only
 
    public:
     static double fitFValues[AUDIO________NUM_BANDS];  // filtered fit values, public to be drawable in display
@@ -36,7 +36,6 @@ class Microphone {
 
     static double scale;
     static double basis;
-    static double slope;
     static uint64_t signal;
     /**
      * line lengths by band as actually to be drawn on the led-matrices, length 1-8
@@ -45,7 +44,7 @@ class Microphone {
     static int peakValues[AUDIO________NUM_BANDS];
     static int bandValues[AUDIO________NUM_BANDS];  // actual band values direclty after sampling
     /**
-     * how fast to decay the lines (not the peak, which is hardcoded - should it?)
+     * how fast to decay the lines (not the peak, which is hardcoded :: TODO :: should it?)
      */
     static uint8_t decay;
     static bool powerup();

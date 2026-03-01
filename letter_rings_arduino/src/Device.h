@@ -26,6 +26,10 @@ class Device {
      * the modus currently active
      */
     static modus_________e currModus;
+    /**
+     * milliseconds when device was put into PRI
+     */
+    static uint64_t lastRolePriAssignmentMillis;
 
    public:
     /**
@@ -42,7 +46,11 @@ class Device {
     static orientation___e getOrientation();
     static void setOrientation(orientation___e orientation);
     static device_role___e getDeviceRole();
-    static void setDeviceRole(device_role___e deviceRole);
+    /**
+     * set a new role on the device
+     * return true if the role was accepted, false otherwise
+     */
+    static bool setDeviceRole(device_role___e deviceRole);
 };
 
 #endif
