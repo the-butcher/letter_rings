@@ -17,15 +17,21 @@ class Display {
    private:
     static Adafruit_ST7789 baseDisplay;
     static GFXcanvas16 canvas;
+    static bool needsWrite;
+    static void drawString(String text, uint16_t x, uint16_t y, text_halign___e halign, uint8_t hPadding = 0, uint16_t color = ST77XX_BLACK);
+    static bool needsStatusRedraw;
 
    public:
-    static bool needsStatusRedraw;
-    static bool needsWrite;
     static bool powerup();
-    static void drawStatus(modus_________e modus);
-    static void drawConfig();
+    static bool depower();
 
     static void clearModus();
+
+    static void setNeedsStatusRedraw();
+    static bool drawStatus(modus_________e modus);
+
+    static void drawConfig();
+
     static void drawText(String label);
     static void drawFrequ();
 
@@ -36,9 +42,11 @@ class Display {
     static void drawAcceleration();
 
     static void drawSignal();
-    static bool depower();
-    static void drawString(String text, uint16_t x, uint16_t y, text_halign___e halign, uint8_t hPadding = 0, uint16_t color = ST77XX_BLACK);
-    static void write();
+
+    /**
+     * write actual canvas updates to the display, if required
+     */
+    static bool write();
 };
 
 #endif

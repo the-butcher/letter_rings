@@ -21,6 +21,7 @@ class Microphone {
     /**
      * min/max indices to associate samples with bands, a simple quadratic curve built in the powerup call
      */
+    static int buckValueMax;
     static int buckValues[AUDIO________NUM_BANDS];
     static double dlt1Values[AUDIO________NUM_BANDS];
     static double dlt2Values[AUDIO________NUM_BANDS];

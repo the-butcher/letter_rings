@@ -5,8 +5,8 @@ Matrix Matrices::matrixB(0x71);
 Matrix Matrices::matrixC(0x72);
 Matrix Matrices::matrixD(0x73);
 
-uint8_t Matrices::brightness = 0;
-bool Matrices::needsBrightnessUpdate = true;
+uint8_t Matrices::brightnessCurr = 64;
+uint8_t Matrices::brightnessPend = 0;
 bool Matrices::needsWrite = false;
 
 bool Matrices::powerup() {
@@ -34,12 +34,15 @@ bool Matrices::depower() {
     return true;
 }
 
-void Matrices::updateBrightness() {
-    Matrices::matrixA.setBrightness(Matrices::brightness);
-    Matrices::matrixB.setBrightness(Matrices::brightness);
-    Matrices::matrixC.setBrightness(Matrices::brightness);
-    Matrices::matrixD.setBrightness(Matrices::brightness);
-    Matrices::needsBrightnessUpdate = false;
+bool Matrices::setBrightness(uint8_t brightness) {
+    if (brightness >= 0 && brightness <= 15) {
+        Matrices::brightnessPend = brightness;
+    }
+    return Matrices::brightnessPend != Matrices::brightnessCurr;
+}
+
+uint8_t Matrices::getBrightness() {
+    return Matrices::brightnessPend;
 }
 
 void Matrices::drawBars() {
@@ -124,19 +127,32 @@ void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color,
     Matrices::needsWrite = true;
 }
 
-void Matrices::clear() {
-    Matrices::matrixA.clear();
-    Matrices::matrixB.clear();
-    Matrices::matrixC.clear();
-    Matrices::matrixD.clear();
-}
+// void Matrices::clear() {
+//     Matrices::matrixA.clear();
+//     Matrices::matrixB.clear();
+//     Matrices::matrixC.clear();
+//     Matrices::matrixD.clear();
+// }
 
-void Matrices::write() {
-    Matrices::matrixA.write();
-    Matrices::matrixB.write();
-    Matrices::matrixC.write();
-    Matrices::matrixD.write();
-    Matrices::needsWrite = false;
+bool Matrices::write() {
+    bool written = false;
+    if (Matrices::needsWrite) {
+        Matrices::matrixA.write();
+        Matrices::matrixB.write();
+        Matrices::matrixC.write();
+        Matrices::matrixD.write();
+        Matrices::needsWrite = false;
+        written = true;
+    }
+    if (Matrices::brightnessCurr != Matrices::brightnessPend) {
+        Matrices::brightnessCurr = Matrices::brightnessPend;
+        Matrices::matrixA.setBrightness(Matrices::brightnessCurr);
+        Matrices::matrixB.setBrightness(Matrices::brightnessCurr);
+        Matrices::matrixC.setBrightness(Matrices::brightnessCurr);
+        Matrices::matrixD.setBrightness(Matrices::brightnessCurr);
+        written = true;
+    }
+    return written;
 }
 
 void Matrices::setOrientation(orientation___e orientation) {

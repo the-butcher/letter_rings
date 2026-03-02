@@ -25,10 +25,13 @@ const int16_t BITMAP_RESET_POS = -10;
 int16_t bitmapPos = BITMAP_RESET_POS;
 
 uint64_t millisAPri = 0;
-uint64_t millisBPri = 0;
-uint64_t millisCPri = 0;
 uint64_t durationAB = 0;
 uint64_t durationAC = 0;
+
+#if USE_SERIAL_LOOP_OUTPUT == true
+uint64_t totalLoopMillis = 0;
+uint64_t totalLoopNumber = 0;
+#endif
 
 bool exceedsWordUpdateInterval(uint64_t currMillis) {
     return (currMillis - lastWordUpdateMillis) > WORD_UPDATE_INTERVAL_MS;
@@ -58,8 +61,6 @@ modus_________e determineModus() {
 
 void runSecondaryLoopTask(void* pvParameters) {
 
-    Serial.println("runSecondaryLoopTask");
-
     while (true) {
 
         uint64_t currMillis = millis();
@@ -73,19 +74,16 @@ void runSecondaryLoopTask(void* pvParameters) {
 
         modus_________e modus = determineModus();
 
-        if (Display::needsStatusRedraw) {
-            Display::drawStatus(modus);
-        }
-
-        // TODO :: this probably has to go to the regular loop (but wont happen regularly, so likely not important)
-        if (Matrices::needsBrightnessUpdate) {
-            Matrices::updateBrightness();
-        }
+        Display::drawStatus(modus); // only draws if required
 
         // update position (max update count/second = 10)
         if ((currMillis - lastOrientationUpdateMillis) > 100) {
 
-            // TODO :: reintroduce euler orientation every n-th read
+#if USE_SERIAL_LOOP_OUTPUT == true
+            Serial.print("loopMillis (avg): ");
+            Serial.println(String(totalLoopMillis * 1.0 / totalLoopNumber, 2));
+#endif
+
             orientation___e matricesOrientation = Device::getOrientation();
             if (matricesOrientation == ORIENTATION______UP && Orientation::getOrientation().y > 20) {
                 Device::setOrientation(ORIENTATION____DOWN);
@@ -125,7 +123,7 @@ void runSecondaryLoopTask(void* pvParameters) {
                 Display::drawFrequ();
             }
 
-            Display::drawDeviceRole();  // little box indicators (TODO :: different colors for better readability)
+            Display::drawDeviceRole();  // little box indicators
 
             lastOrientationUpdateMillis = currMillis;
         }
@@ -157,7 +155,7 @@ void runSecondaryLoopTask(void* pvParameters) {
                 if (wordProgress == WORD_TRANSITION_COUNT) {
                     wordProgress++;
                     Display::drawText(mainWord);
-                    Matrices::drawWord(mainWord);  // TODO :: check if it is smoother to first draw all, then flush all
+                    Matrices::drawWord(mainWord);
                 }
                 vTaskDelay(100);
             }
@@ -185,12 +183,6 @@ void runSecondaryLoopTask(void* pvParameters) {
             vTaskDelay(max(50.0, 150 - Orientation::getOrientation().z));
 
         } else if (modus == MODUS________FREQU) {  // frequency
-
-            // Microphone::read();
-
-            // this may have to happen in the primary loop to align Microphone::read() and Matrices::drawBars()
-            // Matrices::drawBars();  // 7ms
-            // Matrices::write();
 
             vTaskDelay(100);  // effectively do nothing, just wait a bit
 
@@ -269,27 +261,27 @@ void loop() {
 
     modus_________e modus = determineModus();
     if (modus == MODUS________FREQU) {
-        Microphone::read();
+        Microphone::read();    // samples * 25 +
         Matrices::drawBars();  // 7ms
     }
-    if (Matrices::needsWrite) {
-        Matrices::write();
-    }
-    if (Display::needsWrite) {
-        Display::write();
-    }
+    Matrices::write();  // only writes if required
+    Display::write();   // only writes if required
 
-    millisBPri = millis();
-    durationAB = millisBPri - millisAPri;
-    if (durationAB < 40) {
-        delay(40 - durationAB);  // wait until 40 millis have passed since millisA
+    durationAB = millis() - millisAPri;
+    if (durationAB < 55) {
+        delay(55 - durationAB);  // wait until 55 millis have passed since millisA
     }
 
     Orientation::read();
 
-    millisCPri = millis();
-    durationAC = millisCPri - millisAPri;
-    if (durationAC < 50) {
-        delay(50 - durationAC);  // wait until 50 millis have passed since millisA
+    durationAC = millis() - millisAPri;
+    if (durationAC < 60) {
+        delay(60 - durationAC);  // wait until 60 millis have passed since millisA
     }
+
+#if USE_SERIAL_LOOP_OUTPUT == true
+    totalLoopMillis += (millis() - millisAPri);
+    totalLoopNumber++;
+#endif
+
 }

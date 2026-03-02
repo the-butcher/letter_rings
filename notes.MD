@@ -1,6 +1,7 @@
 ✔️ reply to host
 
 - android app
+  ✔ adapt the app so changes apply to all connected devices, this will simplify the UI and reduce room for error
   ✔ address does not hide when connection is lost
   ✔ generally no further bluetooth scans are done once a device connection is lost
   ✔ brightness slider
@@ -10,104 +11,108 @@
   ✔️ gatt connection to 2(!) devices, if that does not work maybe one device being server, one being client could be an alternative
   ✔️ find out about message size and how to split texts if needed
   ! try to identify code that can fail and handle errors accordingly, read more BLE tutorials
-    ? when the device disconnects before the gatt-services are in place there is no event or other notification
-    ? attempting to connect from this state returns the app to a stable state (gatt connect fails and the UI shows the button again after that)
-      ✔ handle GATT disconnect (update UI), roughly in place, but needs revisit,
-      ✔ a switch disconnect in the app does not disconnect the device!
-      ✔ map raw bands to screen/matrix space
-      ✔ build some sort of average from the most recent band values
-      ✔ display delta from current measurement to average (aka less or more volume than previously)
+  ? when the device disconnects before the gatt-services are in place there is no event or other notification
+  ? attempting to connect from this state returns the app to a stable state (gatt connect fails and the UI shows the button again after that)
+  ✔ handle GATT disconnect (update UI), roughly in place, but needs revisit,
+  ✔ a switch disconnect in the app does not disconnect the device!
+  ✔ map raw bands to screen/matrix space
+  ✔ build some sort of average from the most recent band values
+  ✔ display delta from current measurement to average (aka less or more volume than previously)
 
 - esp
-  - darken the green led with black edding
+  - check how long a display write would normally consume, then maybe implement redraw regions to save some of that time
+  - there should to be a "conversation" modus, where the leds are off or only a "standby" led is on
+    - any gesture to enable/disable this mode?
+  - sending or receiving through esp-now appears to disturb frequencies, try to move send calls to primary loop, receive would be more difficult
+  - darken the green orientation sensor led with black edding
   - documentation
     - github readme
-	- pictures, video for github and twitter
+  - pictures, video for github and twitter
   - make correlation threshold (0.80 currently) configurable to prevent weird behaviour when actually at the party
-  - there is occasional lag when drawing matrices, where it seems the bitmap pos has proceeded multiple steps (~3) before an actual redraw
+  ❌ there is occasional lag when drawing matrices, where it seems the bitmap pos has proceeded multiple steps (~3) before an actual redraw
   - check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
   - print new ring holders
     - ring holders could be more modular
-	- a single ring holder would offer better hold and protection for a single ring
+  - a single ring holder would offer better hold and protection for a single ring
     - right hand is 23-24-23-20
-    - left  hand is 24-24-22-20
-  ✔ mabe use the free 23mm for the right ring-finer (22 is a bit tight there)
-  ✔ need another 24mm ring for left index finger (23 wont fit)
-  ✔ it seems like high frequencies are over-represented in the spectrum
-  ✔ check if order 3 regression on frequencies is OK :: seems to work better than order 2
-  ✔ separate word sets for left and right
-  ✔ have a mode (name?) where after a new label and some timeout it goes back to frequ
-    ❌ could be standard, labels do not make much sense without recognition, therefore a new label could just put the decive in temp label mode
-  ❌ any mode where altering brightness would add value?
-  ✔ have proper matrix UP/DOWN flip in all modes
-  ✔ unify method names Matrices vs. Matrix
-  ✔ clearXXX function, execute properly after modus switch
-  ❌ dim TFT a while after the last button press https://forums.adafruit.com/viewtopic.php?t=174096
-  ! test with high volume and noise as good as possible, experiment with gain settings on the microphone
-  ✔ be able to switch modes
-    ✔ through display
-    ✔ through gesture (?)
-    ✔ through bluetooth / mobile
-  ❌ any other attractive modes?
-    ❌ a mode "shaking" random chars by acceleration / position
-	❌ a mode that would write the word "beer" when lifting a bottle, would have to be a specific orientation change in a specific amount of time
-    ❌ "collab" mode where people can "inject" labels
-    ❌ would there be a non-backend solution?
-    ❌ enter labels on a public website
-    ❌ app fetches label and
-    ❌ could this be a simple php solution working with a text or json file for storage?
-    ❌ "kitt mode"
+    - left hand is 24-24-22-20
+      ! test with high volume and noise as good as possible, experiment with gain settings on the microphone
+      ✔ mabe use the free 23mm for the right ring-finer (22 is a bit tight there)
+      ✔ need another 24mm ring for left index finger (23 wont fit)
+      ✔ it seems like high frequencies are over-represented in the spectrum
+      ✔ check if order 3 regression on frequencies is OK :: seems to work better than order 2
+      ✔ separate word sets for left and right
+      ✔ have a mode (name?) where after a new label and some timeout it goes back to frequ
+      ❌ could be standard, labels do not make much sense without recognition, therefore a new label could just put the decive in temp label mode
+      ❌ any mode where altering brightness would add value?
+      ✔ have proper matrix UP/DOWN flip in all modes
+      ✔ unify method names Matrices vs. Matrix
+      ✔ clearXXX function, execute properly after modus switch
+      ❌ dim TFT a while after the last button press https://forums.adafruit.com/viewtopic.php?t=174096
+      ✔ be able to switch modes
+      ✔ through display
+      ✔ through gesture (?)
+      ✔ through bluetooth / mobile
+      ❌ any other attractive modes?
+      ❌ a mode "shaking" random chars by acceleration / position
+      ❌ a mode that would write the word "beer" when lifting a bottle, would have to be a specific orientation change in a specific amount of time
+      ❌ "collab" mode where people can "inject" labels
+      ❌ would there be a non-backend solution?
+      ❌ enter labels on a public website
+      ❌ app fetches label and
+      ❌ could this be a simple php solution working with a text or json file for storage?
+      ❌ "kitt mode"
       ❌ a single dot travelling left to right and back
-    ✔ any way to determine when left and right are held in alignment?
-	  ✔ setup task to read orientation in short intervals and keep track of the last n (some power of 2, maybe 32) acceleration vectors
-	  ✔ create esp-now connection between left and right
-	  ✔ send acceleration vectors to other device in regular intervals
-	  ❌ align vectors time-wise (how?)
-	  ✔ calculate pearson correlation coefficient between incoming acceleration data and own acceleration data
-	  ✔ see if this produces usable similarity results
-	  ❌ if both devices agree to have similar acceleration values unlock some (yet to be defines) two device mode
-	  ❌ should both devices always have the same mode?
-	  ✔ first device detecting similarity takes the lead
-	    ✔ other device will not need to check for similarity while paired
-		✔ leading device sends drawing codes, ie. kitt bar signal
-		✔ non-leading device needs to know when similarity was lost
-	    ❌ could be a kitt style animation (which device will be in charge of position?)
-		✔ could be a pacman style animation (which device will be in charge of position?)
-		✔ full width of matrices needs to be accounted for when paired :: with proper rotation
-		✔ the PRI device will also have to be in charge of maintaining a unique up/down orientation
-    ❌ voice recognition for 4 letter words ;)
-    ✔ ignore invalid titles for the runLabel
-  ✔ maybe have a "song" mode that will show artist and title for a given time, then go back to frequencies
-    ✔ any way to synchronize left and right in word mode?
-    ✔ let the android app have the central role in words mode (only if connected)
-    ✔ let the android app send pairs of words in regular intervals
-    ✔ change words mode so that there always is a target word in words mode and a prepicked set of transition words
-    ✔ when not connnected the devices can pick target words themselves, when connected the devices will wait for target words coming in over bluetooth
-    ✔ define pairs of opposing words
-    ✔ initial values of radio buttons after connect
-    ✔ create a left UI version (?)
-    ✔ screen could be oriented "upwards" to have an orientation common to left and right
-    ✔ take care of readability (no font size = 1)
-    ✔ byte to string parsing in the ESP32
-    ✔️ microphone POC in the ESP32, preferrably amplifier style, but could also be led matrix brightness
-    ✔ validate possibility of multiple led matrices on one i2c line
-    ❌ could there be a generic blend function for labels?
-    ❌ how would different lengths of labels be handled?
-    ❌ original label longer than new label
-    ❌ example:
-    ❌ this is a very very very long label
-    ❌ short label
-    ❌ original label shorter than new label
-    ✔ create some blend magic from one character to another
-    ✔ could maybe work with offscreen canvas
-    ✔ look at canvas.getBuffer()
-    ✔ maybe a few random sequences including the number 0-63 and gradually changing from src to target values would do the trick
-    ✔ check if there is a shuffle method for arrays in arduino
-    ❌ rotate display upon hand position using blend effect
-    ❌ current buffers of A and D (and B and C) would have to be swapped and rotated
+      ✔ any way to determine when left and right are held in alignment?
+      ✔ setup task to read orientation in short intervals and keep track of the last n (some power of 2, maybe 32) acceleration vectors
+      ✔ create esp-now connection between left and right
+      ✔ send acceleration vectors to other device in regular intervals
+      ❌ align vectors time-wise (how?)
+      ✔ calculate pearson correlation coefficient between incoming acceleration data and own acceleration data
+      ✔ see if this produces usable similarity results
+      ❌ if both devices agree to have similar acceleration values unlock some (yet to be defines) two device mode
+      ❌ should both devices always have the same mode?
+      ✔ first device detecting similarity takes the lead
+      ✔ other device will not need to check for similarity while paired
+      ✔ leading device sends drawing codes, ie. kitt bar signal
+      ✔ non-leading device needs to know when similarity was lost
+      ❌ could be a kitt style animation (which device will be in charge of position?)
+      ✔ could be a pacman style animation (which device will be in charge of position?)
+      ✔ full width of matrices needs to be accounted for when paired :: with proper rotation
+      ✔ the PRI device will also have to be in charge of maintaining a unique up/down orientation
+      ❌ voice recognition for 4 letter words ;)
+      ✔ ignore invalid titles for the runLabel
+      ✔ maybe have a "song" mode that will show artist and title for a given time, then go back to frequencies
+      ✔ any way to synchronize left and right in word mode?
+      ✔ let the android app have the central role in words mode (only if connected)
+      ✔ let the android app send pairs of words in regular intervals
+      ✔ change words mode so that there always is a target word in words mode and a prepicked set of transition words
+      ✔ when not connnected the devices can pick target words themselves, when connected the devices will wait for target words coming in over bluetooth
+      ✔ define pairs of opposing words
+      ✔ initial values of radio buttons after connect
+      ✔ create a left UI version (?)
+      ✔ screen could be oriented "upwards" to have an orientation common to left and right
+      ✔ take care of readability (no font size = 1)
+      ✔ byte to string parsing in the ESP32
+      ✔️ microphone POC in the ESP32, preferrably amplifier style, but could also be led matrix brightness
+      ✔ validate possibility of multiple led matrices on one i2c line
+      ❌ could there be a generic blend function for labels?
+      ❌ how would different lengths of labels be handled?
+      ❌ original label longer than new label
+      ❌ example:
+      ❌ this is a very very very long label
+      ❌ short label
+      ❌ original label shorter than new label
+      ✔ create some blend magic from one character to another
+      ✔ could maybe work with offscreen canvas
+      ✔ look at canvas.getBuffer()
+      ✔ maybe a few random sequences including the number 0-63 and gradually changing from src to target values would do the trick
+      ✔ check if there is a shuffle method for arrays in arduino
+      ❌ rotate display upon hand position using blend effect
+      ❌ current buffers of A and D (and B and C) would have to be swapped and rotated
 
 ✔ pcb
-  ✔ order pcb after multi-matrix i2c validation
+✔ order pcb after multi-matrix i2c validation
 
 LOVE ICON GAIN HYPE UNDO COOL HOPE KISS MOON FEEL HELP DEAL FACT GAME KIND MIND DARE EARN WELL GROW JUMP KEEP BOLD CALM DEEP EASY GOOD FULL GLAD HIGH NEAR PULL PLUS SAVE FAST LIKE FREE
 HERO BEST BODY DEAR FACE FLOW LEAD USER YEAH PEAK FUND LIST NEWS PAIR LIST NOTE SELF BASS FINE BLUE HALF LIVE LONG HOUR LOOK MARK MOVE LIFT GOAL BAND SOFT CARE PURE FUND STAY MORE WARM

@@ -6,9 +6,11 @@ bool Display::needsWrite = false;
 GFXcanvas16 Display::canvas(DISPLAY__WIDTH, DISPLAY_HEIGHT);
 
 bool Display::powerup() {
+
     // turn on backlite
     pinMode(TFT_BACKLITE, OUTPUT);
     digitalWrite(TFT_BACKLITE, HIGH);
+
     // turn on the TFT / I2C power supply
     pinMode(TFT_I2C_POWER, OUTPUT);
     digitalWrite(TFT_I2C_POWER, HIGH);
@@ -20,34 +22,52 @@ bool Display::powerup() {
     Display::canvas.setTextWrap(true);
 
     return true;
+
 }
 
 bool Display::depower() {
+
     // turn off backlite
     pinMode(TFT_BACKLITE, OUTPUT);
     digitalWrite(TFT_BACKLITE, LOW);
+
     // turn off the TFT / I2C power supply
     pinMode(TFT_I2C_POWER, OUTPUT);
     digitalWrite(TFT_I2C_POWER, LOW);
+
     return true;
+
 }
 
-void Display::drawStatus(modus_________e modus) {
+void Display::setNeedsStatusRedraw() {
+    Display::needsStatusRedraw = true;
+}
 
-    Display::drawConfig();  // buttons labels
-    Display::drawConnection();
-    Display::drawOrientation();
-    if (modus == MODUS________LABEL) {
-        Display::drawText(Device::label);
+bool Display::drawStatus(modus_________e modus) {
+
+    if (Display::needsStatusRedraw) {
+
+        Display::drawConfig();  // buttons labels
+        Display::drawConnection();
+        Display::drawOrientation();
+        if (modus == MODUS________LABEL) {
+            Display::drawText(Device::label);
+        }
+        Display::drawMatrixState();  // I2C init states of matrices
+
+        Display::needsWrite = true;
+        Display::needsStatusRedraw = false;
+
+        return true;
+
+    } else {
+        return false;
     }
-    Display::drawMatrixState();  // I2C init states of matrices
 
-    Display::needsStatusRedraw = false;
-
-    Display::needsWrite = true;
 }
 
 void Display::drawString(String text, uint16_t x, uint16_t y, text_halign___e halign, uint8_t hPadding, uint16_t color) {
+
     Display::canvas.setCursor(0, 0);
     int16_t x1, y1;
     uint16_t w, h, xAlign;
@@ -64,6 +84,7 @@ void Display::drawString(String text, uint16_t x, uint16_t y, text_halign___e ha
     Display::canvas.print(text);
 
     Display::needsWrite = true;
+
 }
 
 void Display::drawConfig() {
@@ -75,9 +96,9 @@ void Display::drawConfig() {
 
     Display::drawString("-", 0, configYPos, TEXT_HALIGN___LEFT);
     String baText;
-    if (Buttons::buttonActionA == BUTTON_ACTION_MODUS) {
+    if (Buttons::buttonAction == BUTTON_ACTION_MODUS) {
         baText = "MODUS";
-    } else if (Buttons::buttonActionA == BUTTON_ACTION_DECAY) {
+    } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY) {
         baText = "DECAY";
     } else {
         baText = "LIGHT";
@@ -86,7 +107,7 @@ void Display::drawConfig() {
     Display::drawString("+", DISPLAY__WIDTH, configYPos, TEXT_HALIGN__RIGHT);
 
     String value;
-    if (Buttons::buttonActionA == BUTTON_ACTION_MODUS) {
+    if (Buttons::buttonAction == BUTTON_ACTION_MODUS) {
         modus_________e currModus = Device::getCurrModus();
         if (currModus == MODUS________WORDS) {
             value = "WORDS";
@@ -101,10 +122,10 @@ void Display::drawConfig() {
         } else {
             value = "ERROR";
         }
-    } else if (Buttons::buttonActionA == BUTTON_ACTION_DECAY) {
+    } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY) {
         value = String(Microphone::decay);
     } else {
-        value = String(Matrices::brightness);
+        value = String(Matrices::getBrightness());
     }
 
     Display::drawString(value, DISPLAY__WIDTH / 2, configYPos - 17, TEXT_HALIGN_CENTER, DISPLAY__WIDTH / 2);
@@ -187,13 +208,14 @@ void Display::drawMatrixState() {
     Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixD.hasBegun ? ST77XX_GREEN : ST77XX_RED);
 
     Display::needsWrite = true;
+
 }
 
 void Display::drawDeviceRole() {
 
     device_role___e deviceRole = Device::getDeviceRole();
 
-    uint16_t roleColors[3] = {0xce59, ST77XX_YELLOW, ST77XX_MAGENTA};
+    uint16_t roleColors[3] = { 0xce59, ST77XX_YELLOW, ST77XX_MAGENTA };
 
     uint8_t rectXPos = DISPLAY__WIDTH - 38;
     uint8_t rectYPos = DISPLAY_HEIGHT - 27;
@@ -208,6 +230,7 @@ void Display::drawDeviceRole() {
     }
 
     Display::needsWrite = true;
+
 }
 
 void Display::drawConnection() {
@@ -221,9 +244,11 @@ void Display::drawConnection() {
     Display::drawString(Blesrv::macAdress, DISPLAY__WIDTH / 2, yPosC, TEXT_HALIGN_CENTER, 20, connected ? ST77XX_BLUE : 0x31a6);
 
     Display::needsWrite = true;
+
 }
 
 uint8_t getXLabelOffset(double value) {
+
     uint8_t xLabelOffset = 0;
     if (value >= 0) {  // no minus sign needed
         xLabelOffset += 12;
@@ -235,6 +260,7 @@ uint8_t getXLabelOffset(double value) {
         xLabelOffset += 12;
     }
     return xLabelOffset;
+
 }
 
 void Display::drawOrientation() {
@@ -265,6 +291,7 @@ void Display::drawOrientation() {
     Display::drawString(Device::getOrientation() == ORIENTATION______UP ? "UP  " : "DOWN", xPosValue, yPosO, TEXT_HALIGN___LEFT);
 
     Display::needsWrite = true;
+
 }
 
 void Display::drawAcceleration() {
@@ -295,6 +322,7 @@ void Display::drawAcceleration() {
     }
 
     Display::needsWrite = true;
+
 }
 
 void Display::drawSignal() {
@@ -328,9 +356,17 @@ void Display::drawSignal() {
     Display::canvas.drawFastHLine(DISPLAY__WIDTH - 8, yPosOffset, 8, ST77XX_CYAN);
 
     Display::needsWrite = true;
+
 }
 
-void Display::write() {
-    Display::baseDisplay.drawRGBBitmap(0, 0, Display::canvas.getBuffer(), DISPLAY__WIDTH, DISPLAY_HEIGHT);
-    Display::needsWrite = false;
+bool Display::write() {
+
+    if (Display::needsWrite) {
+        Display::baseDisplay.drawRGBBitmap(0, 0, Display::canvas.getBuffer(), DISPLAY__WIDTH, DISPLAY_HEIGHT);
+        Display::needsWrite = false;
+        return true;
+    } else {
+        return false;
+    }
+
 }

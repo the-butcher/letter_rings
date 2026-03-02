@@ -3,12 +3,28 @@
 Button Buttons::buttonA(GPIO_NUM_2);
 Button Buttons::buttonB(GPIO_NUM_1);
 Button Buttons::buttonC(GPIO_NUM_0);
-button_action_e Buttons::buttonActionA = BUTTON_ACTION_MODUS;
+button_action_e Buttons::buttonAction = BUTTON_ACTION_MODUS;
+
+
+bool Buttons::powerup() {
+
+    pinMode(Buttons::buttonA.gpin, INPUT_PULLDOWN);
+    attachInterrupt(Buttons::buttonA.ipin, Buttons::handleInterruptA, CHANGE);
+
+    pinMode(Buttons::buttonB.gpin, INPUT_PULLDOWN);
+    attachInterrupt(Buttons::buttonB.ipin, Buttons::handleInterruptB, CHANGE);
+
+    pinMode(Buttons::buttonC.gpin, INPUT_PULLUP);
+    attachInterrupt(Buttons::buttonC.ipin, Buttons::handleInterruptC, CHANGE);
+    return true;
+
+}
+
 
 void Buttons::handleInterruptA() {
     uint64_t interruptMillis = millis();
     if (digitalRead(Buttons::buttonA.gpin) == LOW && (interruptMillis - Buttons::buttonA.lastInterruptMillis) > BUTTON_DEBOUNCE_MILLIS) {
-        if (Buttons::buttonActionA == BUTTON_ACTION_MODUS) {
+        if (Buttons::buttonAction == BUTTON_ACTION_MODUS) {
             modus_________e currModus = Device::getCurrModus();
             if (currModus == MODUS________WORDS) {
                 Device::setCurrModus(MODUS________LABEL);
@@ -22,37 +38,35 @@ void Buttons::handleInterruptA() {
                 Device::setCurrModus(MODUS________WORDS);
             }
             Blesrv::writeModus();  // send the new value over BLE (when connected)
-        } else if (Buttons::buttonActionA == BUTTON_ACTION_DECAY && Microphone::decay < 80) {
+        } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY && Microphone::decay < 80) {
             Microphone::decay += 5;
-        } else if (Matrices::brightness < 15) {
-            Matrices::brightness += 1;
-            Matrices::needsBrightnessUpdate = true;
+        } else if (Matrices::setBrightness(Matrices::getBrightness() + 1)) {
             Blesrv::writeLight();
         }
         Buttons::buttonA.lastInterruptMillis = interruptMillis;
-        Display::needsStatusRedraw = true;
+        Display::setNeedsStatusRedraw();
     }
 }
 
 void Buttons::handleInterruptB() {
     uint64_t interruptMillis = millis();
     if (digitalRead(Buttons::buttonB.gpin) == HIGH && (interruptMillis - Buttons::buttonB.lastInterruptMillis) > BUTTON_DEBOUNCE_MILLIS) {
-        if (Buttons::buttonActionA == BUTTON_ACTION_MODUS) {
-            Buttons::buttonActionA = BUTTON_ACTION_DECAY;
-        } else if (Buttons::buttonActionA == BUTTON_ACTION_DECAY) {
-            Buttons::buttonActionA = BUTTON_ACTION_LIGHT;
+        if (Buttons::buttonAction == BUTTON_ACTION_MODUS) {
+            Buttons::buttonAction = BUTTON_ACTION_DECAY;
+        } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY) {
+            Buttons::buttonAction = BUTTON_ACTION_LIGHT;
         } else {
-            Buttons::buttonActionA = BUTTON_ACTION_MODUS;
+            Buttons::buttonAction = BUTTON_ACTION_MODUS;
         }
         Buttons::buttonB.lastInterruptMillis = interruptMillis;
-        Display::needsStatusRedraw = true;
+        Display::setNeedsStatusRedraw();
     }
 }
 
 void Buttons::handleInterruptC() {
     uint64_t interruptMillis = millis();
     if (digitalRead(Buttons::buttonC.gpin) == HIGH && (interruptMillis - Buttons::buttonC.lastInterruptMillis) > BUTTON_DEBOUNCE_MILLIS) {
-        if (Buttons::buttonActionA == BUTTON_ACTION_MODUS) {
+        if (Buttons::buttonAction == BUTTON_ACTION_MODUS) {
             modus_________e currModus = Device::getCurrModus();
             if (currModus == MODUS________ACCEL) {
                 Device::setCurrModus(MODUS________PARTY);
@@ -66,26 +80,12 @@ void Buttons::handleInterruptC() {
                 Device::setCurrModus(MODUS________ACCEL);
             }
             Blesrv::writeModus();  // send the new value over BLE (when connected)
-        } else if (Buttons::buttonActionA == BUTTON_ACTION_DECAY && Microphone::decay > 5) {
+        } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY && Microphone::decay > 5) {
             Microphone::decay -= 5;
-        } else if (Matrices::brightness > 0) {
-            Matrices::brightness -= 1;
-            Matrices::needsBrightnessUpdate = true;
+        } else if (Matrices::setBrightness(Matrices::getBrightness() - 1)) {
             Blesrv::writeLight();
         }
         Buttons::buttonC.lastInterruptMillis = interruptMillis;
-        Display::needsStatusRedraw = true;
+        Display::setNeedsStatusRedraw();
     }
-}
-
-bool Buttons::powerup() {
-    pinMode(Buttons::buttonA.gpin, INPUT_PULLDOWN);
-    attachInterrupt(Buttons::buttonA.ipin, Buttons::handleInterruptA, CHANGE);
-
-    pinMode(Buttons::buttonB.gpin, INPUT_PULLDOWN);
-    attachInterrupt(Buttons::buttonB.ipin, Buttons::handleInterruptB, CHANGE);
-
-    pinMode(Buttons::buttonC.gpin, INPUT_PULLUP);
-    attachInterrupt(Buttons::buttonC.ipin, Buttons::handleInterruptC, CHANGE);
-    return true;
 }

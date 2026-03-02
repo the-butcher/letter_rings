@@ -77,16 +77,21 @@ class MainActivity : AppCompatActivity() {
         catalog = ShazamKit.createShazamCatalog(tokenProvider)
 
         val recognitionSwitch: Switch = findViewById (R.id.swRecognition)
+        val btRecognizeNow: Button =  findViewById ( R.id.btRecognition)
         recognitionSwitch.setOnCheckedChangeListener { _, isChecked ->
             isRecognitionChecked = isChecked
+            if (isRecognitionChecked != btRecognizeNow.isEnabled) { // set the radio groups visibility to gone if visibility
+                Log.d("MAIN", "btRecognizeNow will change enabled")
+                this@MainActivity.runOnUiThread { btRecognizeNow.setEnabled(isRecognitionChecked) }
+            }
+        }
+        btRecognizeNow.setOnClickListener  {
+            Log.i("MAIN", "recognize now button clicked")
+            WorkHandler.scheduleShazamWork(1)
         }
 
-        setupRadioButtons(Side.LEFT)
-        setupRadioButtons(Side.RIGHT)
-
-        setupSeekBar(Side.LEFT)
-        setupSeekBar(Side.RIGHT)
-
+        setupRadioButtons()
+        setupSeekBar()
         setupConnButton(Side.LEFT)
         setupConnButton(Side.RIGHT)
 
@@ -100,7 +105,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_SCAN)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
     fun setupConnButton(side: Side) {
 
         Log.i("BLE", "set up conn button (${side})")
@@ -112,36 +117,39 @@ class MainActivity : AppCompatActivity() {
             val bluetoothAdapter = bluetoothManager.adapter
             BleScanner(bluetoothAdapter, side).startScan()
         }
+
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun setupRadioButtons(side: Side) {
-        setupRadioButton(side, side.idRbWords, MODUS________WORDS)
-        setupRadioButton(side, side.idRbLabel, MODUS________LABEL)
-        setupRadioButton(side, side.idRbFrequ, MODUS________FREQU)
-        setupRadioButton(side, side.idRbParty, MODUS________PARTY)
-        setupRadioButton(side, side.idRbAccel, MODUS________ACCEL)
+    fun setupRadioButtons() {
+        setupRadioButton( R.id.radio_words, MODUS________WORDS)
+        setupRadioButton( R.id.radio_label, MODUS________LABEL)
+        setupRadioButton( R.id.radio_frequ, MODUS________FREQU)
+        setupRadioButton( R.id.radio_party, MODUS________PARTY)
+        setupRadioButton( R.id.radio_accel, MODUS________ACCEL)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun setupRadioButton(side: Side, @IdRes idRb: Int, modus: Int) {
+    fun setupRadioButton(@IdRes idRb: Int, modus: Int) {
         val rgModus: RadioButton =  findViewById (idRb)
         rgModus.setOnCheckedChangeListener { _, isChecked ->
             Log.d("MODUS", "rgModus checked: $isChecked")
             if (isChecked) {
-                bleDeviceInstanceMap[side]?.writeModusValue(modus)
+                bleDeviceInstanceMap[Side.LEFT]?.writeModusValue(modus)
+                bleDeviceInstanceMap[Side.RIGHT]?.writeModusValue(modus)
             }
         }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun setupSeekBar(side: Side) {
-        val sbLight: SeekBar =  findViewById (side.idSbLight)
+    fun setupSeekBar() {
+        val sbLight: SeekBar =  findViewById (R.id.sbLight)
         sbLight.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onStopTrackingTouch(seekBar: SeekBar) {
-                Log.i("MAIN", "onStopTrackingTouch (${side.idSbLight})")
-                bleDeviceInstanceMap[side]?.writeLightValue(sbLight.progress)
+                Log.i("MAIN", "onStopTrackingTouch (${R.id.sbLight})")
+                bleDeviceInstanceMap[Side.LEFT]?.writeLightValue(sbLight.progress)
+                bleDeviceInstanceMap[Side.RIGHT]?.writeLightValue(sbLight.progress)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar) {
 //                Log.i("MAIN", "onStartTrackingTouch (${side.idSbLight}, ${sbLight.progress})")
@@ -194,25 +202,27 @@ class MainActivity : AppCompatActivity() {
 
     fun setModus(modus: Byte, side: Side) {
 
-        Log.d("BLE", "set modus ($modus, $side)")
+        // TODO :: warn if settings are inconsistent
+
+        Log.d("BLE", "set modus ($modus)")
         if (modus.toInt() == MODUS________WORDS) {
-            val rgModusWords: RadioButton =  findViewById (side.idRbWords)
+            val rgModusWords: RadioButton =  findViewById (R.id.radio_words)
             Log.d("BLE", "rgModusWords will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusWords.setChecked(true) }
         } else if (modus.toInt() == MODUS________LABEL) {
-            val rgModusLabel: RadioButton =  findViewById (side.idRbLabel)
+            val rgModusLabel: RadioButton =  findViewById (R.id.radio_label)
             Log.d("BLE", "rgModusLabel will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusLabel.setChecked(true) }
         } else if (modus.toInt() == MODUS________FREQU) {
-            val rgModusFrequ: RadioButton =  findViewById (side.idRbFrequ)
+            val rgModusFrequ: RadioButton =  findViewById (R.id.radio_frequ)
             Log.d("BLE", "rgModusFrequ will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusFrequ.setChecked(true) }
         } else if (modus.toInt() == MODUS________PARTY) {
-            val rgModusParty: RadioButton =  findViewById (side.idRbParty)
+            val rgModusParty: RadioButton =  findViewById (R.id.radio_party)
             Log.d("BLE", "rgModusParty will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusParty.setChecked(true) }
         } else if (modus.toInt() == MODUS________ACCEL) {
-            val rgModusAccel: RadioButton =  findViewById (side.idRbAccel)
+            val rgModusAccel: RadioButton =  findViewById (R.id.radio_accel)
             Log.d("BLE", "rgModusAccel will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusAccel.setChecked(true) }
         }
@@ -221,7 +231,9 @@ class MainActivity : AppCompatActivity() {
 
     fun setLight(light: Byte, side: Side) {
 
-        val sbLight: SeekBar =  findViewById (side.idSbLight)
+        // TODO :: warn if settings are inconsistent
+
+        val sbLight: SeekBar =  findViewById (R.id.sbLight)
         Log.d("BLE", "sbLight will be changed on ui-thread")
         this@MainActivity.runOnUiThread { sbLight.setProgress((light.toInt())) }
 
@@ -232,22 +244,34 @@ class MainActivity : AppCompatActivity() {
         Log.i("BLE", "check ble-state (side: ${side}, gatt: ${bleDeviceInstanceMap[side]?.gattInstance})")
 
         val bleDeviceSwitch: Switch =  findViewById (side.idSwConn)
-        val llContr: LinearLayout =  findViewById ( side.idLlContr)
-        if (bleDeviceInstanceMap[side]?.gattInstance == null) {
-            Log.d("BLE", "gattL is null")
-            if (bleDeviceSwitch.isChecked) {
-                Log.d("BLE", "switch is checked, will uncheck on ui-thread")
-                this@MainActivity.runOnUiThread { bleDeviceSwitch.toggle() }
-            }
+        val llContr: LinearLayout =  findViewById ( R.id.llContr)
+        if (bleDeviceInstanceMap[Side.LEFT]?.gattInstance == null && bleDeviceInstanceMap[Side.RIGHT]?.gattInstance == null) {
+
+            // none of LEFT or RIGHT is connected - hide controls
             if (llContr.visibility == View.VISIBLE) { // set the radio groups visibility to gone if visibility
                 Log.d("BLE", "llContr is VISIBLE, will set to GONE")
                 this@MainActivity.runOnUiThread { llContr.setVisibility(View.GONE) }
             }
-        } else { // set the radio groups visibility to visible if gone
+
+        } else {
+
+            // at least one of LEFT or RIGHT are connected - show controls
             if (llContr.visibility == View.GONE) { // show radio group if gone
                 Log.d("BLE", "llContr is GONE, will set to VISIBLE")
                 this@MainActivity.runOnUiThread { llContr.setVisibility(View.VISIBLE) }
             }
+
+            if (bleDeviceInstanceMap[side]?.gattInstance == null) {
+                Log.d("BLE", "gattL is null")
+                if (bleDeviceSwitch.isChecked) {
+                    Log.d("BLE", "switch is checked, will uncheck on ui-thread")
+                    this@MainActivity.runOnUiThread { bleDeviceSwitch.toggle() }
+                }
+
+            } else { // set the radio groups visibility to visible if gone
+
+            }
+
         }
 
     }
@@ -295,7 +319,7 @@ class MainActivity : AppCompatActivity() {
 
         //keep current activity instance and use to perform any UI related task on work completion
         instance = WeakReference(this)
-        WorkHandler.scheduleShazamWork()
+        WorkHandler.scheduleShazamWork(60)
         WorkHandler.scheduleWordPairWork()
 
     }
@@ -338,7 +362,7 @@ class MainActivity : AppCompatActivity() {
             )
         } else {
             // All permissions are already granted
-            Toast.makeText(this, "All permissions already granted", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "all permissions already granted", Toast.LENGTH_SHORT).show()
         }
     }
 

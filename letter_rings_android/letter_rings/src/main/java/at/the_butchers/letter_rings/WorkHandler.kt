@@ -3,10 +3,12 @@ package at.the_butchers.letter_rings
 import android.Manifest
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 
@@ -36,7 +38,29 @@ object WorkHandler {
 
     }
 
-    fun scheduleShazamWork() {
+    fun scheduleShazamWork(delaySeconds: Long) {
+
+        val workManagerInstance = WorkManager.getInstance(MainActivity.instance.get() as Context)
+
+        val workInfos = workManagerInstance.getWorkInfosByTag(WORK__SHAZAM)
+        var currentlyRunning = false
+        try {
+
+            val workInfoList: List<WorkInfo> = workInfos.get()
+            for (workInfo in workInfoList) {
+                currentlyRunning = currentlyRunning || (workInfo.state == WorkInfo.State.RUNNING)
+            }
+
+        } catch (_: Exception) {
+            // do nothing
+        }
+
+        if (currentlyRunning) {
+            MainActivity.instance.get()?.runOnUiThread {
+                Toast.makeText(MainActivity.instance.get(), "recognition already running", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
 
         cancelPreviousWork(WORK__SHAZAM)
 
@@ -45,12 +69,12 @@ object WorkHandler {
             .build()
 
         val workRequest = OneTimeWorkRequestBuilder<ShazamWorker>()
-            .setInitialDelay(60, TimeUnit.SECONDS)
+            .setInitialDelay(delaySeconds, TimeUnit.SECONDS)
             .setConstraints(constraints)
             .addTag(WORK__SHAZAM)
             .build()
 
-        val workManagerInstance = WorkManager.getInstance(MainActivity.instance.get() as Context)
+
         workManagerInstance.enqueue(workRequest)
 
         Log.i(WORK_LOG_TAG, "... shazam work scheduled")
@@ -80,7 +104,7 @@ object WorkHandler {
 
             MainActivity.instance.get()?.updateLabels(title, artist, valid)
             Log.i(WORK_LOG_TAG, "scheduling shazam work (state: $activityState) ...")
-            scheduleShazamWork()
+            scheduleShazamWork(60)
 
 //            if (activityState?.isAtLeast(Lifecycle.State.RESUMED) == true) {
 //

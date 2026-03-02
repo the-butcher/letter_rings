@@ -9,16 +9,16 @@
 #include "Microphone.h"
 
 class Buttons {
-   private:
-   public:
-    static button_action_e buttonActionA;  // TODO :: should not have the "A" postfix
+private:
+public:
+    static button_action_e buttonAction;
     static Button buttonA;
     static Button buttonB;
     static Button buttonC;
+    static bool powerup();
     static void handleInterruptA();
     static void handleInterruptB();
     static void handleInterruptC();
-    static bool powerup();
 };
 
 #endif

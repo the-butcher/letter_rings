@@ -49,8 +49,7 @@
 			      android:layout_height="1dp"
 			      android:layout_marginVertical="4sp"
 			      android:background="@android:color/darker_gray"/>
-
-            <TextView android:id="@+id/txTitle"
+			<TextView android:id="@+id/txTitle"
 			          android:layout_width="match_parent"
 			          android:layout_height="wrap_content"
 			          android:fontFamily="@font/consola"
@@ -67,18 +66,32 @@
 			          android:paddingStart="8sp"
 			          android:text="NA (initial)"
 			          android:textSize="20sp"/>
+					  
+			<View android:layout_width="match_parent"
+			      android:layout_height="1dp"
+			      android:layout_marginVertical="4sp"
+			      android:background="@android:color/darker_gray"/>
 
-            <View
-                android:id="@+id/view"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginVertical="4sp"
-                android:background="@color/white" />
-
-            <LinearLayout
+            <Button
+                android:id="@+id/btRecognition"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:enabled="false"
+                android:fontFamily="@font/consola"
+                android:gravity="left"
+                android:text="recognize now"
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+				
+			<View android:id="@+id/view"
+			      android:layout_width="match_parent"
+			      android:layout_height="1dp"
+			      android:layout_marginVertical="4sp"
+			      android:background="@color/white"/>
+			<LinearLayout android:layout_width="match_parent"
+			              android:layout_height="wrap_content"
+			              android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/txWordL"
@@ -89,6 +102,7 @@
                     android:padding="4sp"
                     android:paddingStart="8sp"
                     android:text="word-l"
+                    android:textAlignment="center"
                     android:textSize="20sp" />
 
                 <TextView
@@ -100,22 +114,24 @@
                     android:padding="4sp"
                     android:paddingStart="8sp"
                     android:text="word-r"
+                    android:textAlignment="center"
                     android:textSize="20sp" />
-            </LinearLayout>
-
-            <View android:layout_width="match_parent"
+			</LinearLayout>
+			<View android:layout_width="match_parent"
 			      android:layout_height="1dp"
 			      android:layout_marginVertical="4sp"
 			      android:background="@android:color/white"/>
-				  
-			<Button android:id="@+id/btConnL"
-			        android:layout_width="match_parent"
-			        android:layout_height="wrap_content"
-			        android:fontFamily="@font/consola"
-			        android:gravity="left"
-			        android:text="ble scan left"
-			        android:textSize="20sp"
-			        android:textAllCaps="false"/>
+
+            <Button
+                android:id="@+id/btConnL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/consola"
+                android:gravity="left"
+                android:text="ble scan left"
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
 
             <LinearLayout
                 android:id="@+id/llConnL"
@@ -146,243 +162,145 @@
                     android:text="NA"
                     android:textSize="12sp" />
 
-                <LinearLayout
-                    android:id="@+id/llContrL"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="4sp"
-                        android:background="#999999" />
-
-                    <RadioGroup
-                        android:id="@+id/rgModusL"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:paddingStart="4sp"
-                        android:paddingEnd="4sp">
-
-                        <RadioButton
-                            android:id="@+id/radio_wordsL"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/consola"
-                            android:padding="4sp"
-                            android:paddingStart="8sp"
-                            android:paddingEnd="8sp"
-                            android:text="words"
-                            android:textSize="20sp" />
-
-                        <RadioButton
-                            android:id="@+id/radio_labelL"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/consola"
-                            android:padding="4sp"
-                            android:paddingStart="8sp"
-                            android:paddingRight="8sp"
-                            android:text="label"
-                            android:textSize="20sp" />
-
-                        <RadioButton
-                            android:id="@+id/radio_frequL"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/consola"
-                            android:padding="4sp"
-                            android:paddingStart="8sp"
-                            android:paddingEnd="8sp"
-                            android:text="frequ"
-                            android:textSize="20sp" />
-							
-							                        <RadioButton
-                            android:id="@+id/radio_partyL"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/consola"
-                            android:padding="4sp"
-                            android:paddingStart="8sp"
-                            android:paddingEnd="8sp"
-                            android:text="party"
-                            android:textSize="20sp" />
-							
-														                        <RadioButton
-                            android:id="@+id/radio_accelL"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/consola"
-                            android:padding="4sp"
-                            android:paddingStart="8sp"
-                            android:paddingEnd="8sp"
-                            android:text="accel"
-                            android:textSize="20sp" />
-                    </RadioGroup>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="4sp"
-                        android:background="#999999" />
-
-                    <SeekBar
-                        android:id="@+id/sbLightL"
-                        style="@style/Widget.AppCompat.SeekBar.Discrete"
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
-                        android:max="5"
-                        android:padding="6sp"
-                        android:paddingStart="20sp"
-                        android:paddingEnd="20sp"
-                        android:progress="0" />
-                </LinearLayout>
-
             </LinearLayout>
 			<View android:layout_width="match_parent"
 			      android:layout_height="1dp"
 			      android:layout_marginVertical="4sp"
 			      android:background="@color/white"/>
-			<Button android:id="@+id/btConnR"
-			        android:layout_width="match_parent"
-			        android:layout_height="wrap_content"
-			        android:fontFamily="@font/consola"
-			        android:gravity="left"
-			        android:text="ble scan right"
-			        android:textSize="20sp"
-			        android:textAllCaps="false"/>
 
-            <LinearLayout
-                android:id="@+id/llConnR"
+            <Button
+                android:id="@+id/btConnR"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/consola"
+                android:gravity="left"
+                android:text="ble scan right"
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+			<LinearLayout android:id="@+id/llConnR"
+			              android:layout_width="match_parent"
+			              android:layout_height="wrap_content"
+			              android:orientation="vertical"
+			              android:visibility="gone">
+				<Switch android:id="@+id/swConnR"
+				        android:layout_width="match_parent"
+				        android:layout_height="wrap_content"
+				        android:enabled="true"
+				        android:fontFamily="@font/consola"
+				        android:padding="4sp"
+				        android:paddingStart="8sp"
+				        android:showText="false"
+				        android:text="ble conn right"
+				        android:textSize="20sp"/>
+				<TextView android:id="@+id/txAddrR"
+				          android:layout_width="match_parent"
+				          android:layout_height="wrap_content"
+				          android:fontFamily="@font/consola"
+				          android:paddingStart="8sp"
+				          android:paddingBottom="8sp"
+				          android:text="NA"
+				          android:textSize="12sp"/>
+			</LinearLayout>
+			<View android:layout_width="match_parent"
+			      android:layout_height="1dp"
+			      android:layout_marginVertical="4sp"
+			      android:background="@color/white"/>
+
+            <LinearLayout
+                android:id="@+id/llContr"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <Switch
-                    android:id="@+id/swConnR"
+                <RadioGroup
+                    android:id="@+id/rgModus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:enabled="true"
-                    android:fontFamily="@font/consola"
-                    android:padding="4sp"
-                    android:paddingStart="8sp"
-                    android:showText="false"
-                    android:text="ble conn right"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/txAddrR"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/consola"
-                    android:paddingStart="8sp"
-                    android:paddingBottom="8sp"
-                    android:text="NA"
-                    android:textSize="12sp" />
-
-                <LinearLayout
-                    android:id="@+id/llContrR"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:visibility="gone">
+                    android:paddingStart="4sp"
+                    android:paddingEnd="4sp">
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="4sp"
-                        android:background="#999999" />
-
-                    <RadioGroup
-                        android:id="@+id/rgModusR"
+                    <RadioButton
+                        android:id="@+id/radio_words"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:paddingStart="4sp">
+                        android:fontFamily="@font/consola"
+                        android:padding="4sp"
+                        android:paddingStart="8sp"
+                        android:paddingEnd="8sp"
+                        android:text="words"
+                        android:textSize="20sp" />
 
-                        <RadioButton
-                            android:id="@+id/radio_wordsR"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/consola"
-                            android:padding="4sp"
-                            android:paddingStart="8sp"
-                            android:paddingEnd="8sp"
-                            android:text="words"
-                            android:textSize="20sp" />
-
-                        <RadioButton
-                            android:id="@+id/radio_labelR"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/consola"
-                            android:padding="4sp"
-                            android:paddingStart="8sp"
-                            android:paddingEnd="8sp"
-                            android:text="label"
-                            android:textSize="20sp" />
-
-                        <RadioButton
-                            android:id="@+id/radio_frequR"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/consola"
-                            android:padding="4sp"
-                            android:paddingStart="8sp"
-                            android:paddingEnd="8sp"
-                            android:text="frequ"
-                            android:textSize="20sp" />
-							
-							                        <RadioButton
-                            android:id="@+id/radio_partyR"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/consola"
-                            android:padding="4sp"
-                            android:paddingStart="8sp"
-                            android:paddingEnd="8sp"
-                            android:text="party"
-                            android:textSize="20sp" />
-						<RadioButton
-                            android:id="@+id/radio_accelR"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/consola"
-                            android:padding="4sp"
-                            android:paddingStart="8sp"
-                            android:paddingEnd="8sp"
-                            android:text="accel"
-                            android:textSize="20sp" />
-							
-                    </RadioGroup>
-
-                    <View
+                    <RadioButton
+                        android:id="@+id/radio_label"
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="4sp"
-                        android:background="#999999" />
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/consola"
+                        android:padding="4sp"
+                        android:paddingStart="8sp"
+                        android:paddingRight="8sp"
+                        android:text="label"
+                        android:textSize="20sp" />
 
-                    <SeekBar
-                        android:id="@+id/sbLightR"
-                        style="@style/Widget.AppCompat.SeekBar.Discrete"
+                    <RadioButton
+                        android:id="@+id/radio_frequ"
                         android:layout_width="match_parent"
-                        android:layout_height="36dp"
-                        android:max="5"
-                        android:padding="6sp"
-                        android:paddingStart="20sp"
-                        android:paddingEnd="20sp"
-                        android:progress="0" />
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/consola"
+                        android:padding="4sp"
+                        android:paddingStart="8sp"
+                        android:paddingEnd="8sp"
+                        android:text="frequ"
+                        android:textSize="20sp" />
 
-                </LinearLayout>
+                    <RadioButton
+                        android:id="@+id/radio_party"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/consola"
+                        android:padding="4sp"
+                        android:paddingStart="8sp"
+                        android:paddingEnd="8sp"
+                        android:text="party"
+                        android:textSize="20sp" />
+
+                    <RadioButton
+                        android:id="@+id/radio_accel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/consola"
+                        android:padding="4sp"
+                        android:paddingStart="8sp"
+                        android:paddingEnd="8sp"
+                        android:text="accel"
+                        android:textSize="20sp" />
+                </RadioGroup>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="4sp"
+                    android:background="#999999" />
+
+                <SeekBar
+                    android:id="@+id/sbLight"
+                    style="@style/Widget.AppCompat.SeekBar.Discrete"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:max="5"
+                    android:padding="6sp"
+                    android:paddingStart="20sp"
+                    android:paddingEnd="20sp"
+                    android:progress="0" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="4sp"
+                    android:background="@color/white" />
             </LinearLayout>
-			<View android:layout_width="match_parent"
-			      android:layout_height="1dp"
-			      android:layout_marginVertical="4sp"
-			      android:background="@color/white"/>
 		</LinearLayout>
 	</ScrollView>
 </LinearLayout>
