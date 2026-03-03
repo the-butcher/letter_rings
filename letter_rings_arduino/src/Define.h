@@ -10,7 +10,10 @@
 #define BLE_DEVICE_NAME "LETTER_RINGS_R"
 #endif
 
+// when USE__FORCE_MODUS_ACCEL = true, the device does not have to be PRI to show the bitmap animation
+#define USE__FORCE_MODUS_ACCEL false
 #define USE_SERIAL_LOOP_OUTPUT false
+#define USE__________CLIP_DRAW false
 
 #define COMMAND_LABEL_____UUID "067c3c93-eb63-4905-b292-478642f8ae99"  // for remote writing a label (moving over multiple matrices)
 #define COMMAND_WORD______UUID "3dfde050-8432-4f2f-9366-de27c430c05c"  // for remote writing a word (static 4-letter word)
@@ -61,9 +64,6 @@ static const int8_t BITMAPS_OFF = -1;                                           
 #endif
 
 const gpio_num_t AUDIO______________PIN = GPIO_NUM_8;  // A5
-
-// when FORCE_ACCEL = true, the decive does not have to be PRI to show the bitmap animation
-const bool FORCE_ACCEL = false;
 
 const uint64_t ROLE_PRI____DURATION_MS = 15000;
 const uint64_t WORD_UPDATE_INTERVAL_MS = 14000;
@@ -153,6 +153,10 @@ typedef enum : uint8_t {
      */
     MODUS________FREQU,
     /**
+     * show single dot
+     */
+    MODUS________BREAK,
+    /**
      * show label for a while then go back to frequency
      */
     MODUS________PARTY,
@@ -173,6 +177,13 @@ typedef struct {
     double y;
     double z;
 } vector________t;
+
+typedef struct {
+    uint16_t xMin;
+    uint16_t yMin;
+    uint16_t xMax;
+    uint16_t yMax;
+} extent________t;
 
 typedef struct {
     float values[ACCELERATION___SAMPLES];

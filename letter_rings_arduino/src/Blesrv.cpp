@@ -28,12 +28,12 @@ String Blesrv::macAdress;
 class BlesrvCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
         Serial.println("something connected");
-        Display::setNeedsStatusRedraw();
+        // Display::setNeedsStatusRedraw();
     };
     void onDisconnect(BLEServer* pServer) {
         pServer->getAdvertising()->start();
         Serial.println("something disconnected");
-        Display::setNeedsStatusRedraw();
+        // Display::setNeedsStatusRedraw();
     }
 };
 
@@ -55,7 +55,7 @@ class LabelCallbacks : public BLECharacteristicCallbacks {
         // newString.toUpperCase();
         Device::label = newString;
 
-        Display::setNeedsStatusRedraw();
+        // Display::setNeedsStatusRedraw();
 
     }
 };
@@ -77,7 +77,7 @@ class WordsCallbacks : public BLECharacteristicCallbacks {
         String newString = (char*)newValue;
         Device::word = newString;
 
-        Display::setNeedsStatusRedraw();
+        // Display::setNeedsStatusRedraw();
 
     }
 };
@@ -101,7 +101,7 @@ class ModusCallbacks : public BLECharacteristicCallbacks {
         uint8_t bModus = newValue[0];
         if (bModus >= MODUS________WORDS && bModus <= MODUS________ACCEL) {
             Device::setCurrModus((modus_________e)bModus);
-            Display::setNeedsStatusRedraw();
+            Display::setNeedsConfigRedraw();
         }
     }
 };
@@ -123,7 +123,7 @@ class LightCallbacks : public BLECharacteristicCallbacks {
 
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         if (Matrices::setBrightness(newValue[0])) {
-            Display::setNeedsStatusRedraw();
+            Display::setNeedsConfigRedraw();
         }
 
     }

@@ -10,13 +10,13 @@
 #include "Microphone.h"
 
 class Matrix {
-   private:
+private:
     Adafruit_8x8matrix baseMatrix;
     GFXcanvas1 canvasA;
     GFXcanvas1 canvasB;
     uint8_t addr;
 
-   public:
+public:
     bool hasBegun;
     // uint8_t copyOrder[64];
     Matrix(uint8_t addr);
@@ -28,9 +28,7 @@ class Matrix {
     void drawLabel(String label, int16_t offset);
     void clear();
     void write();
-    // void drawTextToCanvasA(String text, int16_t offset);
-    // void copyCanvasAtoCanvasB(uint8_t progress, bool skipPrevious);
-    // void flushCanvasBtoMatrix();
+    void drawPixel(int16_t x, int16_t y, uint16_t color);
     void drawBars(uint8_t indexMin);
     void drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color);
     void setBrightness(uint8_t brightness);  // 0 - 15

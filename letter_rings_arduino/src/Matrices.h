@@ -41,9 +41,10 @@ public:
     static bool powerup();
     static bool depower();
 
-    // static void clear();
+    static void clear();
 
     static void setOrientation(orientation___e orientation);
+    static void drawPixel(int16_t x, int16_t y, uint16_t color);
     static void drawBars();
     static void drawWord(String word);
     static void drawLabel(String label, int16_t offset);

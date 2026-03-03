@@ -254,6 +254,17 @@
                         android:paddingEnd="8sp"
                         android:text="frequ"
                         android:textSize="20sp" />
+						
+						                    <RadioButton
+                        android:id="@+id/radio_break"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/consola"
+                        android:padding="4sp"
+                        android:paddingStart="8sp"
+                        android:paddingEnd="8sp"
+                        android:text="break"
+                        android:textSize="20sp" />
 
                     <RadioButton
                         android:id="@+id/radio_party"

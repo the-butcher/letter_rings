@@ -14,25 +14,41 @@
 #include "Orientation.h"
 
 class Display {
-   private:
+private:
     static Adafruit_ST7789 baseDisplay;
-    static GFXcanvas16 canvas;
-    static bool needsWrite;
-    static void drawString(String text, uint16_t x, uint16_t y, text_halign___e halign, uint8_t hPadding = 0, uint16_t color = ST77XX_BLACK);
-    static bool needsStatusRedraw;
+    static GFXcanvas16 drawCanvas;
+    static GFXcanvas16 clipCanvas;
+    static bool needsClip;
+    static bool needsCopy;
+    static bool writingCopy;
 
-   public:
+    static void drawString(String text, uint16_t x, uint16_t y, text_halign___e halign, uint8_t hPadding = 0, uint16_t color = ST77XX_BLACK);
+    static bool needsConfigRedraw;
+    static extent________t clipExtent;
+    static extent________t copyExtent;
+    static void addClip(uint16_t clipXMin, uint16_t clipYMin, uint16_t clipXMax, uint16_t clipYMax);
+    static bool isFirstDrawOrientation;
+    static bool isFirstDrawSignal;
+    static bool lastConnectionState;
+    static device_role___e lastDeviceRole;
+    static bool isFirstDrawMatrixState;
+    static String lastText;
+    static uint64_t lastSignal;
+    /**
+     * height of either frequency or acceleration bars
+     */
+    static uint16_t lastBarsHeight;
+
+public:
     static bool powerup();
     static bool depower();
 
     static void clearModus();
 
-    static void setNeedsStatusRedraw();
-    static bool drawStatus(modus_________e modus);
-
+    static void setNeedsConfigRedraw();
     static void drawConfig();
 
-    static void drawText(String label);
+    static void drawText(String text);
     static void drawFrequ();
 
     static void drawOrientation();
@@ -43,10 +59,11 @@ class Display {
 
     static void drawSignal();
 
+    static bool writeClip();
     /**
      * write actual canvas updates to the display, if required
      */
-    static bool write();
+    static bool writeCopy();
 };
 
 #endif

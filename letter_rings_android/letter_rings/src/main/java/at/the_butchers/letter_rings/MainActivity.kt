@@ -125,6 +125,7 @@ class MainActivity : AppCompatActivity() {
         setupRadioButton( R.id.radio_words, MODUS________WORDS)
         setupRadioButton( R.id.radio_label, MODUS________LABEL)
         setupRadioButton( R.id.radio_frequ, MODUS________FREQU)
+        setupRadioButton( R.id.radio_break, MODUS________BREAK)
         setupRadioButton( R.id.radio_party, MODUS________PARTY)
         setupRadioButton( R.id.radio_accel, MODUS________ACCEL)
     }
@@ -217,6 +218,10 @@ class MainActivity : AppCompatActivity() {
             val rgModusFrequ: RadioButton =  findViewById (R.id.radio_frequ)
             Log.d("BLE", "rgModusFrequ will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusFrequ.setChecked(true) }
+        } else if (modus.toInt() == MODUS________BREAK) {
+            val rgModusBreak: RadioButton =  findViewById (R.id.radio_break)
+            Log.d("BLE", "rgModusBreak will be checked on ui-thread")
+            this@MainActivity.runOnUiThread { rgModusBreak.setChecked(true) }
         } else if (modus.toInt() == MODUS________PARTY) {
             val rgModusParty: RadioButton =  findViewById (R.id.radio_party)
             Log.d("BLE", "rgModusParty will be checked on ui-thread")

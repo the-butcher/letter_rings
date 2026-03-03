@@ -1,9 +1,26 @@
 #include <Display.h>
 
 Adafruit_ST7789 Display::baseDisplay(TFT_CS, TFT_DC, TFT_RST);
-bool Display::needsStatusRedraw = true;
-bool Display::needsWrite = false;
-GFXcanvas16 Display::canvas(DISPLAY__WIDTH, DISPLAY_HEIGHT);
+
+bool Display::needsClip = false;
+bool Display::needsCopy = false;
+bool Display::writingCopy = false;
+
+GFXcanvas16 Display::drawCanvas(DISPLAY__WIDTH, DISPLAY_HEIGHT);
+GFXcanvas16 Display::clipCanvas(1, 1);
+
+extent________t Display::clipExtent = { DISPLAY__WIDTH, DISPLAY_HEIGHT, 0, 0 };
+extent________t Display::copyExtent = { 0, 0, 0, 0 };
+
+bool Display::needsConfigRedraw = true;
+bool Display::isFirstDrawOrientation = true;
+bool Display::isFirstDrawSignal = true;
+bool Display::isFirstDrawMatrixState = true;
+bool Display::lastConnectionState = true; // start with true to force an initial draw
+device_role___e Display::lastDeviceRole = DEVICE_ROLE_____PRI; // start with primary to force an initial draw
+uint16_t Display::lastBarsHeight = 112;
+String Display::lastText = "";
+uint64_t Display::lastSignal = 0;
 
 bool Display::powerup() {
 
@@ -19,7 +36,7 @@ bool Display::powerup() {
     Display::baseDisplay.setRotation(0);                        // buttons at the bottom
     Display::baseDisplay.fillScreen(ST77XX_BLACK);
 
-    Display::canvas.setTextWrap(true);
+    Display::drawCanvas.setTextWrap(true);
 
     return true;
 
@@ -39,39 +56,16 @@ bool Display::depower() {
 
 }
 
-void Display::setNeedsStatusRedraw() {
-    Display::needsStatusRedraw = true;
-}
-
-bool Display::drawStatus(modus_________e modus) {
-
-    if (Display::needsStatusRedraw) {
-
-        Display::drawConfig();  // buttons labels
-        Display::drawConnection();
-        Display::drawOrientation();
-        if (modus == MODUS________LABEL) {
-            Display::drawText(Device::label);
-        }
-        Display::drawMatrixState();  // I2C init states of matrices
-
-        Display::needsWrite = true;
-        Display::needsStatusRedraw = false;
-
-        return true;
-
-    } else {
-        return false;
-    }
-
+void Display::setNeedsConfigRedraw() {
+    Display::needsConfigRedraw = true;
 }
 
 void Display::drawString(String text, uint16_t x, uint16_t y, text_halign___e halign, uint8_t hPadding, uint16_t color) {
 
-    Display::canvas.setCursor(0, 0);
+    Display::drawCanvas.setCursor(0, 0);
     int16_t x1, y1;
     uint16_t w, h, xAlign;
-    Display::canvas.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+    Display::drawCanvas.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
     if (halign == TEXT_HALIGN___LEFT) {
         xAlign = x;
     } else if (halign == TEXT_HALIGN_CENTER) {
@@ -79,135 +73,212 @@ void Display::drawString(String text, uint16_t x, uint16_t y, text_halign___e ha
     } else {
         xAlign = x - w;
     }
-    Display::canvas.fillRect(xAlign - hPadding - 1, y - 1, w + hPadding * 2, h + 1, color);
-    Display::canvas.setCursor(xAlign, y);
-    Display::canvas.print(text);
+    Display::drawCanvas.fillRect(xAlign - hPadding - 1, y - 1, w + hPadding * 2, h + 1, color);
+    Display::drawCanvas.setCursor(xAlign, y);
+    Display::drawCanvas.print(text);
 
-    Display::needsWrite = true;
+    Display::needsClip = true;
 
 }
 
 void Display::drawConfig() {
 
-    Display::canvas.setTextSize(2);
-    Display::canvas.setTextColor(0xad55);  // #AAAAAA
+    if (Display::needsConfigRedraw) {
 
-    uint8_t configYPos = DISPLAY_HEIGHT - 14;
+        Display::drawCanvas.setTextSize(2);
+        Display::drawCanvas.setTextColor(0xad55);  // #AAAAAA
 
-    Display::drawString("-", 0, configYPos, TEXT_HALIGN___LEFT);
-    String baText;
-    if (Buttons::buttonAction == BUTTON_ACTION_MODUS) {
-        baText = "MODUS";
-    } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY) {
-        baText = "DECAY";
-    } else {
-        baText = "LIGHT";
-    }
-    Display::drawString(baText, DISPLAY__WIDTH / 2, configYPos, TEXT_HALIGN_CENTER);
-    Display::drawString("+", DISPLAY__WIDTH, configYPos, TEXT_HALIGN__RIGHT);
+        uint8_t configYPos = DISPLAY_HEIGHT - 14;
 
-    String value;
-    if (Buttons::buttonAction == BUTTON_ACTION_MODUS) {
-        modus_________e currModus = Device::getCurrModus();
-        if (currModus == MODUS________WORDS) {
-            value = "WORDS";
-        } else if (currModus == MODUS________LABEL) {
-            value = "LABEL";
-        } else if (currModus == MODUS________FREQU) {
-            value = "FREQU";
-        } else if (currModus == MODUS________PARTY) {
-            value = "PARTY";
-        } else if (currModus == MODUS________ACCEL) {
-            value = "ACCEL";
+        Display::drawString("-", 0, configYPos, TEXT_HALIGN___LEFT);
+        String baText;
+        if (Buttons::buttonAction == BUTTON_ACTION_MODUS) {
+            baText = "MODUS";
+        } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY) {
+            baText = "DECAY";
         } else {
-            value = "ERROR";
+            baText = "LIGHT";
         }
-    } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY) {
-        value = String(Microphone::decay);
-    } else {
-        value = String(Matrices::getBrightness());
+        Display::drawString(baText, DISPLAY__WIDTH / 2, configYPos, TEXT_HALIGN_CENTER);
+        Display::drawString("+", DISPLAY__WIDTH, configYPos, TEXT_HALIGN__RIGHT);
+
+        String value;
+        if (Buttons::buttonAction == BUTTON_ACTION_MODUS) {
+            modus_________e currModus = Device::getCurrModus();
+            if (currModus == MODUS________WORDS) {
+                value = "WORDS";
+            } else if (currModus == MODUS________LABEL) {
+                value = "LABEL";
+            } else if (currModus == MODUS________FREQU) {
+                value = "FREQU";
+            } else if (currModus == MODUS________BREAK) {
+                value = "BREAK";
+            } else if (currModus == MODUS________PARTY) {
+                value = "PARTY";
+            } else if (currModus == MODUS________ACCEL) {
+                value = "ACCEL";
+            } else {
+                value = "ERROR";
+            }
+        } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY) {
+            value = String(Microphone::decay);
+        } else {
+            value = String(Matrices::getBrightness());
+        }
+
+        Display::drawString(value, DISPLAY__WIDTH / 2, configYPos - 17, TEXT_HALIGN_CENTER, DISPLAY__WIDTH / 2);
+
+        Display::drawString(DEVICE____________SIDE, DISPLAY__WIDTH, configYPos - 17, TEXT_HALIGN__RIGHT);
+
+        Display::needsConfigRedraw = false;
+
+        Display::addClip(0, configYPos - 17, DISPLAY__WIDTH, DISPLAY_HEIGHT);
+
+        Display::needsClip = true;
+
     }
 
-    Display::drawString(value, DISPLAY__WIDTH / 2, configYPos - 17, TEXT_HALIGN_CENTER, DISPLAY__WIDTH / 2);
-
-    Display::drawString(DEVICE____________SIDE, DISPLAY__WIDTH, configYPos - 17, TEXT_HALIGN__RIGHT);
-
-    Display::needsWrite = true;
 }
 
 void Display::clearModus() {
-    Display::canvas.fillRect(0, 12, DISPLAY__WIDTH, 120, ST77XX_BLACK);
-    Display::needsWrite = true;
+    Display::drawCanvas.fillRect(0, 12, DISPLAY__WIDTH, 120, ST77XX_BLACK);
+    Display::addClip(0, 12, DISPLAY__WIDTH, 12 + 120);
+    Display::needsClip = true;
 }
 
-void Display::drawText(String label) {
+void Display::drawText(String text) {
 
-    Display::clearModus();
+    if (text != Display::lastText) {
 
-    Display::canvas.setTextSize(2);
-    Display::canvas.setTextColor(ST77XX_WHITE);
+        Display::clearModus(); // adds a clip
 
-    Display::drawString(label, 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
+        Display::drawCanvas.setTextSize(2);
+        Display::drawCanvas.setTextColor(ST77XX_WHITE);
 
-    Display::needsWrite = true;
+        Display::drawString(text, 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
+
+        Display::lastText = text;
+
+        Display::needsClip = true;
+
+    }
+
 }
 
 void Display::drawFrequ() {
 
-    int x;
-    int h;
-    const int y = 124;
-    const int m = 112;
+    uint16_t x;
+    uint16_t h;
+    const uint16_t y = 124;
+    const uint16_t m = 112;
 
-    Display::clearModus();
+    uint16_t clearDisplayHeight = Display::lastBarsHeight;
+    Display::drawCanvas.fillRect(0, y - clearDisplayHeight, DISPLAY__WIDTH, clearDisplayHeight, ST77XX_BLACK); // clear previous bars area
+
+    Display::lastBarsHeight = 0;
 
     // actual band values
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
         x = i * 8 + 3;
-        h = min(m, (int)round(Microphone::bandValues[i] / 256.0));
-        Display::canvas.fillRect(x, y - h, 7, h, 0x9cd3);  // #9c9a9c - draw fresh bar
+        h = min(m, (uint16_t)round(Microphone::bandValues[i] / 256.0));
+        Display::drawCanvas.fillRect(x, y - h, 7, h, 0x9cd3);  // #9c9a9c - draw fresh bar
+        Display::lastBarsHeight = max(Display::lastBarsHeight, h);
     }
 
     double x0;
     double y0;
     double x1;
     double y1;
-    for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
-        x1 = i;
-        y1 = Microphone::fitFValues[i];
+    uint16_t ly0;
+    uint16_t ly1;
+    for (uint16_t i = 0; i < AUDIO________NUM_BANDS; i++) {
+        ly0 = i;
+        ly1 = Microphone::fitFValues[i];
         if (i > 0) {
-            Display::canvas.drawLine(round(x0 * 8 + 6), round(y - min(m * 1.0, y0 / 256.0)), round(x1 * 8 + 6), round(y - min(m * 1.0, y1 / 256.0)), ST77XX_YELLOW);
-            // Display::canvas.drawLine(round(x0 * 8 + 6), round(y - y0 / 256.0), round(x1 * 8 + 6), round(y - y1 / 256.0), ST77XX_YELLOW);
+            ly0 = round(y - min(m * 1.0, y0 / 256.0));
+            ly1 = round(y - min(m * 1.0, y1 / 256.0));
+            Display::drawCanvas.drawLine(round(x0 * 8 + 6), ly0, round(x1 * 8 + 6), ly1, ST77XX_YELLOW);
+            Display::lastBarsHeight = max(Display::lastBarsHeight, (uint16_t)(y - ly0));
+            Display::lastBarsHeight = max(Display::lastBarsHeight, (uint16_t)(y - ly1));
         }
         x0 = x1;
         y0 = y1;
     }
 
-    for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
+    for (uint16_t i = 0; i < AUDIO________NUM_BANDS; i++) {
         x = i * 8 + 3;
-        h = min(m, (int)round(Microphone::bandScaled[i] / 256.0));
-        Display::canvas.drawRect(x, y - h, 7, h, 0xdefb);  // #dddddd - draw scaled bar
+        h = min(m, (uint16_t)round(Microphone::bandScaled[i] / 256.0));
+        Display::drawCanvas.drawRect(x, y - h, 7, h, 0xdefb);  // #dddddd - draw scaled bar
+        Display::lastBarsHeight = max(Display::lastBarsHeight, h);
     }
 
-    Display::canvas.drawFastHLine(0, y - (int)round(Microphone::basis / 256.0), DISPLAY__WIDTH, ST77XX_YELLOW);
+    Display::drawCanvas.drawFastHLine(0, y - (int)round(Microphone::basis / 256.0), DISPLAY__WIDTH, ST77XX_YELLOW);
     // Display::canvas.drawFastHLine(0, y - (int)round(Microphone::fitFAverag / 256.0), DISPLAY__WIDTH, ST77XX_MAGENTA);
 
-    Display::needsWrite = true;
+    Display::addClip(0, y - max(clearDisplayHeight, Display::lastBarsHeight), DISPLAY__WIDTH, y);
+
+    Display::needsClip = true;
+
+}
+
+void Display::drawAcceleration() {
+
+    // Display::clearModus();
+
+    uint16_t x;
+    uint16_t h;
+    const uint16_t y = 124;
+    const uint16_t m = 112;
+
+    uint16_t clearDisplayHeight = Display::lastBarsHeight;
+    Display::drawCanvas.fillRect(0, y - clearDisplayHeight, DISPLAY__WIDTH, clearDisplayHeight, ST77XX_BLACK); // clear previous bars area
+
+    Display::drawCanvas.setTextSize(2);
+    Display::drawCanvas.setTextColor(Orientation::coefficient > ACCELERATION_THRESHOLD ? 0xad55 : 0xf800);  // #adaaad : #ff0000
+    Display::drawString(String(Orientation::coefficient, 3), 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
+
+    acceleration__t accelA = Orientation::getAccelA();
+    for (uint16_t i = 0; i < ACCELERATION___SAMPLES; i++) {
+        x = i * 4 + 3;
+        h = min(m, (uint16_t)round(accelA.values[i] * 32));
+        Display::drawCanvas.fillRect(x, y - h, 3, h, 0x9cd3);  // #9c9a9c - draw fresh bar (grey)
+    }
+
+    acceleration__t accelB = Orientation::getAccelB();
+    for (uint16_t i = 0; i < ACCELERATION___SAMPLES; i++) {
+        x = i * 4 + 3;
+        h = min(m, (uint16_t)round(accelB.values[i] * 32));
+        Display::drawCanvas.drawRect(x, y - h, 3, h, 0xdefb);  // #dddddd - draw scaled bar
+    }
+
+    Display::lastBarsHeight = 112;
+    Display::addClip(0, y - max(clearDisplayHeight, Display::lastBarsHeight), DISPLAY__WIDTH, y);
+
+    Display::needsClip = true;
+
 }
 
 void Display::drawMatrixState() {
 
-    uint8_t rectXPos = 0;
-    uint8_t rectYPos = DISPLAY_HEIGHT - 27;
-    Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixA.hasBegun ? ST77XX_GREEN : ST77XX_RED);
-    rectXPos += 8;
-    Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixB.hasBegun ? ST77XX_GREEN : ST77XX_RED);
-    rectXPos += 8;
-    Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixC.hasBegun ? ST77XX_GREEN : ST77XX_RED);
-    rectXPos += 8;
-    Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixD.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+    if (Display::isFirstDrawMatrixState) {
 
-    Display::needsWrite = true;
+        uint8_t rectXPos = 0;
+        uint8_t rectYPos = DISPLAY_HEIGHT - 27;
+        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixA.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+        rectXPos += 8;
+        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixB.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+        rectXPos += 8;
+        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixC.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+        rectXPos += 8;
+        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixD.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+
+        Display::addClip(0, rectYPos, 32, rectYPos + 6);
+
+        Display::isFirstDrawMatrixState = false;
+
+        Display::needsClip = true;
+
+    }
 
 }
 
@@ -215,21 +286,29 @@ void Display::drawDeviceRole() {
 
     device_role___e deviceRole = Device::getDeviceRole();
 
-    uint16_t roleColors[3] = { 0xce59, ST77XX_YELLOW, ST77XX_MAGENTA };
+    if (deviceRole != Display::lastDeviceRole) {
 
-    uint8_t rectXPos = DISPLAY__WIDTH - 38;
-    uint8_t rectYPos = DISPLAY_HEIGHT - 27;
-    for (uint8_t i = DEVICE_ROLE_____ANY; i <= DEVICE_ROLE_____SEC; i++) {
-        Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, ST77XX_BLACK);
-        if (deviceRole == i) {
-            Display::canvas.fillRect(rectXPos, rectYPos, 6, 6, roleColors[i]);
-        } else {
-            Display::canvas.drawRect(rectXPos, rectYPos, 6, 6, 0x9cd3);
+        uint16_t roleColors[3] = { 0xce59, ST77XX_YELLOW, ST77XX_MAGENTA };
+
+        uint8_t rectXPos = DISPLAY__WIDTH - 29;
+        uint8_t rectYPos = 1;
+        for (uint8_t i = DEVICE_ROLE_____ANY; i <= DEVICE_ROLE_____SEC; i++) {
+            Display::drawCanvas.fillRect(rectXPos, rectYPos, 8, 8, ST77XX_BLACK);
+            if (deviceRole == i) {
+                Display::drawCanvas.fillRect(rectXPos, rectYPos, 8, 8, roleColors[i]);
+            } else {
+                Display::drawCanvas.drawRect(rectXPos, rectYPos, 8, 8, 0x9cd3);
+            }
+            rectXPos += 10;
         }
-        rectXPos += 8;
-    }
 
-    Display::needsWrite = true;
+        Display::addClip(DISPLAY__WIDTH - 29, 0, DISPLAY__WIDTH, 10);
+
+        Display::lastDeviceRole = deviceRole;
+
+        Display::needsClip = true;
+
+    }
 
 }
 
@@ -237,134 +316,167 @@ void Display::drawConnection() {
 
     bool connected = Blesrv::isConnected();
 
-    Display::canvas.setTextSize(1);
-    Display::canvas.setTextColor(connected ? ST77XX_WHITE : 0x73ae);  // https://rgbcolorpicker.com/565
+    if (connected != Display::lastConnectionState) {
 
-    uint16_t yPosC = 1;
-    Display::drawString(Blesrv::macAdress, DISPLAY__WIDTH / 2, yPosC, TEXT_HALIGN_CENTER, 20, connected ? ST77XX_BLUE : 0x31a6);
+        Display::drawCanvas.setTextSize(1);
+        Display::drawCanvas.setTextColor(connected ? ST77XX_WHITE : 0x73ae);  // https://rgbcolorpicker.com/565
 
-    Display::needsWrite = true;
+        uint16_t yPosC = 1;
+        Display::drawString(Blesrv::macAdress, 2, yPosC, TEXT_HALIGN___LEFT, 2, connected ? ST77XX_BLUE : 0x31a6);
 
-}
+        Display::addClip(0, 0, DISPLAY__WIDTH, 10);
 
-uint8_t getXLabelOffset(double value) {
+        Display::lastConnectionState = connected;
 
-    uint8_t xLabelOffset = 0;
-    if (value >= 0) {  // no minus sign needed
-        xLabelOffset += 12;
+        Display::needsClip = true;
+
     }
-    if (abs(value) < 100) {
-        xLabelOffset += 12;
-    }
-    if (abs(value) < 10) {
-        xLabelOffset += 12;
-    }
-    return xLabelOffset;
 
 }
 
 void Display::drawOrientation() {
 
-    Display::canvas.setTextSize(2);
-    Display::canvas.setTextColor(Orientation::hasBegun ? 0xad55 : 0xdc30);  // #adaaad : #de8684 // https://rgbcolorpicker.com/565
+    if (Orientation::hasBegun) {
 
-    vector________t orientation = Orientation::getOrientation();
+        Display::drawCanvas.setTextSize(2);
+        Display::drawCanvas.setTextColor(Orientation::hasBegun ? 0xad55 : 0xdc30);  // #adaaad : #de8684 // https://rgbcolorpicker.com/565
 
-    uint8_t xPosValue = 24;
+        vector________t orientation = Orientation::getOrientation();
 
-    uint8_t yPosOffset = DISPLAY_HEIGHT - 20;
+        // uint8_t xPosValue = 24;
+        uint8_t yPosOffset = DISPLAY_HEIGHT - 20;
 
-    uint16_t yPosX = yPosOffset - 17 * 5;
-    Display::drawString(String(orientation.x, 2), xPosValue + getXLabelOffset(orientation.x), yPosX, TEXT_HALIGN___LEFT, 36);
-    Display::drawString("X: ", 0, yPosX, TEXT_HALIGN___LEFT);
+        // dont draw x since it has no relevance for device functionality
+        // uint16_t yPosX = yPosOffset - 17 * 5;
+        // Display::drawString(String(orientation.x, 2), xPosValue + getXLabelOffset(orientation.x), yPosX, TEXT_HALIGN___LEFT, 36);
+        // Display::drawString("X: ", 0, yPosX, TEXT_HALIGN___LEFT);
 
-    uint16_t yPosY = yPosOffset - 17 * 4;
-    Display::drawString(String(orientation.y, 2), xPosValue + getXLabelOffset(orientation.y), yPosY, TEXT_HALIGN___LEFT, 36);
-    Display::drawString("Y: ", 0, yPosY, TEXT_HALIGN___LEFT);
+        uint16_t yPosY = yPosOffset - 17 * 5;
+        Display::drawString(String(orientation.y, 2), DISPLAY__WIDTH, yPosY, TEXT_HALIGN__RIGHT, 36);
+        if (Display::isFirstDrawOrientation) {
+            Display::drawString("Y: ", 0, yPosY, TEXT_HALIGN___LEFT);
+        }
 
-    uint16_t yPosZ = yPosOffset - 17 * 3;
-    Display::drawString(String(orientation.z, 2), xPosValue + getXLabelOffset(orientation.z), yPosZ, TEXT_HALIGN___LEFT, 36);
-    Display::drawString("Z: ", 0, yPosZ, TEXT_HALIGN___LEFT);
+        uint16_t yPosZ = yPosOffset - 17 * 4;
+        Display::drawString(String(orientation.z, 2), DISPLAY__WIDTH, yPosZ, TEXT_HALIGN__RIGHT, 36);
+        if (Display::isFirstDrawOrientation) {
+            Display::drawString("Z: ", 0, yPosZ, TEXT_HALIGN___LEFT);
+        }
 
-    uint16_t yPosO = yPosOffset - 17 * 2;
-    Display::drawString("O: ", 0, yPosO, TEXT_HALIGN___LEFT);
-    Display::drawString(Device::getOrientation() == ORIENTATION______UP ? "UP  " : "DOWN", xPosValue, yPosO, TEXT_HALIGN___LEFT);
+        uint16_t yPosO = yPosOffset - 17 * 3;
+        if (Display::isFirstDrawOrientation) {
+            Display::drawString("O: ", 0, yPosO, TEXT_HALIGN___LEFT);
+        }
+        Display::drawString(Device::getOrientation() == ORIENTATION______UP ? "  UP" : "DOWN", DISPLAY__WIDTH, yPosO, TEXT_HALIGN__RIGHT);
 
-    Display::needsWrite = true;
+        Display::addClip(Display::isFirstDrawOrientation ? 0 : 45, yPosY, DISPLAY__WIDTH, yPosY + 17 * 3 - 2);
 
-}
+        Display::isFirstDrawOrientation = false;
 
-void Display::drawAcceleration() {
+        Display::needsClip = true;
 
-    Display::clearModus();
-
-    Display::canvas.setTextSize(2);
-    Display::canvas.setTextColor(Orientation::coefficient > ACCELERATION_THRESHOLD ? 0xad55 : 0xf800);  // #adaaad : #ff0000
-    Display::drawString(String(Orientation::coefficient, 3), 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
-
-    int x;
-    int h;
-    int y = 124;
-    int m = 112;
-
-    acceleration__t accelA = Orientation::getAccelA();
-    for (int i = 0; i < ACCELERATION___SAMPLES; i++) {
-        x = i * 4 + 3;
-        h = min(m, (int)round(accelA.values[i] * 32));
-        Display::canvas.fillRect(x, y - h, 3, h, 0x9cd3);  // #9c9a9c - draw fresh bar (grey)
     }
-
-    acceleration__t accelB = Orientation::getAccelB();
-    for (int i = 0; i < ACCELERATION___SAMPLES; i++) {
-        x = i * 4 + 3;
-        h = min(m, (int)round(accelB.values[i] * 32));
-        Display::canvas.drawRect(x, y - h, 3, h, 0xdefb);  // #dddddd - draw scaled bar
-    }
-
-    Display::needsWrite = true;
 
 }
 
 void Display::drawSignal() {
 
-    Display::canvas.setTextSize(2);
-    Display::canvas.setTextColor(0xad55);  // #AAAAAA
+    uint64_t currSignal = Microphone::signal;
+    if (currSignal != Display::lastSignal) {
 
-    uint8_t barHeight = 70;
-    uint8_t yPosOffset = DISPLAY_HEIGHT - 20 - 17;
+        Display::drawCanvas.setTextSize(2);
+        Display::drawCanvas.setTextColor(0xad55);  // #AAAAAA
 
-    uint16_t signal = Microphone::signal * barHeight / 4096;
+        uint8_t yPosOffset = DISPLAY_HEIGHT - 20;
 
-    uint16_t yPosO = yPosOffset - 17;  // same as o label
-    String signalString;
-    if (Microphone::signal >= 1000) {
-        signalString = " " + String(Microphone::signal);
-    } else if (Microphone::signal >= 100) {
-        signalString = "  " + String(Microphone::signal);
-    } else if (Microphone::signal >= 10) {
-        signalString = "   " + String(Microphone::signal);
-    } else {
-        signalString = "    " + String(Microphone::signal);
+        uint16_t yPosS = yPosOffset - 17 * 2;  // same as o label
+        String signalString;
+        if (Microphone::signal >= 1000) {
+            signalString = String(Microphone::signal);
+        } else if (Microphone::signal >= 100) {
+            signalString = " " + String(Microphone::signal);
+        } else if (Microphone::signal >= 10) {
+            signalString = "  " + String(Microphone::signal);
+        } else {
+            signalString = "   " + String(Microphone::signal);
+        }
+        if (Display::isFirstDrawSignal) {
+            Display::drawString("S: ", 0, yPosS, TEXT_HALIGN___LEFT);
+        }
+        Display::drawString(signalString, DISPLAY__WIDTH, yPosS, TEXT_HALIGN__RIGHT);
+
+        Display::addClip(Display::isFirstDrawSignal ? 0 : 45, yPosS, DISPLAY__WIDTH, yPosS + 16);
+
+        Display::isFirstDrawSignal = false;
+        Display::lastSignal = currSignal;
+
+        Display::needsClip = true;
+
     }
-    Display::drawString(signalString, DISPLAY__WIDTH - 10, yPosO, TEXT_HALIGN__RIGHT);
-
-    Display::canvas.fillRect(DISPLAY__WIDTH - 3, yPosOffset - barHeight, 3, barHeight, ST77XX_BLACK);  // remove previous line
-    Display::canvas.fillRect(DISPLAY__WIDTH - 2, yPosOffset - barHeight, 1, barHeight, 0x632c);        // #666666
-    Display::canvas.fillRect(DISPLAY__WIDTH - 3, yPosOffset - signal, 3, signal, 0xad55);              // signal line
-    Display::canvas.drawFastHLine(DISPLAY__WIDTH - 8, yPosOffset - barHeight, 8, ST77XX_CYAN);
-    Display::canvas.drawFastHLine(DISPLAY__WIDTH - 8, yPosOffset - barHeight / 2, 8, ST77XX_CYAN);
-    Display::canvas.drawFastHLine(DISPLAY__WIDTH - 8, yPosOffset, 8, ST77XX_CYAN);
-
-    Display::needsWrite = true;
 
 }
 
-bool Display::write() {
+void Display::addClip(uint16_t clipXMin, uint16_t clipYMin, uint16_t clipXMax, uint16_t clipYMax) {
+    Display::clipExtent.xMin = min(Display::clipExtent.xMin, clipXMin);
+    Display::clipExtent.yMin = min(Display::clipExtent.yMin, clipYMin);
+    Display::clipExtent.xMax = max(Display::clipExtent.xMax, clipXMax);
+    Display::clipExtent.yMax = max(Display::clipExtent.yMax, clipYMax);
+}
 
-    if (Display::needsWrite) {
-        Display::baseDisplay.drawRGBBitmap(0, 0, Display::canvas.getBuffer(), DISPLAY__WIDTH, DISPLAY_HEIGHT);
-        Display::needsWrite = false;
+bool Display::writeClip() {
+
+    if (Display::needsClip) {
+
+        Display::clipExtent.xMin = max(Display::clipExtent.xMin, (uint16_t)0);
+        Display::clipExtent.yMin = max(Display::clipExtent.yMin, (uint16_t)0);
+        Display::clipExtent.xMax = min(Display::clipExtent.xMax, DISPLAY__WIDTH);
+        Display::clipExtent.yMax = min(Display::clipExtent.yMax, DISPLAY_HEIGHT);
+
+        int16_t clipW = Display::clipExtent.xMax - Display::clipExtent.xMin;
+        int16_t clipH = Display::clipExtent.yMax - Display::clipExtent.yMin;
+
+        if (clipW > 0 && clipH > 0) {
+
+            Display::clipCanvas = GFXcanvas16(clipW, clipH);
+            clipCanvas.drawRGBBitmap(-(int16_t)(Display::clipExtent.xMin), -(int16_t)(Display::clipExtent.yMin), Display::drawCanvas.getBuffer(), DISPLAY__WIDTH, DISPLAY_HEIGHT);
+
+            Display::copyExtent = { Display::clipExtent.xMin, Display::clipExtent.yMin, Display::clipExtent.xMax, Display::clipExtent.yMax };
+            Display::needsCopy = true;
+
+        }
+
+        Display::clipExtent = { DISPLAY__WIDTH, DISPLAY_HEIGHT, 0, 0 };
+        Display::needsClip = false;
+
         return true;
+
+    } else {
+        return false;
+    }
+
+
+}
+
+bool Display::writeCopy() {
+
+    if (Display::needsCopy) {
+
+        int16_t copyW = Display::copyExtent.xMax - Display::copyExtent.xMin;
+        int16_t copyH = Display::copyExtent.yMax - Display::copyExtent.yMin;
+
+        if (copyW > 0 && copyH > 0) {
+            Display::baseDisplay.drawRGBBitmap(Display::copyExtent.xMin, Display::copyExtent.yMin, Display::clipCanvas.getBuffer(), copyW, copyH);
+#if USE__________CLIP_DRAW == true
+            Display::baseDisplay.drawRect(Display::copyExtent.xMin, Display::copyExtent.yMin, copyW, copyH, ST77XX_RED);
+#endif
+            // Display::baseDisplay.drawRGBBitmap(0, 0, drawCanvas.getBuffer(), DISPLAY__WIDTH, DISPLAY_HEIGHT);
+            // Display::baseDisplay.drawRect(Display::clipXMin, Display::clipYMin, clipW, clipH, ST77XX_RED);
+        }
+
+        Display::needsCopy = false;
+
+        return true;
+
     } else {
         return false;
     }

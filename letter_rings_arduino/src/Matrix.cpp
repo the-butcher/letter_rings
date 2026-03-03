@@ -97,6 +97,12 @@ void Matrix::drawLabel(String label, int16_t offset) {
     }
 }
 
+void Matrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
+    if (this->hasBegun) {
+        this->baseMatrix.drawPixel(x, y, color);
+    }
+}
+
 void Matrix::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color) {
     if (this->hasBegun) {
         this->baseMatrix.drawBitmap(offset, 0, bitmap, 8, 8, color);

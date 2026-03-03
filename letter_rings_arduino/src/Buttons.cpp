@@ -31,6 +31,8 @@ void Buttons::handleInterruptA() {
             } else if (currModus == MODUS________LABEL) {
                 Device::setCurrModus(MODUS________FREQU);
             } else if (currModus == MODUS________FREQU) {
+                Device::setCurrModus(MODUS________BREAK);
+            } else if (currModus == MODUS________BREAK) {
                 Device::setCurrModus(MODUS________PARTY);
             } else if (currModus == MODUS________PARTY) {
                 Device::setCurrModus(MODUS________ACCEL);
@@ -44,7 +46,7 @@ void Buttons::handleInterruptA() {
             Blesrv::writeLight();
         }
         Buttons::buttonA.lastInterruptMillis = interruptMillis;
-        Display::setNeedsStatusRedraw();
+        Display::setNeedsConfigRedraw();
     }
 }
 
@@ -59,7 +61,7 @@ void Buttons::handleInterruptB() {
             Buttons::buttonAction = BUTTON_ACTION_MODUS;
         }
         Buttons::buttonB.lastInterruptMillis = interruptMillis;
-        Display::setNeedsStatusRedraw();
+        Display::setNeedsConfigRedraw();
     }
 }
 
@@ -71,6 +73,8 @@ void Buttons::handleInterruptC() {
             if (currModus == MODUS________ACCEL) {
                 Device::setCurrModus(MODUS________PARTY);
             } else if (currModus == MODUS________PARTY) {
+                Device::setCurrModus(MODUS________BREAK);
+            } else if (currModus == MODUS________BREAK) {
                 Device::setCurrModus(MODUS________FREQU);
             } else if (currModus == MODUS________FREQU) {
                 Device::setCurrModus(MODUS________LABEL);
@@ -86,6 +90,6 @@ void Buttons::handleInterruptC() {
             Blesrv::writeLight();
         }
         Buttons::buttonC.lastInterruptMillis = interruptMillis;
-        Display::setNeedsStatusRedraw();
+        Display::setNeedsConfigRedraw();
     }
 }

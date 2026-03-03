@@ -45,6 +45,21 @@ uint8_t Matrices::getBrightness() {
     return Matrices::brightnessPend;
 }
 
+void Matrices::drawPixel(int16_t x, int16_t y, uint16_t color) {
+    if (Device::getOrientation() == ORIENTATION______UP) {
+        Matrices::matrixA.drawPixel(x, y, color);
+        Matrices::matrixB.drawPixel(x - 8, y, color);
+        Matrices::matrixC.drawPixel(x - 16, y, color);
+        Matrices::matrixD.drawPixel(x - 24, y, color);
+    } else {
+        Matrices::matrixD.drawPixel(x, y, color);
+        Matrices::matrixC.drawPixel(x - 8, y, color);
+        Matrices::matrixB.drawPixel(x - 16, y, color);
+        Matrices::matrixA.drawPixel(x - 24, y, color);
+    }
+    Matrices::needsWrite = true;
+}
+
 void Matrices::drawBars() {
     if (Device::getOrientation() == ORIENTATION______UP) {
         Matrices::matrixA.drawBars(0);
@@ -61,25 +76,16 @@ void Matrices::drawBars() {
 }
 
 void Matrices::drawWord(String word) {
-    uint32_t wordDelayMillis = 3;
     if (Device::getOrientation() == ORIENTATION______UP) {
         Matrices::matrixA.drawWord(word, 0);
-        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixB.drawWord(word, -8);
-        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixC.drawWord(word, -16);
-        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixD.drawWord(word, -24);
-        if (wordDelayMillis > 0) delay(wordDelayMillis);
     } else {
         Matrices::matrixD.drawWord(word, 0);
-        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixC.drawWord(word, -8);
-        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixB.drawWord(word, -16);
-        if (wordDelayMillis > 0) delay(wordDelayMillis);
         Matrices::matrixA.drawWord(word, -24);
-        if (wordDelayMillis > 0) delay(wordDelayMillis);
     }
     Matrices::needsWrite = true;
 }
@@ -127,12 +133,12 @@ void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color,
     Matrices::needsWrite = true;
 }
 
-// void Matrices::clear() {
-//     Matrices::matrixA.clear();
-//     Matrices::matrixB.clear();
-//     Matrices::matrixC.clear();
-//     Matrices::matrixD.clear();
-// }
+void Matrices::clear() {
+    Matrices::matrixA.clear();
+    Matrices::matrixB.clear();
+    Matrices::matrixC.clear();
+    Matrices::matrixD.clear();
+}
 
 bool Matrices::write() {
     bool written = false;
