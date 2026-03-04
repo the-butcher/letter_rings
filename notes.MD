@@ -20,18 +20,22 @@
   ✔ display delta from current measurement to average (aka less or more volume than previously)
 
 - esp
-  - darken the green orientation sensor led with black edding
+  ✔ test and measure the usb-c cables
+    ✔ draw sensor protection and cable hold
+    ✔ print and mount
   - documentation
     - github readme
     - pictures, video for github and twitter
   - make correlation threshold (0.80 currently) configurable to prevent weird behaviour when actually at the party and try to find possible default configuration
-  - check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
   - print new ring holders
-    - ring holders could be more modular
+    ✔ ring holders could be more modular
     - a single ring holder may offer better hold and protection for a single ring
-      - right hand is 23-24-23-20
-      - left hand is 24-24-22-20
-  ! test with high volume and noise as good as possible, experiment with gain settings on the microphone  ✔ modus accel is considerably slower when actually paired :: maybe the sens increase to 250ms :: solved with splitting the secondary tasks
+      ✔ right hand is 23-24-23-20
+      ✔ left hand is 24-24-22-20
+  ~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
+  ~ test with high volume and noise as good as possible, experiment with gain settings on the microphone 
+  ❌ darken the green orientation sensor led with black edding
+  ✔ modus accel is considerably slower when actually paired :: maybe the sens increase to 250ms :: solved with splitting the secondary tasks
   ✔ check how long a display write would normally consume, then maybe implement redraw regions to save some of that time
     ✔ was 14ms, now down to 5ms
   ✔ there should to be a "conversation" modus, where the leds are off or only a "standby" led is on
@@ -111,6 +115,10 @@
   ✔ check if there is a shuffle method for arrays in arduino
   ❌ rotate display upon hand position using blend effect
   ❌ current buffers of A and D (and B and C) would have to be swapped and rotated
+  ✔ Lackstift gelb für Kabelmarkierungen @ müller
+  ✔ punkt bei SCL auf der LED Matrix
+  ❌ kurzes stück gelber schraumpfschlauch am SCL kabel, beidseitig
+  ✔ und / oder dupont stecker auf der SCL seite gelb markiert  
 
 ✔ pcb
 ✔ order pcb after multi-matrix i2c validation
@@ -163,7 +171,99 @@ GAIN LOSS
 
 ---
 
-- Lackstift gelb für Kabelmarkierungen @ müller
-  - punkt bei SCL auf der LED Matrix
-  - kurzes stück gelber schraumpfschlauch am SCL kabel, beidseitig
-  - und / oder dupont stecker auf der SCL seite gelb markiert
+From ChatGPT
+
+Love – Hate
+Rich – Poor
+Open – Shut
+Give – Take
+Rise – Fall
+Good – Evil
+East – West
+Hard – Soft
+High – Down
+Warm – Cool
+Full – Half
+Dawn – Dusk
+Rain – Snow
+Wind – Fire
+Rock – Roll
+Ship – Dock
+Hand – Foot
+Head – Heel
+Moon – Star
+Tree – Leaf
+Sand – Dirt
+Farm – Barn
+Gold – Iron
+Stop – Halt
+Pull – Push
+Drop – Fall
+Gain – Loss
+Lose – Find
+Hope – Fear
+Calm – Wild
+Safe – Risk
+Dark – Glow
+Grow – Fade
+Melt – Boil
+Heat – Cold
+Fire – Ashy
+Lake – Pond
+Ship – Crew
+Lion – Wolf
+Bear – Deer
+Frog – Toad
+Blue – Gray
+Pink – Teal
+Code – Data
+Math – Text
+User – Host
+Grid – Node
+Wire – Plug
+Belt – Shoe
+Coat – Boot
+Ring – Bell
+Card – Deck
+Page – Book
+Rice – Corn
+Beer – Wine
+Acid – Base
+Fuel – Tank
+Cash – Gold
+Bank – Loan
+Debt – Owed
+Hero – Myth
+Skin – Bone
+Mind – Body
+Soul – Body
+Face – Mask
+Mask – Veil
+Clay – Sand
+Wood – Rock
+Time – Date
+Year – Week
+Hour – Tick
+Tick – Tock
+Sing – Song
+Play – Game
+Team – Club
+Club – Ball
+Ball – Goal
+Goal – Aim
+Luck – Fate
+Fate – Doom
+Cure – Heal
+Sick – Well
+Weak – Firm
+Wide – Long
+Tall – Tiny
+Tiny – Huge
+Huge – Vast
+Deep – High
+Edge – Core
+Core – Crux
+Peak – Base
+Base – Apex
+City – Town
+Road – Path
