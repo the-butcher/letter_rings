@@ -15,11 +15,9 @@
   ? attempting to connect from this state returns the app to a stable state (gatt connect fails and the UI shows the button again after that)
   ✔ handle GATT disconnect (update UI), roughly in place, but needs revisit,
   ✔ a switch disconnect in the app does not disconnect the device!
-  ✔ map raw bands to screen/matrix space
-  ✔ build some sort of average from the most recent band values
-  ✔ display delta from current measurement to average (aka less or more volume than previously)
 
 - esp
+  - first call to party mode does not put the device into initial label mode, later calls work as expected
   ✔ test and measure the usb-c cables
     ✔ draw sensor protection and cable hold
     ✔ print and mount
@@ -27,13 +25,19 @@
     - github readme
     - pictures, video for github and twitter
   - make correlation threshold (0.80 currently) configurable to prevent weird behaviour when actually at the party and try to find possible default configuration
-  - print new ring holders
+    - new characteristic (like light)
+	- slider in app
+	- config in device
+  ✔ print new ring holders
     ✔ ring holders could be more modular
-    - a single ring holder may offer better hold and protection for a single ring
+    ✔ a single ring holder may offer better hold and protection for a single ring
       ✔ right hand is 23-24-23-20
       ✔ left hand is 24-24-22-20
   ~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
   ~ test with high volume and noise as good as possible, experiment with gain settings on the microphone 
+  ✔ map raw bands to screen/matrix space
+  ✔ build some sort of average from the most recent band values
+  ✔ display delta from current measurement to average (aka less or more volume than previously)
   ❌ darken the green orientation sensor led with black edding
   ✔ modus accel is considerably slower when actually paired :: maybe the sens increase to 250ms :: solved with splitting the secondary tasks
   ✔ check how long a display write would normally consume, then maybe implement redraw regions to save some of that time

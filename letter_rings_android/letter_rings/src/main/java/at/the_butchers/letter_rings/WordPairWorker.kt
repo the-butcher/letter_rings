@@ -1,25 +1,11 @@
 package at.the_butchers.letter_rings
 
-import android.Manifest
 import android.content.Context
-import android.media.AudioFormat
-import android.media.AudioRecord
-import android.media.MediaRecorder
 import android.os.Handler
 import android.os.Looper
-import android.os.Process
 import android.util.Log
-import androidx.annotation.RequiresPermission
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.shazam.shazamkit.AudioSampleRateInHz
-import com.shazam.shazamkit.MatchResult
-import com.shazam.shazamkit.ShazamCatalog
-import com.shazam.shazamkit.ShazamKit
-import com.shazam.shazamkit.ShazamKitResult
-import kotlinx.coroutines.runBlocking
-import java.nio.ByteBuffer
-import java.util.EnumMap
 
 class WordPairWorker(appContext: Context, workerParams: WorkerParameters): Worker(appContext, workerParams) {
 
