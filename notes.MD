@@ -18,23 +18,24 @@
 
 - esp
   - first call to party mode does not put the device into initial label mode, later calls work as expected
-  ✔ test and measure the usb-c cables
-    ✔ draw sensor protection and cable hold
-    ✔ print and mount
-  - documentation
-    - github readme
-    - pictures, video for github and twitter
   - make correlation threshold (0.80 currently) configurable to prevent weird behaviour when actually at the party and try to find possible default configuration
     - new characteristic (like light)
 	- slider in app
 	- config in device
+  ~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
+  ~ test with high volume and noise as good as possible, experiment with gain settings on the microphone
+  ✔ test and measure the usb-c cables
+    ✔ draw sensor protection and cable hold
+    ✔ print and mount
+  ✔ documentation
+    ✔ github readme
+    ✔ pictures, video for github and twitter
   ✔ print new ring holders
     ✔ ring holders could be more modular
     ✔ a single ring holder may offer better hold and protection for a single ring
       ✔ right hand is 23-24-23-20
       ✔ left hand is 24-24-22-20
-  ~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
-  ~ test with high volume and noise as good as possible, experiment with gain settings on the microphone 
+
   ✔ map raw bands to screen/matrix space
   ✔ build some sort of average from the most recent band values
   ✔ display delta from current measurement to average (aka less or more volume than previously)
