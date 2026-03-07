@@ -1,8 +1,10 @@
 package at.the_butchers.letter_rings
 
-const val WORK_LOG_TAG = "WORK"
+const val LOG_TAG_MAIN = "MAIN"
+const val LOG_TAG_WORK = "WORK"
+const val LOG_TAG_SHAZ = "SHAZ"
+const val LOG_TAG_BLUE = "BLUE"
 
-const val RGNZ_LOG_TAG = "RGNZ"
 const val WORK__SHAZAM = "SHAZAM"
 const val WORK___WORDS = "WORDS"
 
@@ -12,6 +14,7 @@ const val COMMAND_LABEL_____UUID = "067c3c93-eb63-4905-b292-478642f8ae99"
 const val COMMAND_WORD______UUID = "3dfde050-8432-4f2f-9366-de27c430c05c"
 const val COMMAND_MODUS_____UUID = "a8792ef9-c01c-47ee-a063-f8712bf8dd67"
 const val COMMAND_LIGHT_____UUID = "28c64d42-4958-43f0-8845-5a106498bf1d"
+const val COMMAND_COEFF_____UUID = "cfb68865-9243-4646-af27-750d02d44a3a"
 
 const val CCC_DESCRIPTOR____UUID = "00002902-0000-1000-8000-00805f9b34fb"
 

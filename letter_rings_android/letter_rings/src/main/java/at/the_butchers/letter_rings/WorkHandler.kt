@@ -34,7 +34,7 @@ object WorkHandler {
         val workManagerInstance = WorkManager.getInstance(MainActivity.instance.get() as Context)
         workManagerInstance.enqueue(workRequest)
 
-        Log.i(WORK_LOG_TAG, "... word pair work scheduled")
+        Log.d(LOG_TAG_WORK, "... word pair work scheduled")
 
     }
 
@@ -77,7 +77,7 @@ object WorkHandler {
 
         workManagerInstance.enqueue(workRequest)
 
-        Log.i(WORK_LOG_TAG, "... shazam work scheduled")
+        Log.d(LOG_TAG_WORK, "... shazam work scheduled")
 
     }
 
@@ -88,11 +88,11 @@ object WorkHandler {
             val activityState = MainActivity.instance.get()?.lifecycle?.currentState
 
             MainActivity.instance.get()?.updateWords(wordL, wordR)
-            Log.i(WORK_LOG_TAG, "scheduling word pair work (state: $activityState) ...")
+            Log.i(LOG_TAG_WORK, "scheduling word pair work (state: $activityState) ...")
             scheduleWordPairWork()
 
         } catch (ex: Exception) {
-            Log.e(WORK_LOG_TAG, ex.toString())
+            Log.e(LOG_TAG_WORK, ex.toString())
         }
     }
 
@@ -103,7 +103,7 @@ object WorkHandler {
             val activityState = MainActivity.instance.get()?.lifecycle?.currentState
 
             MainActivity.instance.get()?.updateLabels(title, artist, valid)
-            Log.i(WORK_LOG_TAG, "scheduling shazam work (state: $activityState) ...")
+            Log.i(LOG_TAG_WORK, "scheduling shazam work (state: $activityState) ...")
             scheduleShazamWork(60)
 
 //            if (activityState?.isAtLeast(Lifecycle.State.RESUMED) == true) {
@@ -133,7 +133,7 @@ object WorkHandler {
 //            }
 
         } catch (ex: Exception) {
-            Log.e(WORK_LOG_TAG, ex.toString())
+            Log.e(LOG_TAG_WORK, ex.toString())
         }
 
     }
@@ -142,7 +142,7 @@ object WorkHandler {
 
         val workManagerInstance = WorkManager.getInstance(MainActivity.instance.get() as Context)
         workManagerInstance.cancelAllWorkByTag(workTag)
-        Log.i(WORK_LOG_TAG, "... work cancelled")
+        Log.d(LOG_TAG_WORK, "... work cancelled")
 
     }
 

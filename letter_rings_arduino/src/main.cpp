@@ -245,9 +245,6 @@ void setup(void) {
     Display::powerup();
     delay(100);
 
-    Blesrv::begin();
-    delay(100);
-
     Matrices::powerup();
     delay(100);
 
@@ -263,9 +260,11 @@ void setup(void) {
     Orientation::powerup();
     delay(100);
 
+    Blesrv::begin();
+    delay(100);
+
     xTaskCreatePinnedToCore(runLoopTaskGeneral, "run-loop-general", 10000, NULL, 2, NULL, 0);
     xTaskCreatePinnedToCore(runLoopTaskDisplay, "run-loop-display", 10000, NULL, 2, NULL, 0);
-
 
     Serial.println("... setup");
 }

@@ -15,14 +15,16 @@
  * orientation.z has axis along cable
  */
 class Orientation {
-   private:
+private:
     static Adafruit_BNO055 baseSensor;
     static vector________t orientation;
     static vector________t gyroscope;
     static acceleration__t accelA;
     static acceleration__t accelB;
+    static double coefficient;
+    static double coefficientThreshold;
 
-   public:
+public:
     static bool hasBegun;
     static bool read();
     static vector________t getOrientation();
@@ -33,7 +35,10 @@ class Orientation {
     static acceleration__t getAccelB();
     static void setAccelB(acceleration__t accelB);
     static void calculateCoefficient();
-    static double coefficient;
+    static double getCoefficient();
+    static double getCoefficientThreshold();
+    static bool setCoefficientThreshold(double coefficientThreshold);
+    static bool isAboveCoefficientThreshold();
 };
 
 #endif

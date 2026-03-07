@@ -73,13 +73,13 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
         Orientation::setAccelB(incomingAcceleration);
         Orientation::calculateCoefficient();
         if (Device::getDeviceRole() != DEVICE_ROLE_____SEC) {                                                        // can not change role when in SEC, must remain passive
-            if (Orientation::coefficient >= ACCELERATION_THRESHOLD) {                                                // should be PRI
+            if (Orientation::isAboveCoefficientThreshold()) {                                                // should be PRI
                 if (Device::getDeviceRole() != DEVICE_ROLE_____PRI && Device::setDeviceRole(DEVICE_ROLE_____PRI)) {  // but is not and accepts PRI
-                    Nowsrv::sendDeviceRole({DEVICE_ROLE_____SEC});                                                   // tell other device to be SEC
+                    Nowsrv::sendDeviceRole({ DEVICE_ROLE_____SEC });                                                   // tell other device to be SEC
                 }
             } else {                                                                                                 // should be ANY
                 if (Device::getDeviceRole() != DEVICE_ROLE_____ANY && Device::setDeviceRole(DEVICE_ROLE_____ANY)) {  // but is not and accepts ANY
-                    Nowsrv::sendDeviceRole({DEVICE_ROLE_____ANY});                                                   // reset other device to ANY
+                    Nowsrv::sendDeviceRole({ DEVICE_ROLE_____ANY });                                                   // reset other device to ANY
                 }
             }
         }

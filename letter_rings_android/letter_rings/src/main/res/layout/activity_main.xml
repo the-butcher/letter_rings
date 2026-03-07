@@ -254,8 +254,8 @@
                         android:paddingEnd="8sp"
                         android:text="frequ"
                         android:textSize="20sp" />
-						
-						                    <RadioButton
+
+                    <RadioButton
                         android:id="@+id/radio_break"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -295,16 +295,95 @@
                     android:layout_marginVertical="4sp"
                     android:background="#999999" />
 
-                <SeekBar
-                    android:id="@+id/sbLight"
-                    style="@style/Widget.AppCompat.SeekBar.Discrete"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="36dp"
-                    android:max="5"
-                    android:padding="6sp"
-                    android:paddingStart="20sp"
-                    android:paddingEnd="20sp"
-                    android:progress="0" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="36dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/consola"
+                        android:paddingStart="8sp"
+                        android:paddingTop="10sp"
+                        android:text="0"
+                        android:textAlignment="center"
+                        android:textSize="12sp" />
+
+                    <SeekBar
+                        android:id="@+id/sbLight"
+                        style="@style/Widget.AppCompat.SeekBar.Discrete"
+                        android:layout_width="match_parent"
+                        android:layout_height="36dp"
+                        android:layout_weight="10"
+                        android:max="5"
+                        android:padding="6sp"
+                        android:paddingStart="20sp"
+                        android:paddingEnd="20sp"
+                        android:progress="0" />
+
+                    <TextView
+                        android:layout_width="36dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/consola"
+                        android:paddingTop="10sp"
+                        android:paddingEnd="8sp"
+                        android:text="5"
+                        android:textAlignment="center"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="4sp"
+                    android:background="#999999" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="36dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/consola"
+                        android:paddingStart="8sp"
+                        android:paddingTop="10sp"
+                        android:text="60"
+                        android:textAlignment="center"
+                        android:textSize="12sp" />
+
+                    <SeekBar
+                        android:id="@+id/sbCoeff"
+
+                        android:layout_width="match_parent"
+                        android:layout_height="36dp"
+                        android:layout_weight="10"
+                        android:max="90"
+                        android:min="60"
+                        android:padding="6sp"
+                        android:paddingStart="20sp"
+                        android:paddingEnd="20sp"
+                        android:progress="7" />
+
+                    <TextView
+                        android:layout_width="36dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/consola"
+                        android:paddingTop="10sp"
+                        android:paddingEnd="8sp"
+                        android:text="90"
+                        android:textAlignment="center"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
 
                 <View
                     android:layout_width="match_parent"

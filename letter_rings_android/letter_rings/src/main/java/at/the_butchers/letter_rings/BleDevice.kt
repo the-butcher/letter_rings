@@ -23,6 +23,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
     var wordCharacteristic: BluetoothGattCharacteristic? = null // set word
     var modusCharacteristic: BluetoothGattCharacteristic? = null // get/set modus
     var lightCharacteristic: BluetoothGattCharacteristic? = null // get/set light
+    var coeffCharacteristic: BluetoothGattCharacteristic? = null // get/set coefficient
 
     @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
     fun writeLabelValue(value: String) {
@@ -43,7 +44,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
         if (gattInstance != null && modusCharacteristic != null) {
             val bytes = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(modus).array()
             bytes.reverse() // significant byte need to be first
-            Log.i("BLE", "writing modus value ${bytes.size} ${bytes[0]} ${bytes[3]}")
+            Log.i(LOG_TAG_BLUE, "writing modus value ${bytes.size} ${bytes[0]} ${bytes[3]}")
             gattInstance!!.writeCharacteristic(modusCharacteristic!!, bytes, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
         }
     }
@@ -53,21 +54,37 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
         if (gattInstance != null && lightCharacteristic != null) {
             val bytes = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(light).array()
             bytes.reverse() // significant byte need to be first
-            Log.i("BLE", "writing light value ${bytes.size} ${bytes[0]} ${bytes[3]}")
+            Log.i(LOG_TAG_BLUE, "writing light value ${bytes.size} ${bytes[0]} ${bytes[3]}")
             gattInstance!!.writeCharacteristic(lightCharacteristic!!, bytes, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+        }
+    }
+
+    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    fun writeCoeffValue(coeff: Int) {
+        if (gattInstance != null && coeffCharacteristic != null) {
+            val bytes = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(coeff).array()
+            bytes.reverse() // significant byte need to be first
+            Log.i(LOG_TAG_BLUE, "writing coeff value ${bytes.size} ${bytes[0]} ${bytes[3]}")
+            gattInstance!!.writeCharacteristic(coeffCharacteristic!!, bytes, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
         }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun readModusValue() {
         val readResult = gattInstance?.readCharacteristic(modusCharacteristic);
-        Log.i("BLE","modus characteristic read (result: ${readResult})") // returns true
+        Log.i(LOG_TAG_BLUE,"read-characteristic-modus (result: ${readResult})") // returns true
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun readLightValue() {
         val readResult = gattInstance?.readCharacteristic(lightCharacteristic);
-        Log.i("BLE","light characteristic read (result: ${readResult})") // returns true
+        Log.i(LOG_TAG_BLUE,"read-characteristic-light (result: ${readResult})") // returns true
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun readCoeffValue() {
+        val readResult = gattInstance?.readCharacteristic(coeffCharacteristic);
+        Log.i(LOG_TAG_BLUE,"read-characteristic-coeff (result: ${readResult})") // returns true
     }
 
     // https://punchthrough.com/android-ble-guide/
@@ -87,18 +104,18 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
             characteristic.isIndicatable() -> BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
             characteristic.isNotifiable() -> BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
             else -> {
-                Log.e("ConnectionManager", "${characteristic.uuid} doesn't support notifications/indications")
+                Log.e(LOG_TAG_BLUE, "${characteristic.uuid} doesn't support notifications/indications")
                 return
             }
         }
 
         characteristic.getDescriptor(cccdUuid)?.let() { cccDescriptor ->
             if (gattInstance?.setCharacteristicNotification(characteristic, true) == false) {
-                Log.e("ConnectionManager", "setCharacteristicNotification failed for ${characteristic.uuid}")
+                Log.e(LOG_TAG_BLUE, "setCharacteristicNotification failed for ${characteristic.uuid}")
                 return
             }
             writeDescriptor(cccDescriptor, payload)
-        } ?: Log.e("ConnectionManager", "${characteristic.uuid} doesn't contain the CCC descriptor!")
+        } ?: Log.e(LOG_TAG_BLUE, "${characteristic.uuid} doesn't contain the CCC descriptor!")
 
     }
 
@@ -112,7 +129,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
         gattInstance?.close()
         gattInstance?.disconnect()
         gattInstance = null
-        Log.i("BLE", "disconnect-gatt (side: ${side})")
+        Log.i(LOG_TAG_BLUE, "disconnect-gatt (side: ${side})")
         MainActivity.instance.get()?.checkBleState(side)
     }
 
@@ -124,50 +141,57 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    Log.i("BLE", "connection-state-change (side: ${side}, STATE_CONNECTED)")
+                    Log.i(LOG_TAG_BLUE, "connection-state-change (side: ${side}, STATE_CONNECTED)")
                     gatt.discoverServices()
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    Log.i("BLE", "connection-state-change (side: ${side}, STATE_DISCONNECTED)")
+                    Log.i(LOG_TAG_BLUE, "connection-state-change (side: ${side}, STATE_DISCONNECTED)")
                     MainActivity.instance.get()?.removeBleDevice(side)
                     MainActivity.instance.get()?.checkBleState(side)
                 }
             }
 
             override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) {
-                Log.i("BLE", "read-characteristic (side: ${side}, status: ${status})")
+//                Log.i(LOG_TAG_BLUE, "characteristic-read (side: ${side}, status: ${status})")
                 val uuid = characteristic.uuid
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
                         if (characteristic.uuid.toString() == COMMAND_MODUS_____UUID) {
                             val modus = value[0]
+                            Log.i(LOG_TAG_BLUE, "characteristic-read (side: ${side}, modus: ${modus})")
                             MainActivity.instance.get()?.setModus(modus, side)
-                            Log.i("BLE", "read-characteristic (side: ${side}, modus: ${modus})")
                         } else if (characteristic.uuid.toString() == COMMAND_LIGHT_____UUID) {
                             val light = value[0]
+                            Log.i(LOG_TAG_BLUE, "characteristic-read (side: ${side}, light: ${light})")
                             MainActivity.instance.get()?.setLight(light, side)
-                            Log.i("BLE", "read-characteristic (side: ${side}, light: ${light})")
+                        } else if (characteristic.uuid.toString() == COMMAND_COEFF_____UUID) {
+                            val coeff = value[0]
+                            Log.i(LOG_TAG_BLUE, "characteristic-read (side: ${side}, coeff: ${coeff})")
+                            MainActivity.instance.get()?.setCoeff(coeff, side)
                         } else {
-                            Log.w("BLE", "read-characteristic (side: ${side}, unknown characteristic)")
+                            Log.w(LOG_TAG_BLUE, "characteristic-read (side: ${side}, unknown characteristic)")
                         }
                     }
                     BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
-                        Log.e("BLE", "read-characteristic (side: ${side}, GATT_READ_NOT_PERMITTED)")
+                        Log.e(LOG_TAG_BLUE, "characteristic-read (side: ${side}, GATT_READ_NOT_PERMITTED)")
                     }
                     else -> {
-                        Log.e("BLE", "read-characteristic (side: ${side}, error: $status))")
+                        Log.e(LOG_TAG_BLUE, "characteristic-read (side: ${side}, error: $status))")
                     }
                 }
             }
 
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             public override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) {
-                Log.i("BLE", "read-characteristic (side: ${side}, uuid: ${characteristic.uuid})")
+                Log.i(LOG_TAG_BLUE, "characteristic-change (side: ${side}, uuid: ${characteristic.uuid})")
                 if (characteristic.uuid.toString() == COMMAND_MODUS_____UUID) {
-                    Log.i("BLE", "trigger read-characteristic (side: ${side}, modus")
+                    Log.i(LOG_TAG_BLUE, "trigger read-characteristic (side: ${side}, modus)")
                     readModusValue()
                 } else if (characteristic.uuid.toString() == COMMAND_LIGHT_____UUID) {
-                    Log.i("BLE", "trigger read-characteristic (side: ${side}, light")
+                    Log.i(LOG_TAG_BLUE, "trigger read-characteristic (side: ${side}, light)")
                     readLightValue()
+                } else if (characteristic.uuid.toString() == COMMAND_COEFF_____UUID) {
+                    Log.i(LOG_TAG_BLUE, "trigger read-characteristic (side: ${side}, coeff)")
+                    readCoeffValue()
                 }
             }
 
@@ -177,7 +201,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
 
                     val services = gatt.services
-                    Log.d("BLE", "found services: ${services.size}")
+                    Log.d(LOG_TAG_BLUE, "found services: ${services.size}")
                     val service = gatt.getService(UUID.fromString(side.serviceUuid))
                     if (service != null) {
 
@@ -185,43 +209,76 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                         wordCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_WORD______UUID))
                         modusCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_MODUS_____UUID))
                         lightCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_LIGHT_____UUID))
+                        coeffCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_COEFF_____UUID))
 
                         modusCharacteristic?.let {
 
-                            enableNotifications(it)
-
-                            // get initial modus value
                             Handler(Looper.getMainLooper()).postDelayed({
+
+                                enableNotifications(modusCharacteristic!!)
+
+                            }, 500)
+
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                // get initial modus value
                                 try {
                                     readModusValue()
                                 } catch (e: Exception) {
-                                    Log.e("BLE", "failed to read modus ${e.message}")
+                                    Log.e(LOG_TAG_BLUE, "failed to read modus ${e.message}")
                                 }
-                            }, 1000)
 
-                        } ?: Log.i("BLE","modus characteristic not found") // returns true
+                            }, 750)
+
+                        } ?: Log.i(LOG_TAG_BLUE,"modus characteristic not found") // returns true
 
                         lightCharacteristic?.let {
 
-                            enableNotifications(it)
-
-                            // get initial modus value
                             Handler(Looper.getMainLooper()).postDelayed({
+
+                                enableNotifications(lightCharacteristic!!)
+
+                            }, 750)
+
+                            Handler(Looper.getMainLooper()).postDelayed({
+
+                                // get initial modus value
                                 try {
                                     readLightValue()
                                 } catch (e: Exception) {
-                                    Log.e("BLE", "failed to read light ${e.message}")
+                                    Log.e(LOG_TAG_BLUE, "failed to read light ${e.message}")
                                 }
-                            }, 2000)
 
-                        } ?: Log.i("BLE","light characteristic not found") // returns true
+                            }, 1000)
 
-                        Log.i("BLE", "services-discovered (side: ${side})")
+                        } ?: Log.i(LOG_TAG_BLUE,"light characteristic not found") // returns true
+
+                        coeffCharacteristic?.let {
+
+                            Handler(Looper.getMainLooper()).postDelayed({
+
+                                enableNotifications(coeffCharacteristic!!)
+
+                            }, 1250)
+
+                            Handler(Looper.getMainLooper()).postDelayed({
+
+                                // get initial coeff value
+                                try {
+                                    readCoeffValue()
+                                } catch (e: Exception) {
+                                    Log.e(LOG_TAG_BLUE, "failed to read coeff ${e.message}")
+                                }
+
+                            }, 1500)
+
+                        } ?: Log.i(LOG_TAG_BLUE,"coeff characteristic not found") // returns true
+
+                        Log.i(LOG_TAG_BLUE, "services-discovered (side: ${side})")
                         MainActivity.instance.get()?.checkBleState(side)
 
                     } else {
 
-                        Log.i("BLE", "services-lost (side: ${side})")
+                        Log.i(LOG_TAG_BLUE, "services-lost (side: ${side})")
                         // TODO :: reset connection
                         gattInstance = null;
                         MainActivity.instance.get()?.checkBleState(side)

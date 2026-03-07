@@ -96,8 +96,10 @@ void Display::drawConfig() {
             baText = "MODUS";
         } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY) {
             baText = "DECAY";
-        } else {
+        } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT) {
             baText = "LIGHT";
+        } else {
+            baText = "COEFF";
         }
         Display::drawString(baText, DISPLAY__WIDTH / 2, configYPos, TEXT_HALIGN_CENTER);
         Display::drawString("+", DISPLAY__WIDTH, configYPos, TEXT_HALIGN__RIGHT);
@@ -122,8 +124,10 @@ void Display::drawConfig() {
             }
         } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY) {
             value = String(Microphone::decay);
-        } else {
+        } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT) {
             value = String(Matrices::getBrightness());
+        } else {
+            value = String((int)round(Orientation::getCoefficientThreshold() * 100));
         }
 
         Display::drawString(value, DISPLAY__WIDTH / 2, configYPos - 17, TEXT_HALIGN_CENTER, DISPLAY__WIDTH / 2);
@@ -234,8 +238,8 @@ void Display::drawAcceleration() {
     Display::drawCanvas.fillRect(0, y - clearDisplayHeight, DISPLAY__WIDTH, clearDisplayHeight, ST77XX_BLACK); // clear previous bars area
 
     Display::drawCanvas.setTextSize(2);
-    Display::drawCanvas.setTextColor(Orientation::coefficient > ACCELERATION_THRESHOLD ? 0xad55 : 0xf800);  // #adaaad : #ff0000
-    Display::drawString(String(Orientation::coefficient, 3), 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
+    Display::drawCanvas.setTextColor(Orientation::isAboveCoefficientThreshold() ? 0xad55 : 0xf800);  // #adaaad : #ff0000
+    Display::drawString(String(Orientation::getCoefficient(), 3), 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
 
     acceleration__t accelA = Orientation::getAccelA();
     for (uint16_t i = 0; i < ACCELERATION___SAMPLES; i++) {
@@ -291,13 +295,13 @@ void Display::drawDeviceRole() {
         uint16_t roleColors[3] = { 0xce59, ST77XX_YELLOW, ST77XX_MAGENTA };
 
         uint8_t rectXPos = DISPLAY__WIDTH - 29;
-        uint8_t rectYPos = 1;
+        uint8_t rectYPos = 0;
         for (uint8_t i = DEVICE_ROLE_____ANY; i <= DEVICE_ROLE_____SEC; i++) {
-            Display::drawCanvas.fillRect(rectXPos, rectYPos, 8, 8, ST77XX_BLACK);
+            Display::drawCanvas.fillRect(rectXPos, rectYPos, 9, 9, ST77XX_BLACK);
             if (deviceRole == i) {
-                Display::drawCanvas.fillRect(rectXPos, rectYPos, 8, 8, roleColors[i]);
+                Display::drawCanvas.fillRect(rectXPos, rectYPos, 9, 9, roleColors[i]);
             } else {
-                Display::drawCanvas.drawRect(rectXPos, rectYPos, 8, 8, 0x9cd3);
+                Display::drawCanvas.drawRect(rectXPos, rectYPos, 9, 9, 0x9cd3);
             }
             rectXPos += 10;
         }

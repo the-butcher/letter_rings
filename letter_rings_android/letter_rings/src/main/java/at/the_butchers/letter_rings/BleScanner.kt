@@ -29,7 +29,7 @@ class BleScanner(private val bluetoothAdapter: BluetoothAdapter, private val sid
 
         if (!isScanning) {
 
-            Log.d("BLE", "starting BLE scan")
+            Log.d(LOG_TAG_BLUE, "starting BLE scan")
             isScanning = true
 
             val filters = listOf(
@@ -59,7 +59,7 @@ class BleScanner(private val bluetoothAdapter: BluetoothAdapter, private val sid
 
         if (isScanning) {
 
-            Log.d("BLE", "stopping BLE scan")
+            Log.d(LOG_TAG_BLUE, "stopping BLE scan")
             isScanning = false
             scanner?.stopScan(scanCallback)
             addressSet.clear()
@@ -75,7 +75,7 @@ class BleScanner(private val bluetoothAdapter: BluetoothAdapter, private val sid
 
             val device = result.device
             if (!addressSet.contains(device.address)) {
-                Log.d("BLE", "new device found: ${device.address ?: "no address"}")
+                Log.d(LOG_TAG_BLUE, "new device found: ${device.address ?: "no address"}")
                 addressSet.add(device.address)
                 val bleDevice = BleDevice(device, side)
 //                MainActivity.instance.get()?.checkBleState(side)
@@ -88,7 +88,7 @@ class BleScanner(private val bluetoothAdapter: BluetoothAdapter, private val sid
         }
 
         override fun onScanFailed(errorCode: Int) {
-            // Log.e("BLE", "Scan failed with error code: $errorCode")
+            // Log.e(LOG_TAG_BLUE, "Scan failed with error code: $errorCode")
         }
 
     }

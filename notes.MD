@@ -35,7 +35,6 @@
     ✔ a single ring holder may offer better hold and protection for a single ring
       ✔ right hand is 23-24-23-20
       ✔ left hand is 24-24-22-20
-
   ✔ map raw bands to screen/matrix space
   ✔ build some sort of average from the most recent band values
   ✔ display delta from current measurement to average (aka less or more volume than previously)

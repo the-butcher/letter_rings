@@ -65,19 +65,25 @@ void Microphone::read() {
     }
 
     // collect samples
-    uint64_t signalSum = 0;
+    double signalAvg = 0;
     uint16_t analogValue;
     for (int i = 0; i < AUDIO__________SAMPLES; i++) {
         Microphone::newTime = micros();
         analogValue = analogReadFast(7);  // analogRead(AUDIO______________PIN);  // A conversion takes about 9.7uS on an ESP32
-        signalSum += analogValue;
+        signalAvg += analogValue;
         Microphone::vReal[i] = analogValue;
         Microphone::vImag[i] = 0;
         while ((micros() - Microphone::newTime) < Microphone::sampling_period_us) {
             // do nothing, just let time pass
         }
     }
-    Microphone::signal = signalSum / AUDIO__________SAMPLES;
+    signalAvg = signalAvg / AUDIO__________SAMPLES;
+    Microphone::signal = (uint64_t)round(signalAvg);
+
+    // https://leobot.net/tutorial/1067?srsltid=AfmBOopGwK3bNLB8GH9lWKwbYeUN1UAsiPBQsh7GJRLy7i_L0Uc4ghWd
+    for (int i = 0; i < AUDIO__________SAMPLES; i++) {
+        Microphone::vReal[i] = Microphone::vReal[i] - signalAvg;
+    }
 
     // 13ms to here
 

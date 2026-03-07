@@ -25,7 +25,7 @@ class ShazamWorker(appContext: Context, workerParams: WorkerParameters): Worker(
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT])
     override fun doWork(): Result {
 
-        Log.d(WORK_LOG_TAG, "do work")
+        Log.d(LOG_TAG_WORK, "do work")
 
         var artist = "NA"
         var title = "NA"
@@ -33,17 +33,17 @@ class ShazamWorker(appContext: Context, workerParams: WorkerParameters): Worker(
 
         if (MainActivity.instance.get()?.isRecognitionChecked == true) {
 
-            Log.i(RGNZ_LOG_TAG, "recognition is active")
+            Log.i(LOG_TAG_SHAZ, "recognition is active")
 
             val catalog = MainActivity.instance.get()?.catalog
             if (catalog != null) {
                 runBlocking  {
 
                     val micRecording = simpleMicRecording(catalog)
-                    Log.i(RGNZ_LOG_TAG, "got micRecording (${micRecording.size}bytes)")
+                    Log.i(LOG_TAG_SHAZ, "got micRecording (${micRecording.size}bytes)")
 
                     val matchResult = recognizeFromBytes(catalog, micRecording)
-                    Log.i(RGNZ_LOG_TAG, "got matchResult (is match: ${matchResult is MatchResult.Match})")
+                    Log.i(LOG_TAG_SHAZ, "got matchResult (is match: ${matchResult is MatchResult.Match})")
 
                     if (matchResult is MatchResult.Match) {
                         for (matchedMediaItem in matchResult.matchedMediaItems) {
@@ -59,7 +59,7 @@ class ShazamWorker(appContext: Context, workerParams: WorkerParameters): Worker(
 
             } else {
 
-                Log.i(RGNZ_LOG_TAG, "catalog is null")
+                Log.i(LOG_TAG_SHAZ, "catalog is null")
 
                 artist = "NA (no-artist-catalog)"
                 title = "NA (no-title-catalog)"
@@ -68,7 +68,7 @@ class ShazamWorker(appContext: Context, workerParams: WorkerParameters): Worker(
 
         } else {
 
-            Log.i(RGNZ_LOG_TAG, "recognition is inactive")
+            Log.i(LOG_TAG_SHAZ, "recognition is inactive")
 
             artist = "NA (no-artist-recognition)"
             title = "NA (no-title-recognition)"
@@ -91,13 +91,13 @@ class ShazamWorker(appContext: Context, workerParams: WorkerParameters): Worker(
 
         signatureGenerator.append(micRecording, micRecording.size, System.currentTimeMillis())
         val signature = signatureGenerator.generateSignature()
-        Log.i(RGNZ_LOG_TAG, "got signature (${signature.durationInMs}ms)")
+        Log.i(LOG_TAG_SHAZ, "got signature (${signature.durationInMs}ms)")
 
         val session = (ShazamKit.createSession(catalog) as ShazamKitResult.Success).data
         val matchResult = session.match(signature)
 
 
-        Log.d("MIC", matchResult.toString())
+        Log.d(LOG_TAG_SHAZ, matchResult.toString())
 
         return matchResult
 

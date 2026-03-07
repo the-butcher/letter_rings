@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
 
         requestPermissions()
 
-        Log.i("MAIN", "main create")
+        Log.i(LOG_TAG_MAIN, "main create")
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         val inputStream = assetManager.open("shazam.properties")
         properties.load(inputStream)
         val shazamJwt = properties.getProperty("SHAZAM_JWT")
-        Log.d("MAIN", "shazamJwt from file ($shazamJwt)")
+        Log.d(LOG_TAG_MAIN, "shazamJwt from file ($shazamJwt)")
 
         val tokenProvider = DeveloperTokenProvider {
             DeveloperToken(shazamJwt)
@@ -81,17 +81,18 @@ class MainActivity : AppCompatActivity() {
         recognitionSwitch.setOnCheckedChangeListener { _, isChecked ->
             isRecognitionChecked = isChecked
             if (isRecognitionChecked != btRecognizeNow.isEnabled) { // set the radio groups visibility to gone if visibility
-                Log.d("MAIN", "btRecognizeNow will change enabled")
+                Log.d(LOG_TAG_MAIN, "btRecognizeNow will change enabled")
                 this@MainActivity.runOnUiThread { btRecognizeNow.setEnabled(isRecognitionChecked) }
             }
         }
         btRecognizeNow.setOnClickListener  {
-            Log.i("MAIN", "recognize now button clicked")
+            Log.i(LOG_TAG_MAIN, "recognize now button clicked")
             WorkHandler.scheduleShazamWork(1)
         }
 
         setupRadioButtons()
-        setupSeekBar()
+        setupLightBar()
+        setupCoeffBar()
         setupConnButton(Side.LEFT)
         setupConnButton(Side.RIGHT)
 
@@ -108,11 +109,11 @@ class MainActivity : AppCompatActivity() {
     @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
     fun setupConnButton(side: Side) {
 
-        Log.i("BLE", "set up conn button (${side})")
+        Log.i(LOG_TAG_BLUE, "set up conn button (${side})")
 
         val btConn: Button =  findViewById ( side.idBtConn)
         btConn.setOnClickListener  {
-            Log.i("BLE", "conn button clicked (${side})")
+            Log.i(LOG_TAG_BLUE, "conn button clicked (${side})")
             val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
             val bluetoothAdapter = bluetoothManager.adapter
             BleScanner(bluetoothAdapter, side).startScan()
@@ -134,7 +135,7 @@ class MainActivity : AppCompatActivity() {
     fun setupRadioButton(@IdRes idRb: Int, modus: Int) {
         val rgModus: RadioButton =  findViewById (idRb)
         rgModus.setOnCheckedChangeListener { _, isChecked ->
-            Log.d("MODUS", "rgModus checked: $isChecked")
+            Log.d(LOG_TAG_MAIN, "rgModus checked: $isChecked")
             if (isChecked) {
                 bleDeviceInstanceMap[Side.LEFT]?.writeModusValue(modus)
                 bleDeviceInstanceMap[Side.RIGHT]?.writeModusValue(modus)
@@ -143,20 +144,39 @@ class MainActivity : AppCompatActivity() {
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun setupSeekBar() {
+    fun setupLightBar() {
         val sbLight: SeekBar =  findViewById (R.id.sbLight)
         sbLight.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onStopTrackingTouch(seekBar: SeekBar) {
-                Log.i("MAIN", "onStopTrackingTouch (${R.id.sbLight})")
+                Log.i(LOG_TAG_MAIN, "stop-tracking-touch (${R.id.sbLight})")
                 bleDeviceInstanceMap[Side.LEFT]?.writeLightValue(sbLight.progress)
                 bleDeviceInstanceMap[Side.RIGHT]?.writeLightValue(sbLight.progress)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar) {
-//                Log.i("MAIN", "onStartTrackingTouch (${side.idSbLight}, ${sbLight.progress})")
+//                Log.i(LOG_TAG_MAIN, "onStartTrackingTouch (${side.idSbLight}, ${sbLight.progress})")
             }
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-//                Log.i("MAIN", "onProgressChanged (${side.idSbLight}, ${progress})")
+//                Log.i(LOG_TAG_MAIN, "onProgressChanged (${side.idSbLight}, ${progress})")
+            }
+        })
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun setupCoeffBar() {
+        val sbCoeff: SeekBar =  findViewById (R.id.sbCoeff)
+        sbCoeff.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                Log.i(LOG_TAG_MAIN, "stop-tracking-touch (${R.id.sbCoeff})")
+                bleDeviceInstanceMap[Side.LEFT]?.writeCoeffValue(sbCoeff.progress)
+                bleDeviceInstanceMap[Side.RIGHT]?.writeCoeffValue(sbCoeff.progress)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+//                Log.i(LOG_TAG_MAIN, "onStartTrackingTouch (${side.sbCoeff}, ${sbCoeff.progress})")
+            }
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+//                Log.i(LOG_TAG_MAIN, "onProgressChanged (${side.sbCoeff}, ${progress})")
             }
         })
     }
@@ -166,7 +186,7 @@ class MainActivity : AppCompatActivity() {
 
         bleDeviceInstanceMap[side] = bleDevice
 
-        Log.i("BLE", "set ble-device (${side}, ${bleDevice.address})")
+        Log.i(LOG_TAG_BLUE, "set ble-device (${side}, ${bleDevice.address})")
 
         val bleDeviceSwitch: Switch =  findViewById (side.idSwConn)
         val txAddr: TextView =  findViewById (side.idTxAddr)
@@ -205,30 +225,30 @@ class MainActivity : AppCompatActivity() {
 
         // TODO :: warn if settings are inconsistent
 
-        Log.d("BLE", "set modus ($modus)")
+        Log.d(LOG_TAG_BLUE, "set modus ($modus)")
         if (modus.toInt() == MODUS________WORDS) {
             val rgModusWords: RadioButton =  findViewById (R.id.radio_words)
-            Log.d("BLE", "rgModusWords will be checked on ui-thread")
+            Log.d(LOG_TAG_BLUE, "rgModusWords will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusWords.setChecked(true) }
         } else if (modus.toInt() == MODUS________LABEL) {
             val rgModusLabel: RadioButton =  findViewById (R.id.radio_label)
-            Log.d("BLE", "rgModusLabel will be checked on ui-thread")
+            Log.d(LOG_TAG_BLUE, "rgModusLabel will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusLabel.setChecked(true) }
         } else if (modus.toInt() == MODUS________FREQU) {
             val rgModusFrequ: RadioButton =  findViewById (R.id.radio_frequ)
-            Log.d("BLE", "rgModusFrequ will be checked on ui-thread")
+            Log.d(LOG_TAG_BLUE, "rgModusFrequ will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusFrequ.setChecked(true) }
         } else if (modus.toInt() == MODUS________BREAK) {
             val rgModusBreak: RadioButton =  findViewById (R.id.radio_break)
-            Log.d("BLE", "rgModusBreak will be checked on ui-thread")
+            Log.d(LOG_TAG_BLUE, "rgModusBreak will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusBreak.setChecked(true) }
         } else if (modus.toInt() == MODUS________PARTY) {
             val rgModusParty: RadioButton =  findViewById (R.id.radio_party)
-            Log.d("BLE", "rgModusParty will be checked on ui-thread")
+            Log.d(LOG_TAG_BLUE, "rgModusParty will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusParty.setChecked(true) }
         } else if (modus.toInt() == MODUS________ACCEL) {
             val rgModusAccel: RadioButton =  findViewById (R.id.radio_accel)
-            Log.d("BLE", "rgModusAccel will be checked on ui-thread")
+            Log.d(LOG_TAG_BLUE, "rgModusAccel will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusAccel.setChecked(true) }
         }
 
@@ -239,14 +259,25 @@ class MainActivity : AppCompatActivity() {
         // TODO :: warn if settings are inconsistent
 
         val sbLight: SeekBar =  findViewById (R.id.sbLight)
-        Log.d("BLE", "sbLight will be changed on ui-thread")
+        Log.d(LOG_TAG_BLUE, "sbLight will be changed on ui-thread")
         this@MainActivity.runOnUiThread { sbLight.setProgress((light.toInt())) }
 
     }
 
+    fun setCoeff(coeff: Byte, side: Side) {
+
+        // TODO :: warn if settings are inconsistent
+
+        val sbCoeff: SeekBar =  findViewById (R.id.sbCoeff)
+        Log.d(LOG_TAG_BLUE, "sbCoeff will be changed on ui-thread")
+        this@MainActivity.runOnUiThread { sbCoeff.setProgress((coeff.toInt())) }
+
+    }
+
+
     fun checkBleState(side: Side) {
 
-        Log.i("BLE", "check ble-state (side: ${side}, gatt: ${bleDeviceInstanceMap[side]?.gattInstance})")
+        Log.i(LOG_TAG_BLUE, "check ble-state (side: ${side}, gatt: ${bleDeviceInstanceMap[side]?.gattInstance})")
 
         val bleDeviceSwitch: Switch =  findViewById (side.idSwConn)
         val llContr: LinearLayout =  findViewById ( R.id.llContr)
@@ -254,7 +285,7 @@ class MainActivity : AppCompatActivity() {
 
             // none of LEFT or RIGHT is connected - hide controls
             if (llContr.visibility == View.VISIBLE) { // set the radio groups visibility to gone if visibility
-                Log.d("BLE", "llContr is VISIBLE, will set to GONE")
+                Log.d(LOG_TAG_BLUE, "llContr is VISIBLE, will set to GONE")
                 this@MainActivity.runOnUiThread { llContr.setVisibility(View.GONE) }
             }
 
@@ -262,14 +293,14 @@ class MainActivity : AppCompatActivity() {
 
             // at least one of LEFT or RIGHT are connected - show controls
             if (llContr.visibility == View.GONE) { // show radio group if gone
-                Log.d("BLE", "llContr is GONE, will set to VISIBLE")
+                Log.d(LOG_TAG_BLUE, "llContr is GONE, will set to VISIBLE")
                 this@MainActivity.runOnUiThread { llContr.setVisibility(View.VISIBLE) }
             }
 
             if (bleDeviceInstanceMap[side]?.gattInstance == null) {
-                Log.d("BLE", "gattL is null")
+                Log.d(LOG_TAG_BLUE, "gattL is null")
                 if (bleDeviceSwitch.isChecked) {
-                    Log.d("BLE", "switch is checked, will uncheck on ui-thread")
+                    Log.d(LOG_TAG_BLUE, "switch is checked, will uncheck on ui-thread")
                     this@MainActivity.runOnUiThread { bleDeviceSwitch.toggle() }
                 }
 
@@ -284,7 +315,7 @@ class MainActivity : AppCompatActivity() {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun updateLabels(title: String, artist: String, valid: Boolean) {
 
-        Log.i("MAIN", "update tx (textL: $title) (textR: $artist)")
+        Log.i(LOG_TAG_MAIN, "update tx (textL: $title) (textR: $artist)")
 
         val txTitle = findViewById<View?>(R.id.txTitle) as TextView
         val txArtist = findViewById<View?>(R.id.txArtist) as TextView
@@ -304,7 +335,7 @@ class MainActivity : AppCompatActivity() {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun updateWords(wordL: String, wordR: String) {
 
-        Log.i("MAIN", "update words (wordL: $wordL) (wordR: $wordR)")
+        Log.i(LOG_TAG_MAIN, "update words (wordL: $wordL, wordR: $wordR)")
 
         val txWordL = findViewById<View?>(R.id.txWordL) as TextView
         val txWordR = findViewById<View?>(R.id.txWordR) as TextView
@@ -320,7 +351,7 @@ class MainActivity : AppCompatActivity() {
 
         super.onResume()
 
-        Log.i("MAIN", "main resume")
+        Log.i(LOG_TAG_MAIN, "main resume")
 
         //keep current activity instance and use to perform any UI related task on work completion
         instance = WeakReference(this)
@@ -331,7 +362,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
 
-        Log.i("MAIN", "main stop")
+        Log.i(LOG_TAG_MAIN, "main stop")
 
 //        WorkHandler.cancelPreviousWork()
 //        instance = WeakReference(null)

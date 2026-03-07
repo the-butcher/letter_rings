@@ -6,6 +6,7 @@ BLECharacteristic* Blesrv::pLabelCharacteristic;
 BLECharacteristic* Blesrv::pWordCharacteristic;
 BLECharacteristic* Blesrv::pModusCharacteristic;
 BLECharacteristic* Blesrv::pLightCharacteristic;
+BLECharacteristic* Blesrv::pCoeffCharacteristic;
 String Blesrv::macAdress;
 
 // // Function to convert a struct to a byte array
@@ -52,10 +53,7 @@ class LabelCallbacks : public BLECharacteristicCallbacks {
 
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         String newString = (char*)newValue;
-        // newString.toUpperCase();
         Device::label = newString;
-
-        // Display::setNeedsStatusRedraw();
 
     }
 };
@@ -76,8 +74,6 @@ class WordsCallbacks : public BLECharacteristicCallbacks {
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         String newString = (char*)newValue;
         Device::word = newString;
-
-        // Display::setNeedsStatusRedraw();
 
     }
 };
@@ -130,6 +126,30 @@ class LightCallbacks : public BLECharacteristicCallbacks {
 
 };
 
+/**
+ * light write callback (incoming coeff values)
+ */
+class CoeffCallbacks : public BLECharacteristicCallbacks {
+
+    void onWrite(BLECharacteristic* pCharacteristic) {
+
+        // size_t pDataLength = pCharacteristic->getLength();
+        // Serial.print("pDataLength: ");
+        // Serial.print(String(pDataLength));
+        // Serial.print(", core: ");
+        // Serial.print(xPortGetCoreID());
+        // Serial.print(", newValue: ");
+        // Serial.println(String(newValue[0]));
+
+        uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
+        if (Orientation::setCoefficientThreshold(newValue[0] / 100.0)) {
+            Display::setNeedsConfigRedraw();
+        }
+
+    }
+
+};
+
 bool Blesrv::isConnected() {
     return Blesrv::pServer->getConnectedCount() > 0;
 }
@@ -153,21 +173,33 @@ bool Blesrv::begin() {
 
     // setup modus characteristic, read and write, can be changed from both device and app
     Blesrv::pModusCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_MODUS_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
-    Blesrv::pModusCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_MODUS_DSC_UUID, sizeof(modus_________e)));
+    // Blesrv::pModusCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_MODUS_DSC_UUID, sizeof(modus_________e)));
     Blesrv::pModusCharacteristic->addDescriptor(new BLE2902());
     Blesrv::pModusCharacteristic->setCallbacks(new ModusCallbacks());
-    // initial value
-    int cModus = Device::getCurrModus();
-    Blesrv::pModusCharacteristic->setValue(cModus);
+    // // initial value
+    // int cModus = Device::getCurrModus();
+    // Blesrv::pModusCharacteristic->setValue(cModus);
+    Blesrv::writeModus();
 
     // setup light characteristic, read and write, can be changed from both device and app
     Blesrv::pLightCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_LIGHT_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
-    Blesrv::pLightCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_LIGHT_DSC_UUID, sizeof(uint8_t)));
+    // Blesrv::pLightCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_LIGHT_DSC_UUID, sizeof(uint8_t)));
     Blesrv::pLightCharacteristic->addDescriptor(new BLE2902());
     Blesrv::pLightCharacteristic->setCallbacks(new LightCallbacks());
-    // initial value
-    int cLight = Matrices::getBrightness();
-    Blesrv::pLightCharacteristic->setValue(cLight);
+    // // initial value
+    // int cLight = Matrices::getBrightness();
+    // Blesrv::pLightCharacteristic->setValue(cLight);
+    Blesrv::writeLight();
+
+    // setup light characteristic, read and write, can be changed from both device and app
+    Blesrv::pCoeffCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_COEFF_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
+    // Blesrv::pCoeffCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_COEFF_DSC_UUID, sizeof(uint8_t)));
+    Blesrv::pCoeffCharacteristic->addDescriptor(new BLE2902());
+    Blesrv::pCoeffCharacteristic->setCallbacks(new CoeffCallbacks());
+    // // initial value
+    // int cCoeff = (int)round(Orientation::getCoefficientThreshold() * 100);
+    // Blesrv::pCoeffCharacteristic->setValue(cCoeff);
+    Blesrv::writeCoeff();
 
     Blesrv::pService->start();
 
@@ -178,12 +210,17 @@ bool Blesrv::begin() {
     pAdvertising->addServiceUUID(COMMAND_WORD______UUID);
     pAdvertising->addServiceUUID(COMMAND_MODUS_____UUID);
     pAdvertising->addServiceUUID(COMMAND_MODUS_DSC_UUID);
+    pAdvertising->addServiceUUID(COMMAND_LIGHT_____UUID);
+    pAdvertising->addServiceUUID(COMMAND_LIGHT_DSC_UUID);
+    pAdvertising->addServiceUUID(COMMAND_COEFF_____UUID);
+    pAdvertising->addServiceUUID(COMMAND_COEFF_DSC_UUID);
     pServer->getAdvertising()->start();
 
     const uint8_t* bleAdress = esp_bt_dev_get_address();
     char bleStr[32];
     sprintf(bleStr, "%02X:%02X:%02X:%02X:%02X:%02X", (int)bleAdress[0], (int)bleAdress[1], (int)bleAdress[2], (int)bleAdress[3], (int)bleAdress[4], (int)bleAdress[5]);
     Blesrv::macAdress = String(bleStr);
+
 
     // Serial.print("bleAddress: ");
     // Serial.println(Blesrv::macAdress);
@@ -201,13 +238,32 @@ bool Blesrv::begin() {
 bool Blesrv::writeModus() {
     int cModus = Device::getCurrModus();
     Blesrv::pModusCharacteristic->setValue(cModus);
-    Blesrv::pModusCharacteristic->notify();
-    return Blesrv::isConnected();
+    if (Blesrv::isConnected()) {
+        Blesrv::pModusCharacteristic->notify();
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool Blesrv::writeLight() {
     int cLight = Matrices::getBrightness();
     Blesrv::pLightCharacteristic->setValue(cLight);
-    Blesrv::pLightCharacteristic->notify();
-    return Blesrv::isConnected();
+    if (Blesrv::isConnected()) {
+        Blesrv::pLightCharacteristic->notify();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool Blesrv::writeCoeff() {
+    int cCoeff = (int)round(Orientation::getCoefficientThreshold() * 100);
+    Blesrv::pCoeffCharacteristic->setValue(cCoeff);
+    if (Blesrv::isConnected()) {
+        Blesrv::pCoeffCharacteristic->notify();
+        return true;
+    } else {
+        return false;
+    }
 }

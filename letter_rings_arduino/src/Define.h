@@ -1,4 +1,4 @@
-#define DEVICE____________LEFT false
+#define DEVICE____________LEFT true
 
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"
@@ -21,6 +21,8 @@
 #define COMMAND_MODUS_DSC_UUID "ad965bf4-c9fc-4a29-94b0-c443259a06f6"  // for remote reading/writing the modus (description)
 #define COMMAND_LIGHT_____UUID "28c64d42-4958-43f0-8845-5a106498bf1d"  // for remote reading/writing the light
 #define COMMAND_LIGHT_DSC_UUID "a10d6f93-c4eb-445c-a154-24548909ccb3"  // for remote reading/writing the light (description)
+#define COMMAND_COEFF_____UUID "cfb68865-9243-4646-af27-750d02d44a3a"  // for remote reading/writing the orientation coefficient
+#define COMMAND_COEFF_DSC_UUID "efb7952e-c767-4272-9c77-f53b72536149"  // for remote reading/writing the orientation coefficient (description)
 
 #define AUDIO__________SAMPLES 512    // Must be a power of 2
 #define AUDIO____SAMPLING_FREQ 40000  // Hz, must be 40000 or less due to ADC conversion time. Determines maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
@@ -31,6 +33,8 @@
 
 #define ACCELERATION___SAMPLES 32
 #define ACCELERATION_THRESHOLD 0.8  // threshold for the correlation value considered to be good enough
+#define ORIENTATION_THRES__MIN 0.6
+#define ORIENTATION_THRES__MAX 0.9
 #define ACCELERATION_OFFSET_AB 0
 
 #ifndef Define_h
@@ -136,7 +140,8 @@ typedef enum : int8_t {
 typedef enum : uint8_t {
     BUTTON_ACTION_MODUS,
     BUTTON_ACTION_DECAY,  // the decay of the frequency bands
-    BUTTON_ACTION_LIGHT
+    BUTTON_ACTION_LIGHT,
+    BUTTON_ACTION_COEFF
 } button_action_e;
 
 typedef enum : uint8_t {

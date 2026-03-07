@@ -42,8 +42,10 @@ void Buttons::handleInterruptA() {
             Blesrv::writeModus();  // send the new value over BLE (when connected)
         } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY && Microphone::decay < 80) {
             Microphone::decay += 5;
-        } else if (Matrices::setBrightness(Matrices::getBrightness() + 1)) {
+        } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT && Matrices::setBrightness(Matrices::getBrightness() + 1)) {
             Blesrv::writeLight();
+        } else if (Orientation::setCoefficientThreshold(min(ORIENTATION_THRES__MAX, Orientation::getCoefficientThreshold() + 0.05))) {
+            Blesrv::writeCoeff();
         }
         Buttons::buttonA.lastInterruptMillis = interruptMillis;
         Display::setNeedsConfigRedraw();
@@ -57,6 +59,8 @@ void Buttons::handleInterruptB() {
             Buttons::buttonAction = BUTTON_ACTION_DECAY;
         } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY) {
             Buttons::buttonAction = BUTTON_ACTION_LIGHT;
+        } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT) {
+            Buttons::buttonAction = BUTTON_ACTION_COEFF;
         } else {
             Buttons::buttonAction = BUTTON_ACTION_MODUS;
         }
@@ -86,8 +90,10 @@ void Buttons::handleInterruptC() {
             Blesrv::writeModus();  // send the new value over BLE (when connected)
         } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY && Microphone::decay > 5) {
             Microphone::decay -= 5;
-        } else if (Matrices::setBrightness(Matrices::getBrightness() - 1)) {
+        } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT && Matrices::setBrightness(Matrices::getBrightness() - 1)) {
             Blesrv::writeLight();
+        } else if (Orientation::setCoefficientThreshold(max(ORIENTATION_THRES__MIN, Orientation::getCoefficientThreshold() - 0.05))) {
+            Blesrv::writeCoeff();
         }
         Buttons::buttonC.lastInterruptMillis = interruptMillis;
         Display::setNeedsConfigRedraw();

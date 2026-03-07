@@ -1,17 +1,18 @@
 #include "Orientation.h"
 
 Adafruit_BNO055 Orientation::baseSensor(55, 0x28);
-vector________t Orientation::orientation = {0, 0, 0};
-vector________t Orientation::gyroscope = {0, 0, 0};
+vector________t Orientation::orientation = { 0, 0, 0 };
+vector________t Orientation::gyroscope = { 0, 0, 0 };
 acceleration__t Orientation::accelA;
 acceleration__t Orientation::accelB;
 double Orientation::coefficient;
+double Orientation::coefficientThreshold = 0.8;
 
 bool Orientation::hasBegun = false;
 
 bool Orientation::powerup() {
     Orientation::hasBegun = Orientation::baseSensor.begin();
-    Orientation::gyroscope = {0, 0, 0};
+    Orientation::gyroscope = { 0, 0, 0 };
     return Orientation::hasBegun;
 }
 
@@ -39,7 +40,7 @@ bool Orientation::read() {
     }
     float accelerationMagnitude = sqrt(pow(accelerationData.acceleration.x, 2) + pow(accelerationData.acceleration.y, 2) + pow(accelerationData.acceleration.z, 2));
     Orientation::accelA.values[ACCELERATION___SAMPLES - 1] = accelerationMagnitude;
-    Orientation::orientation = {orientationData.orientation.x, orientationData.orientation.y, orientationData.orientation.z};
+    Orientation::orientation = { orientationData.orientation.x, orientationData.orientation.y, orientationData.orientation.z };
     // {gyroscopeData.gyro.x, gyroscopeData.gyro.y, gyroscopeData.gyro.z};
 
     return true;
@@ -96,4 +97,25 @@ void Orientation::calculateCoefficient() {
         double f = coefficient > Orientation::coefficient ? 0.10 : 0.01;                  // the speed at which the low pass filter adapts
         Orientation::coefficient = Orientation::coefficient * (1 - f) + coefficient * f;  // low pass
     }
+}
+
+double Orientation::getCoefficient() {
+    return Orientation::coefficient;
+}
+
+double Orientation::getCoefficientThreshold() {
+    return Orientation::coefficientThreshold;
+}
+
+bool Orientation::setCoefficientThreshold(double coefficientThreshold) {
+    if (coefficientThreshold >= ORIENTATION_THRES__MIN && coefficientThreshold <= ORIENTATION_THRES__MAX) {
+        Orientation::coefficientThreshold = coefficientThreshold;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool Orientation::isAboveCoefficientThreshold() {
+    return Orientation::coefficient >= Orientation::coefficientThreshold;
 }

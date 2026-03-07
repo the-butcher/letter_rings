@@ -12,17 +12,19 @@
 #include "Define.h"
 #include "Display.h"
 #include "Matrices.h"
+#include "Orientation.h"
 
 class Blesrv {
-   private:
+private:
     static BLEServer* pServer;
     static BLEService* pService;
     static BLECharacteristic* pLabelCharacteristic;
     static BLECharacteristic* pWordCharacteristic;
     static BLECharacteristic* pModusCharacteristic;
     static BLECharacteristic* pLightCharacteristic;
+    static BLECharacteristic* pCoeffCharacteristic;
 
-   public:
+public:
     /**
      * the device's bluetooth mac address
      */
@@ -40,6 +42,10 @@ class Blesrv {
      * write new light value when changed on the device
      */
     static bool writeLight();
+    /**
+     * write new coeff value when changed on the device
+     */
+    static bool writeCoeff();
 };
 
 #endif

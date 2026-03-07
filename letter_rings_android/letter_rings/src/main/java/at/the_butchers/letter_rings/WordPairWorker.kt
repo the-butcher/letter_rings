@@ -47,11 +47,11 @@ class WordPairWorker(appContext: Context, workerParams: WorkerParameters): Worke
     @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
     override fun doWork(): Result {
 
-        Log.d(WORK_LOG_TAG, "do word pair work")
+        Log.d(LOG_TAG_WORK, "do word pair work")
 
         val randomWords = WORDS.random();
 
-        Log.d(WORK_LOG_TAG, "wordL ($randomWords.first), wordR ($randomWords.second)")
+        Log.d(LOG_TAG_WORK, "wordL ($randomWords.first), wordR ($randomWords.second)")
 
         // let the WorkHandler know that this instance is done working, must be async or there are issues cancelling instances
         Handler(Looper.getMainLooper()).postDelayed(  {
