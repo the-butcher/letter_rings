@@ -176,7 +176,9 @@ void Display::drawFrequ() {
     const uint16_t y = 124;
     const uint16_t m = 112;
 
-    uint16_t clearDisplayHeight = Display::lastBarsHeight;
+    double scale = 256.0;
+
+    uint16_t clearDisplayHeight = Display::lastBarsHeight + 1;
     Display::drawCanvas.fillRect(0, y - clearDisplayHeight, DISPLAY__WIDTH, clearDisplayHeight, ST77XX_BLACK); // clear previous bars area
 
     Display::lastBarsHeight = 0;
@@ -184,11 +186,16 @@ void Display::drawFrequ() {
     // actual band values
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
         x = i * 8 + 3;
-        h = min(m, (uint16_t)round(Microphone::bandValues[i] / 256.0));
+        h = min(m, (uint16_t)round(Microphone::bandValues[i] / scale));
         Display::drawCanvas.fillRect(x, y - h, 7, h, 0x9cd3);  // #9c9a9c - draw fresh bar
         Display::lastBarsHeight = max(Display::lastBarsHeight, h);
     }
 
+
+    Display::drawCanvas.drawFastHLine(0, y - (int)round(Microphone::basis / scale), DISPLAY__WIDTH, ST77XX_MAGENTA);
+    // Display::canvas.drawFastHLine(0, y - (int)round(Microphone::fitFAverag / scale), DISPLAY__WIDTH, ST77XX_MAGENTA);
+
+    // the cubic fit curve
     double x0;
     double y0;
     double x1;
@@ -199,8 +206,8 @@ void Display::drawFrequ() {
         ly0 = i;
         ly1 = Microphone::fitFValues[i];
         if (i > 0) {
-            ly0 = round(y - min(m * 1.0, y0 / 256.0));
-            ly1 = round(y - min(m * 1.0, y1 / 256.0));
+            ly0 = round(y - min(m * 1.0, y0 / scale));
+            ly1 = round(y - min(m * 1.0, y1 / scale));
             Display::drawCanvas.drawLine(round(x0 * 8 + 6), ly0, round(x1 * 8 + 6), ly1, ST77XX_YELLOW);
             Display::lastBarsHeight = max(Display::lastBarsHeight, (uint16_t)(y - ly0));
             Display::lastBarsHeight = max(Display::lastBarsHeight, (uint16_t)(y - ly1));
@@ -209,15 +216,13 @@ void Display::drawFrequ() {
         y0 = y1;
     }
 
+    // the scaled/displayed band bar
     for (uint16_t i = 0; i < AUDIO________NUM_BANDS; i++) {
         x = i * 8 + 3;
-        h = min(m, (uint16_t)round(Microphone::bandScaled[i] / 256.0));
+        h = min(m, (uint16_t)round(Microphone::bandScaled[i] / scale));
         Display::drawCanvas.drawRect(x, y - h, 7, h, 0xdefb);  // #dddddd - draw scaled bar
         Display::lastBarsHeight = max(Display::lastBarsHeight, h);
     }
-
-    Display::drawCanvas.drawFastHLine(0, y - (int)round(Microphone::basis / 256.0), DISPLAY__WIDTH, ST77XX_YELLOW);
-    // Display::canvas.drawFastHLine(0, y - (int)round(Microphone::fitFAverag / 256.0), DISPLAY__WIDTH, ST77XX_MAGENTA);
 
     Display::addClip(0, y - max(clearDisplayHeight, Display::lastBarsHeight), DISPLAY__WIDTH, y);
 

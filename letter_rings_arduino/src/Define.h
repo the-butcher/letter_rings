@@ -1,4 +1,4 @@
-#define DEVICE____________LEFT true
+#define DEVICE____________LEFT false
 
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"
@@ -10,10 +10,9 @@
 #define BLE_DEVICE_NAME "LETTER_RINGS_R"
 #endif
 
-// when USE__FORCE_MODUS_ACCEL = true, the device does not have to be PRI to show the bitmap animation
-#define USE__FORCE_MODUS_ACCEL false
-#define USE_SERIAL_LOOP_OUTPUT false
-#define USE__________CLIP_DRAW false
+#define USE__FORCE_MODUS_ACCEL false // when USE__FORCE_MODUS_ACCEL = true, the device does not have to be PRI to show the bitmap animation
+#define USE_SERIAL_LOOP_OUTPUT false // measure loop duration
+#define USE__________CLIP_DRAW false // draw red clip areas on display
 
 #define COMMAND_LABEL_____UUID "067c3c93-eb63-4905-b292-478642f8ae99"  // for remote writing a label (moving over multiple matrices)
 #define COMMAND_WORD______UUID "3dfde050-8432-4f2f-9366-de27c430c05c"  // for remote writing a word (static 4-letter word)

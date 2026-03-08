@@ -1,6 +1,7 @@
 ✔️ reply to host
 
 - android app
+  - integrate ChatGPT word list
   ✔ adapt the app so changes apply to all connected devices, this will simplify the UI and reduce room for error
   ✔ address does not hide when connection is lost
   ✔ generally no further bluetooth scans are done once a device connection is lost
@@ -17,13 +18,16 @@
   ✔ a switch disconnect in the app does not disconnect the device!
 
 - esp
-  - first call to party mode does not put the device into initial label mode, later calls work as expected
-  - make correlation threshold (0.80 currently) configurable to prevent weird behaviour when actually at the party and try to find possible default configuration
-    - new characteristic (like light)
-	- slider in app
-	- config in device
+  - should brightness be adjustable beyond 5 :: 10 maybe?
   ~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
   ~ test with high volume and noise as good as possible, experiment with gain settings on the microphone
+    - https://leobot.net/tutorial/1067?srsltid=AfmBOopGwK3bNLB8GH9lWKwbYeUN1UAsiPBQsh7GJRLy7i_L0Uc4ghWd
+  ✔ not sure if cubic curve still displays :: TODO :: check
+  ❌ first call to party mode does not put the device into initial label mode, later calls work as expected
+  ✔ make correlation threshold (0.80 currently) configurable to prevent weird behaviour when actually at the party and try to find possible default configuration
+    ✔ new characteristic (like light)
+	✔ slider in app
+	✔ config in device
   ✔ test and measure the usb-c cables
     ✔ draw sensor protection and cable hold
     ✔ print and mount
