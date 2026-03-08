@@ -14,7 +14,7 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import java.util.UUID
 
-class BleScanner(private val bluetoothAdapter: BluetoothAdapter, private val side: Side) {
+class BleScanner(bluetoothAdapter: BluetoothAdapter, private val side: Side) {
 
     private val scanner: BluetoothLeScanner? = bluetoothAdapter.bluetoothLeScanner
 

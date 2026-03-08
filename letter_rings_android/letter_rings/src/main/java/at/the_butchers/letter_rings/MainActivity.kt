@@ -2,6 +2,7 @@ package at.the_butchers.letter_rings
 
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothManager
 import android.content.pm.PackageManager
 import android.content.res.AssetManager
@@ -31,6 +32,8 @@ import com.shazam.shazamkit.ShazamKit
 import java.lang.ref.WeakReference
 import java.util.EnumMap
 import java.util.Properties
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 
 
 class MainActivity : AppCompatActivity() {
@@ -46,6 +49,7 @@ class MainActivity : AppCompatActivity() {
 
     val bleDeviceInstanceMap: EnumMap<Side, BleDevice?> = EnumMap(Side.entries.associateWith { null })
 
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     @RequiresPermission(allOf=[Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.WAKE_LOCK, Manifest.permission.BLUETOOTH_CONNECT])
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -181,6 +185,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun setBleDevice(bleDevice: BleDevice, side: Side) {
 
@@ -203,7 +208,7 @@ class MainActivity : AppCompatActivity() {
             if (isChecked) {
                 bleDeviceInstanceMap[side]?.connectGatt(context)
             } else {
-                bleDeviceInstanceMap[side]?.disconnectGatt(context)
+                bleDeviceInstanceMap[side]?.disconnectGatt()
             }
         }
 
@@ -221,7 +226,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun setModus(modus: Byte, side: Side) {
+    fun setModus(modus: Byte) {
 
         // TODO :: warn if settings are inconsistent
 
@@ -254,7 +259,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun setLight(light: Byte, side: Side) {
+    fun setLight(light: Byte) {
 
         // TODO :: warn if settings are inconsistent
 
@@ -264,7 +269,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun setCoeff(coeff: Byte, side: Side) {
+    fun setCoeff(coeff: Byte) {
 
         // TODO :: warn if settings are inconsistent
 
@@ -275,6 +280,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     fun checkBleState(side: Side) {
 
         Log.i(LOG_TAG_BLUE, "check ble-state (side: ${side}, gatt: ${bleDeviceInstanceMap[side]?.gattInstance})")
@@ -284,7 +290,7 @@ class MainActivity : AppCompatActivity() {
         if (bleDeviceInstanceMap[Side.LEFT]?.gattInstance == null && bleDeviceInstanceMap[Side.RIGHT]?.gattInstance == null) {
 
             // none of LEFT or RIGHT is connected - hide controls
-            if (llContr.visibility == View.VISIBLE) { // set the radio groups visibility to gone if visibility
+            if (llContr.isVisible) { // set the radio groups visibility to gone if visibility
                 Log.d(LOG_TAG_BLUE, "llContr is VISIBLE, will set to GONE")
                 this@MainActivity.runOnUiThread { llContr.setVisibility(View.GONE) }
             }
@@ -292,7 +298,7 @@ class MainActivity : AppCompatActivity() {
         } else {
 
             // at least one of LEFT or RIGHT are connected - show controls
-            if (llContr.visibility == View.GONE) { // show radio group if gone
+            if (llContr.isGone) { // show radio group if gone
                 Log.d(LOG_TAG_BLUE, "llContr is GONE, will set to VISIBLE")
                 this@MainActivity.runOnUiThread { llContr.setVisibility(View.VISIBLE) }
             }

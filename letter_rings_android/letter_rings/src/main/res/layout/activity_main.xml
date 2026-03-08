@@ -307,7 +307,7 @@
                         android:fontFamily="@font/consola"
                         android:paddingStart="8sp"
                         android:paddingTop="10sp"
-                        android:text="0"
+                        android:text=" 0"
                         android:textAlignment="center"
                         android:textSize="12sp" />
 
@@ -317,7 +317,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="36dp"
                         android:layout_weight="10"
-                        android:max="5"
+                        android:max="9"
                         android:padding="6sp"
                         android:paddingStart="20sp"
                         android:paddingEnd="20sp"
@@ -330,7 +330,7 @@
                         android:fontFamily="@font/consola"
                         android:paddingTop="10sp"
                         android:paddingEnd="8sp"
-                        android:text="5"
+                        android:text=" 9"
                         android:textAlignment="center"
                         android:textSize="12sp" />
 

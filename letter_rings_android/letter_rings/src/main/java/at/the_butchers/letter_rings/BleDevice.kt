@@ -25,21 +25,21 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
     var lightCharacteristic: BluetoothGattCharacteristic? = null // get/set light
     var coeffCharacteristic: BluetoothGattCharacteristic? = null // get/set coefficient
 
-    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun writeLabelValue(value: String) {
         if (gattInstance != null && labelCharacteristic != null) {
             gattInstance!!.writeCharacteristic(labelCharacteristic!!, value.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
         }
     }
 
-    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun writeWordValue(value: String) {
         if (gattInstance != null && wordCharacteristic != null) {
             gattInstance!!.writeCharacteristic(wordCharacteristic!!, value.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
         }
     }
 
-    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun writeModusValue(modus: Int) {
         if (gattInstance != null && modusCharacteristic != null) {
             val bytes = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(modus).array()
@@ -49,7 +49,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
         }
     }
 
-    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun writeLightValue(light: Int) {
         if (gattInstance != null && lightCharacteristic != null) {
             val bytes = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(light).array()
@@ -59,7 +59,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
         }
     }
 
-    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun writeCoeffValue(coeff: Int) {
         if (gattInstance != null && coeffCharacteristic != null) {
             val bytes = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(coeff).array()
@@ -71,19 +71,19 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun readModusValue() {
-        val readResult = gattInstance?.readCharacteristic(modusCharacteristic);
+        val readResult = gattInstance?.readCharacteristic(modusCharacteristic)
         Log.i(LOG_TAG_BLUE,"read-characteristic-modus (result: ${readResult})") // returns true
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun readLightValue() {
-        val readResult = gattInstance?.readCharacteristic(lightCharacteristic);
+        val readResult = gattInstance?.readCharacteristic(lightCharacteristic)
         Log.i(LOG_TAG_BLUE,"read-characteristic-light (result: ${readResult})") // returns true
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun readCoeffValue() {
-        val readResult = gattInstance?.readCharacteristic(coeffCharacteristic);
+        val readResult = gattInstance?.readCharacteristic(coeffCharacteristic)
         Log.i(LOG_TAG_BLUE,"read-characteristic-coeff (result: ${readResult})") // returns true
     }
 
@@ -97,7 +97,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
     fun BluetoothGattCharacteristic.containsProperty(property: Int): Boolean =
         properties and property != 0
 
-    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun enableNotifications(characteristic: BluetoothGattCharacteristic) {
         val cccdUuid = UUID.fromString(CCC_DESCRIPTOR____UUID)
         val payload = when {
@@ -109,7 +109,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
             }
         }
 
-        characteristic.getDescriptor(cccdUuid)?.let() { cccDescriptor ->
+        characteristic.getDescriptor(cccdUuid)?.let { cccDescriptor ->
             if (gattInstance?.setCharacteristicNotification(characteristic, true) == false) {
                 Log.e(LOG_TAG_BLUE, "setCharacteristicNotification failed for ${characteristic.uuid}")
                 return
@@ -119,13 +119,13 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
 
     }
 
-    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun writeDescriptor(descriptor: BluetoothGattDescriptor, payload: ByteArray) {
         gattInstance?.writeDescriptor(descriptor, payload) ?: error("failed to write descriptor due to missing gatt instance")
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun disconnectGatt(context: Context) {
+    fun disconnectGatt() {
         gattInstance?.close()
         gattInstance?.disconnect()
         gattInstance = null
@@ -152,21 +152,21 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
 
             override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) {
 //                Log.i(LOG_TAG_BLUE, "characteristic-read (side: ${side}, status: ${status})")
-                val uuid = characteristic.uuid
+//                val uuid = characteristic.uuid
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
                         if (characteristic.uuid.toString() == COMMAND_MODUS_____UUID) {
                             val modus = value[0]
                             Log.i(LOG_TAG_BLUE, "characteristic-read (side: ${side}, modus: ${modus})")
-                            MainActivity.instance.get()?.setModus(modus, side)
+                            MainActivity.instance.get()?.setModus(modus)
                         } else if (characteristic.uuid.toString() == COMMAND_LIGHT_____UUID) {
                             val light = value[0]
                             Log.i(LOG_TAG_BLUE, "characteristic-read (side: ${side}, light: ${light})")
-                            MainActivity.instance.get()?.setLight(light, side)
+                            MainActivity.instance.get()?.setLight(light)
                         } else if (characteristic.uuid.toString() == COMMAND_COEFF_____UUID) {
                             val coeff = value[0]
                             Log.i(LOG_TAG_BLUE, "characteristic-read (side: ${side}, coeff: ${coeff})")
-                            MainActivity.instance.get()?.setCoeff(coeff, side)
+                            MainActivity.instance.get()?.setCoeff(coeff)
                         } else {
                             Log.w(LOG_TAG_BLUE, "characteristic-read (side: ${side}, unknown characteristic)")
                         }
@@ -181,7 +181,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
             }
 
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-            public override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) {
+            override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) {
                 Log.i(LOG_TAG_BLUE, "characteristic-change (side: ${side}, uuid: ${characteristic.uuid})")
                 if (characteristic.uuid.toString() == COMMAND_MODUS_____UUID) {
                     Log.i(LOG_TAG_BLUE, "trigger read-characteristic (side: ${side}, modus)")
@@ -195,7 +195,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                 }
             }
 
-            @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
 
                 if (status == BluetoothGatt.GATT_SUCCESS) {
@@ -280,7 +280,7 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
 
                         Log.i(LOG_TAG_BLUE, "services-lost (side: ${side})")
                         // TODO :: reset connection
-                        gattInstance = null;
+                        gattInstance = null
                         MainActivity.instance.get()?.checkBleState(side)
 
                     }

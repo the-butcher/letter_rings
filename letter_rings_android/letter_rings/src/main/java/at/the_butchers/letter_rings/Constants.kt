@@ -18,8 +18,7 @@ const val COMMAND_COEFF_____UUID = "cfb68865-9243-4646-af27-750d02d44a3a"
 
 const val CCC_DESCRIPTOR____UUID = "00002902-0000-1000-8000-00805f9b34fb"
 
-const val WAKELOCK_TIMEOUT: Long = 1000 * 60 * 60 // 1 hour
-
+//const val WAKELOCK_TIMEOUT: Long = 1000 * 60 * 60 // 1 hour
 
 const val MODUS________WORDS = 0
 const val MODUS________LABEL = 1

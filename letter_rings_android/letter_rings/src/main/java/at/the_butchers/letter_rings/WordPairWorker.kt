@@ -9,7 +9,8 @@ import androidx.work.WorkerParameters
 
 class WordPairWorker(appContext: Context, workerParams: WorkerParameters): Worker(appContext, workerParams) {
 
-    val WORDS: List<Pair<String, String>> = listOf(
+    val wordPairs: List<Pair<String, String>> = listOf(
+        Pair("STEW", "SOUP"),
         Pair("LOVE", "HATE"),
         Pair("REAL", "FAKE"),
         Pair("WARM", "COLD"),
@@ -17,7 +18,7 @@ class WordPairWorker(appContext: Context, workerParams: WorkerParameters): Worke
         Pair("FAST", "SLOW"),
         Pair("KIND", "GRIM"),
         Pair("GOOD", "EVIL"),
-        Pair("KEEP", "GIVE"),
+        Pair("TAKE", "GIVE"),
         Pair("WELL", "SICK"),
         Pair("HOPE", "FEAR"),
         Pair("FACT", "MYTH"),
@@ -35,21 +36,38 @@ class WordPairWorker(appContext: Context, workerParams: WorkerParameters): Worke
         Pair("PEAK", "BASE"),
         Pair("PULL", "PUSH"),
         Pair("LAMB", "WOLF"),
-        Pair("HUGE", "TINY"),
-        Pair("FULL", "VOID"),
+        Pair("TALL", "TINY"),
+        Pair("FULL", "HALF"),
         Pair("STAY", "FLEE"),
         Pair("UNDO", "REDO"),
         Pair("LIVE", "PASS"),
-        Pair("EARN", "LOSE"),
-        Pair("GAIN", "LOSS")
-    );
+        Pair("FIND", "LOSE"),
+        Pair("GAIN", "LOSS"),
+        Pair("OPEN", "SHUT"),
+        Pair("EAST", "WEST"),
+        Pair("HIGH", "DEEP"),
+        Pair("DAWN", "DUSK"),
+        Pair("ROCK", "ROLL"),
+        Pair("GOLD", "IRON"),
+        Pair("SAFE", "RISK"),
+        Pair("GROW", "FADE"),
+        Pair("CODE", "DATA"),
+        Pair("ROPE", "KNOT"),
+        Pair("BEER", "WINE"),
+        Pair("SKIN", "BONE"),
+        Pair("FACE", "MASK"),
+        Pair("MIND", "BODY"),
+        Pair("HIDE", "SEEK"),
+        Pair("LUCK", "FATE"),
+        Pair("WEAK", "FIRM"),
+    )
 
     @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
     override fun doWork(): Result {
 
         Log.d(LOG_TAG_WORK, "do word pair work")
 
-        val randomWords = WORDS.random();
+        val randomWords = wordPairs.random()
 
         Log.d(LOG_TAG_WORK, "wordL ($randomWords.first), wordR ($randomWords.second)")
 

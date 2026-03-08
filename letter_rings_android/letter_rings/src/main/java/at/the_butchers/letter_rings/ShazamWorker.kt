@@ -39,7 +39,7 @@ class ShazamWorker(appContext: Context, workerParams: WorkerParameters): Worker(
             if (catalog != null) {
                 runBlocking  {
 
-                    val micRecording = simpleMicRecording(catalog)
+                    val micRecording = simpleMicRecording()
                     Log.i(LOG_TAG_SHAZ, "got micRecording (${micRecording.size}bytes)")
 
                     val matchResult = recognizeFromBytes(catalog, micRecording)
@@ -104,7 +104,7 @@ class ShazamWorker(appContext: Context, workerParams: WorkerParameters): Worker(
     }
 
     @RequiresPermission(allOf=[Manifest.permission.RECORD_AUDIO])
-    private suspend fun simpleMicRecording(catalog: ShazamCatalog) : ByteArray{
+    private fun simpleMicRecording() : ByteArray{
 
         val audioSource = MediaRecorder.AudioSource.UNPROCESSED
 
@@ -123,7 +123,7 @@ class ShazamWorker(appContext: Context, workerParams: WorkerParameters): Worker(
 
         // Final desired buffer size to allocate 12 seconds of audio
         val size = audioFormat.sampleRate * audioFormat.encoding.toByteAllocation() * seconds
-        val destination = ByteBuffer.allocate(size.toInt())
+        val destination = ByteBuffer.allocate(size)
 
         // Small buffer to retrieve chunks of audio
         val bufferSize = AudioRecord.getMinBufferSize(
@@ -134,7 +134,7 @@ class ShazamWorker(appContext: Context, workerParams: WorkerParameters): Worker(
 
         // Make sure you are on a dedicated thread or thread pool for mic recording only and
         // elevate the priority to THREAD_PRIORITY_URGENT_AUDIO
-        android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
+        Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
 
         audioRecord.startRecording()
         val readBuffer = ByteArray(bufferSize)

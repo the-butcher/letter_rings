@@ -1,7 +1,10 @@
 ✔️ reply to host
 
 - android app
-  - integrate ChatGPT word list
+  ! try to identify code that can fail and handle errors accordingly, read more BLE tutorials
+  ? when the device disconnects before the gatt-services are in place there is no event or other notification
+  ? attempting to connect from this state returns the app to a stable state (gatt connect fails and the UI shows the button again after that)
+  ✔ integrate ChatGPT word list
   ✔ adapt the app so changes apply to all connected devices, this will simplify the UI and reduce room for error
   ✔ address does not hide when connection is lost
   ✔ generally no further bluetooth scans are done once a device connection is lost
@@ -11,17 +14,23 @@
   ✔️ have continous parsing at specific intervals (i.e. 1 minute)
   ✔️ gatt connection to 2(!) devices, if that does not work maybe one device being server, one being client could be an alternative
   ✔️ find out about message size and how to split texts if needed
-  ! try to identify code that can fail and handle errors accordingly, read more BLE tutorials
-  ? when the device disconnects before the gatt-services are in place there is no event or other notification
-  ? attempting to connect from this state returns the app to a stable state (gatt connect fails and the UI shows the button again after that)
   ✔ handle GATT disconnect (update UI), roughly in place, but needs revisit,
   ✔ a switch disconnect in the app does not disconnect the device!
 
 - esp
-  - should brightness be adjustable beyond 5 :: 10 maybe?
+  - reprint the pla_top part with a better mic hole center
+  - reprint the usb cable fixture a tad higher and an opening that allows the cable diameter to be inserted, but not the larger diameter between plug and cable
+  - maybe better display in accel mode, where the coedfficient draw a bar with a threshold marker rather than just a number
+  - test with full setup, on arms and powerbank, wear for a while to discover problems, uncomfortable spots, short cables, ...
+  ? belts are a bit short when leading over the batteries :: TODO :: good enough?
   ~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
   ~ test with high volume and noise as good as possible, experiment with gain settings on the microphone
     - https://leobot.net/tutorial/1067?srsltid=AfmBOopGwK3bNLB8GH9lWKwbYeUN1UAsiPBQsh7GJRLy7i_L0Uc4ghWd
+  - dont write to display after a certain time (1 minute, 5 mintues, ...) in an attempt to reduce noise and to save resources overall
+    - backlight could be off/low (even though the constant current likely does not introduce too much signal noise)
+    - wake the display upon config change  
+	- wake the display upon any button press
+  ✔ should brightness be adjustable beyond 5 :: 10 maybe?
   ✔ not sure if cubic curve still displays :: TODO :: check
   ❌ first call to party mode does not put the device into initial label mode, later calls work as expected
   ✔ make correlation threshold (0.80 currently) configurable to prevent weird behaviour when actually at the party and try to find possible default configuration
@@ -142,8 +151,6 @@ GREY RULE WORK TASK STOP LOUD MUST GIVE LOSE TORN ONLY SOLO TRAP FLOP QUIT SUNK 
 https://www.powerthesaurus.org/huge/antonyms
 
 STEW SOUP
-WOKE MAGA
-
 LOVE HATE
 REAL FAKE
 WARM COLD
@@ -151,7 +158,7 @@ MANY NONE
 FAST SLOW
 KIND GRIM
 GOOD EVIL
-KEEP GIVE
+TAKE GIVE
 WELL SICK
 HOPE FEAR
 FACT MYTH
@@ -169,109 +176,28 @@ NICE MEAN
 PEAK BASE
 PULL PUSH
 LAMB WOLF
-HUGE TINY
-FULL VOID
+TALL TINY
+FULL HALF
 STAY FLEE
 UNDO REDO
 LIVE PASS
-EARN LOSE
+FIND LOSE
 GAIN LOSS
+OPEN SHUT
+EAST WEST
+HIGH DEEP
+DAWN DUSK
+ROCK ROLL
+GOLD IRON
+SAFE RISK
+GROW FADE
+CODE DATA
+ROPE KNOT
+BEER WINE
+SKIN BONE
+FACE MASK
+MIND BODY
+HIDE SEEK
+LUCK FATE
+WEAK FIRM
 
----
-
-From ChatGPT
-
-Love – Hate
-Rich – Poor
-Open – Shut
-Give – Take
-Rise – Fall
-Good – Evil
-East – West
-Hard – Soft
-High – Down
-Warm – Cool
-Full – Half
-Dawn – Dusk
-Rain – Snow
-Wind – Fire
-Rock – Roll
-Ship – Dock
-Hand – Foot
-Head – Heel
-Moon – Star
-Tree – Leaf
-Sand – Dirt
-Farm – Barn
-Gold – Iron
-Stop – Halt
-Pull – Push
-Drop – Fall
-Gain – Loss
-Lose – Find
-Hope – Fear
-Calm – Wild
-Safe – Risk
-Dark – Glow
-Grow – Fade
-Melt – Boil
-Heat – Cold
-Fire – Ashy
-Lake – Pond
-Ship – Crew
-Lion – Wolf
-Bear – Deer
-Frog – Toad
-Blue – Gray
-Pink – Teal
-Code – Data
-Math – Text
-User – Host
-Grid – Node
-Wire – Plug
-Belt – Shoe
-Coat – Boot
-Ring – Bell
-Card – Deck
-Page – Book
-Rice – Corn
-Beer – Wine
-Acid – Base
-Fuel – Tank
-Cash – Gold
-Bank – Loan
-Debt – Owed
-Hero – Myth
-Skin – Bone
-Mind – Body
-Soul – Body
-Face – Mask
-Mask – Veil
-Clay – Sand
-Wood – Rock
-Time – Date
-Year – Week
-Hour – Tick
-Tick – Tock
-Sing – Song
-Play – Game
-Team – Club
-Club – Ball
-Ball – Goal
-Goal – Aim
-Luck – Fate
-Fate – Doom
-Cure – Heal
-Sick – Well
-Weak – Firm
-Wide – Long
-Tall – Tiny
-Tiny – Huge
-Huge – Vast
-Deep – High
-Edge – Core
-Core – Crux
-Peak – Base
-Base – Apex
-City – Town
-Road – Path
