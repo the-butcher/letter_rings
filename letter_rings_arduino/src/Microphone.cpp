@@ -13,7 +13,7 @@ int Microphone::lineValues[AUDIO________NUM_BANDS];
 int Microphone::peakValues[AUDIO________NUM_BANDS];
 double Microphone::dlt1Values[AUDIO________NUM_BANDS];
 double Microphone::dlt2Values[AUDIO________NUM_BANDS];
-uint8_t Microphone::decay = 50;
+uint8_t Microphone::decay = 25;
 uint64_t Microphone::signal = 0;
 double Microphone::scale = 0.005;
 double Microphone::basis = 2000;
@@ -31,8 +31,8 @@ bool Microphone::powerup() {
     Serial.print("sampling period us: ");
     Serial.println(Microphone::sampling_period_us);
 
-    double c = 7.5;
-    double b = 10.0;
+    double c = 7.0;
+    double b = 9.0;
 
     // roughly 60Hz to 10000Hz
     Microphone::buckValueMax = AUDIO__________SAMPLES / 4;
@@ -43,7 +43,7 @@ bool Microphone::powerup() {
         Microphone::buckValues[i] = 0 + round(pow(i * 1.0 / AUDIO________NUM_BANDS, 2.00) * Microphone::buckValueMax);
 
         // https://www.desmos.com/calculator/o8ajvpoceu?lang=de
-        Microphone::curvValues[i] = 1;  // 1 - pow((i - c) / b, 2);
+        Microphone::curvValues[i] = 1 - pow((i - c) / b, 2); // 1
 
         Serial.print(i);
         Serial.print(" -> ");
@@ -81,9 +81,9 @@ void Microphone::read() {
     Microphone::signal = (uint64_t)round(signalAvg);
 
     // https://leobot.net/tutorial/1067?srsltid=AfmBOopGwK3bNLB8GH9lWKwbYeUN1UAsiPBQsh7GJRLy7i_L0Uc4ghWd
-    for (int i = 0; i < AUDIO__________SAMPLES; i++) {
-        Microphone::vReal[i] = Microphone::vReal[i] - signalAvg;
-    }
+    // for (int i = 0; i < AUDIO__________SAMPLES; i++) {
+    //     Microphone::vReal[i] = Microphone::vReal[i] - signalAvg;
+    // }
 
     // 13ms to here
 
@@ -117,7 +117,7 @@ void Microphone::read() {
 
     // 27ms to here
 
-    double f = 0.001;  // the speed at which the low pass filter adapts
+    double f = 0.002;  // the speed at which the low pass filter adapts
     Microphone::fitFAverag = 0;
     double x;
     double y;
@@ -140,10 +140,10 @@ void Microphone::read() {
         double delta = Microphone::bandScaled[i] - Microphone::basis;
 
         Microphone::dlt1Values[i] = Microphone::dlt1Values[i] * (1 - Microphone::decay / 100.0);  // decay curr mark
-        Microphone::dlt2Values[i] = Microphone::dlt2Values[i] * 0.95;                             // decay peak mark
+        Microphone::dlt2Values[i] = Microphone::dlt2Values[i] * 0.96;                             // decay peak mark, 0.96 means 0.04 peak decay
 
-        Microphone::dlt1Values[i] = max(Microphone::dlt1Values[i], delta);
-        Microphone::dlt2Values[i] = max(Microphone::dlt2Values[i], delta);
+        Microphone::dlt1Values[i] = max(Microphone::dlt1Values[i], delta); // push curr mark
+        Microphone::dlt2Values[i] = max(Microphone::dlt2Values[i], delta); // push peak mark
 
         Microphone::lineValues[i] = round(Microphone::dlt1Values[i] * Microphone::scale);
         Microphone::peakValues[i] = round(Microphone::dlt2Values[i] * Microphone::scale);

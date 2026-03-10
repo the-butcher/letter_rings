@@ -29,11 +29,13 @@ String Blesrv::macAdress;
 class BlesrvCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
         Serial.println("something connected");
+        Display::setNeedsConfigRedraw(); // not actually a config redraw, but the display should still wake up
         // Display::setNeedsStatusRedraw();
     };
     void onDisconnect(BLEServer* pServer) {
         pServer->getAdvertising()->start();
         Serial.println("something disconnected");
+        Display::setNeedsConfigRedraw(); // not actually a config redraw, but the display should still wake up
         // Display::setNeedsStatusRedraw();
     }
 };
@@ -173,32 +175,20 @@ bool Blesrv::begin() {
 
     // setup modus characteristic, read and write, can be changed from both device and app
     Blesrv::pModusCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_MODUS_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
-    // Blesrv::pModusCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_MODUS_DSC_UUID, sizeof(modus_________e)));
     Blesrv::pModusCharacteristic->addDescriptor(new BLE2902());
     Blesrv::pModusCharacteristic->setCallbacks(new ModusCallbacks());
-    // // initial value
-    // int cModus = Device::getCurrModus();
-    // Blesrv::pModusCharacteristic->setValue(cModus);
     Blesrv::writeModus();
 
     // setup light characteristic, read and write, can be changed from both device and app
     Blesrv::pLightCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_LIGHT_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
-    // Blesrv::pLightCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_LIGHT_DSC_UUID, sizeof(uint8_t)));
     Blesrv::pLightCharacteristic->addDescriptor(new BLE2902());
     Blesrv::pLightCharacteristic->setCallbacks(new LightCallbacks());
-    // // initial value
-    // int cLight = Matrices::getBrightness();
-    // Blesrv::pLightCharacteristic->setValue(cLight);
     Blesrv::writeLight();
 
     // setup light characteristic, read and write, can be changed from both device and app
     Blesrv::pCoeffCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_COEFF_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
-    // Blesrv::pCoeffCharacteristic->addDescriptor(new BLEDescriptor(COMMAND_COEFF_DSC_UUID, sizeof(uint8_t)));
     Blesrv::pCoeffCharacteristic->addDescriptor(new BLE2902());
     Blesrv::pCoeffCharacteristic->setCallbacks(new CoeffCallbacks());
-    // // initial value
-    // int cCoeff = (int)round(Orientation::getCoefficientThreshold() * 100);
-    // Blesrv::pCoeffCharacteristic->setValue(cCoeff);
     Blesrv::writeCoeff();
 
     Blesrv::pService->start();
@@ -209,11 +199,11 @@ bool Blesrv::begin() {
     pAdvertising->addServiceUUID(COMMAND_LABEL_____UUID);
     pAdvertising->addServiceUUID(COMMAND_WORD______UUID);
     pAdvertising->addServiceUUID(COMMAND_MODUS_____UUID);
-    pAdvertising->addServiceUUID(COMMAND_MODUS_DSC_UUID);
+    // pAdvertising->addServiceUUID(COMMAND_MODUS_DSC_UUID);
     pAdvertising->addServiceUUID(COMMAND_LIGHT_____UUID);
-    pAdvertising->addServiceUUID(COMMAND_LIGHT_DSC_UUID);
+    // pAdvertising->addServiceUUID(COMMAND_LIGHT_DSC_UUID);
     pAdvertising->addServiceUUID(COMMAND_COEFF_____UUID);
-    pAdvertising->addServiceUUID(COMMAND_COEFF_DSC_UUID);
+    // pAdvertising->addServiceUUID(COMMAND_COEFF_DSC_UUID);
     pServer->getAdvertising()->start();
 
     const uint8_t* bleAdress = esp_bt_dev_get_address();

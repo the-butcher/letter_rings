@@ -18,18 +18,19 @@
   ✔ a switch disconnect in the app does not disconnect the device!
 
 - esp
-  - reprint the pla_top part with a better mic hole center
-  - reprint the usb cable fixture a tad higher and an opening that allows the cable diameter to be inserted, but not the larger diameter between plug and cable
   - maybe better display in accel mode, where the coedfficient draw a bar with a threshold marker rather than just a number
   - test with full setup, on arms and powerbank, wear for a while to discover problems, uncomfortable spots, short cables, ...
   ? belts are a bit short when leading over the batteries :: TODO :: good enough?
   ~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
   ~ test with high volume and noise as good as possible, experiment with gain settings on the microphone
     - https://leobot.net/tutorial/1067?srsltid=AfmBOopGwK3bNLB8GH9lWKwbYeUN1UAsiPBQsh7GJRLy7i_L0Uc4ghWd
-  - dont write to display after a certain time (1 minute, 5 mintues, ...) in an attempt to reduce noise and to save resources overall
-    - backlight could be off/low (even though the constant current likely does not introduce too much signal noise)
-    - wake the display upon config change  
-	- wake the display upon any button press
+  ✔ dont write to display after a certain time (1 minute, 5 mintues, ...) in an attempt to reduce noise and to save resources overall
+    ✔ backlight could be off/low (even though the constant current likely does not introduce too much signal noise)
+    ✔ wake the display upon config change through BLE
+	✔ wake the display upon any button press
+  ✔ reprint the pla_top part with a better mic hole center
+    ✔ could also have cable fixture all around the dupont plugs
+  ✔ reprint the usb cable fixture a tad higher and an opening that allows the cable diameter to be inserted, but not the larger diameter between plug and cable
   ✔ should brightness be adjustable beyond 5 :: 10 maybe?
   ✔ not sure if cubic curve still displays :: TODO :: check
   ❌ first call to party mode does not put the device into initial label mode, later calls work as expected

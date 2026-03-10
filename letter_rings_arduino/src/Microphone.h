@@ -9,7 +9,7 @@
 #include "analog.h"
 
 class Microphone {
-   private:
+private:
     /**
      * fast fourier transform instance
      */
@@ -30,9 +30,10 @@ class Microphone {
     static double fitXValues[AUDIO________NUM_BANDS];      // a list of ascending double values
     static double fitYValues[AUDIO________NUM_BANDS];      //
     static double coefValues[AUDIO________NUM_ORDER + 1];  // the curve coefficients
-    static double curvValues[AUDIO________NUM_BANDS];      // parabolic shape, visual only
 
-   public:
+
+public:
+    static double curvValues[AUDIO________NUM_BANDS];      // parabolic shape, visual only
     static double fitFValues[AUDIO________NUM_BANDS];  // filtered fit values, public to be drawable in display
     static int bandScaled[AUDIO________NUM_BANDS];
 
@@ -46,7 +47,7 @@ class Microphone {
     static int peakValues[AUDIO________NUM_BANDS];
     static int bandValues[AUDIO________NUM_BANDS];  // actual band values direclty after sampling
     /**
-     * how fast to decay the lines (not the peak, which is hardcoded :: TODO :: should it?)
+     * how fast to decay the lines (not the peak, which is hardcoded)
      */
     static uint8_t decay;
     static bool powerup();

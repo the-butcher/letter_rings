@@ -1,21 +1,22 @@
 #include <Display.h>
 
 Adafruit_ST7789 Display::baseDisplay(TFT_CS, TFT_DC, TFT_RST);
-
-bool Display::needsClip = false;
-bool Display::needsCopy = false;
-bool Display::writingCopy = false;
-
 GFXcanvas16 Display::drawCanvas(DISPLAY__WIDTH, DISPLAY_HEIGHT);
 GFXcanvas16 Display::clipCanvas(1, 1);
 
+bool Display::needsClip = false;
+bool Display::needsCopy = false;
 extent________t Display::clipExtent = { DISPLAY__WIDTH, DISPLAY_HEIGHT, 0, 0 };
 extent________t Display::copyExtent = { 0, 0, 0, 0 };
 
 bool Display::needsConfigRedraw = true;
+uint64_t Display::lastConfigRedrawMillis = 0;
+bool Display::backlightActive = true;
+
 bool Display::isFirstDrawOrientation = true;
 bool Display::isFirstDrawSignal = true;
 bool Display::isFirstDrawMatrixState = true;
+
 bool Display::lastConnectionState = true; // start with true to force an initial draw
 device_role___e Display::lastDeviceRole = DEVICE_ROLE_____PRI; // start with primary to force an initial draw
 uint16_t Display::lastBarsHeight = 112;
@@ -56,6 +57,19 @@ bool Display::depower() {
 
 }
 
+bool Display::exceedsDispActiveDuration(uint64_t currMillis) {
+    bool isExceedsDispActiveDuration = (currMillis - Display::lastConfigRedrawMillis) > DISP_ACTIVE_DURATION_MS;
+    if (isExceedsDispActiveDuration == Display::backlightActive) { // exceeds = true = backlightActive -> needs to be turned off and vice versa
+#if USE__FORCE_BACKLITE_ON == true
+        digitalWrite(TFT_BACKLITE, HIGH); // keep backlite on, even when inactive
+#else
+        digitalWrite(TFT_BACKLITE, isExceedsDispActiveDuration ? LOW : HIGH); // turn off backlite when display is inactive
+#endif
+        Display::backlightActive = !isExceedsDispActiveDuration; // exceeds = true -> backlightActive should be false
+    }
+    return isExceedsDispActiveDuration;
+}
+
 void Display::setNeedsConfigRedraw() {
     Display::needsConfigRedraw = true;
 }
@@ -84,6 +98,9 @@ void Display::drawString(String text, uint16_t x, uint16_t y, text_halign___e ha
 void Display::drawConfig() {
 
     if (Display::needsConfigRedraw) {
+
+        Display::lastConfigRedrawMillis = millis();
+        Display::exceedsDispActiveDuration(Display::lastConfigRedrawMillis); // effectively wake the display
 
         Display::drawCanvas.setTextSize(2);
         Display::drawCanvas.setTextColor(0xad55);  // #AAAAAA
@@ -152,7 +169,7 @@ void Display::clearModus() {
 
 void Display::drawText(String text) {
 
-    if (text != Display::lastText) {
+    if (!Display::exceedsDispActiveDuration(millis()) && text != Display::lastText) {
 
         Display::clearModus(); // adds a clip
 
@@ -171,105 +188,125 @@ void Display::drawText(String text) {
 
 void Display::drawFrequ() {
 
-    uint16_t x;
-    uint16_t h;
-    const uint16_t y = 124;
-    const uint16_t m = 112;
+    if (!Display::exceedsDispActiveDuration(millis())) {
 
-    double scale = 256.0;
+        uint16_t x;
+        uint16_t h;
+        const uint16_t y = 124;
+        const uint16_t m = 112;
 
-    uint16_t clearDisplayHeight = Display::lastBarsHeight + 1;
-    Display::drawCanvas.fillRect(0, y - clearDisplayHeight, DISPLAY__WIDTH, clearDisplayHeight, ST77XX_BLACK); // clear previous bars area
+        double scale = 256.0;
 
-    Display::lastBarsHeight = 0;
+        uint16_t clearDisplayHeight = Display::lastBarsHeight;
+        Display::drawCanvas.fillRect(0, y - clearDisplayHeight, DISPLAY__WIDTH, clearDisplayHeight + 3, ST77XX_BLACK); // clear previous bars area
 
-    // actual band values
-    for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
-        x = i * 8 + 3;
-        h = min(m, (uint16_t)round(Microphone::bandValues[i] / scale));
-        Display::drawCanvas.fillRect(x, y - h, 7, h, 0x9cd3);  // #9c9a9c - draw fresh bar
-        Display::lastBarsHeight = max(Display::lastBarsHeight, h);
-    }
+        Display::lastBarsHeight = 0;
 
-
-    Display::drawCanvas.drawFastHLine(0, y - (int)round(Microphone::basis / scale), DISPLAY__WIDTH, ST77XX_MAGENTA);
-    // Display::canvas.drawFastHLine(0, y - (int)round(Microphone::fitFAverag / scale), DISPLAY__WIDTH, ST77XX_MAGENTA);
-
-    // the cubic fit curve
-    double x0;
-    double y0;
-    double x1;
-    double y1;
-    uint16_t ly0;
-    uint16_t ly1;
-    for (uint16_t i = 0; i < AUDIO________NUM_BANDS; i++) {
-        ly0 = i;
-        ly1 = Microphone::fitFValues[i];
-        if (i > 0) {
-            ly0 = round(y - min(m * 1.0, y0 / scale));
-            ly1 = round(y - min(m * 1.0, y1 / scale));
-            Display::drawCanvas.drawLine(round(x0 * 8 + 6), ly0, round(x1 * 8 + 6), ly1, ST77XX_YELLOW);
-            Display::lastBarsHeight = max(Display::lastBarsHeight, (uint16_t)(y - ly0));
-            Display::lastBarsHeight = max(Display::lastBarsHeight, (uint16_t)(y - ly1));
+        // actual band values
+        for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
+            x = i * 8 + 3;
+            h = min(m, (uint16_t)round(Microphone::bandValues[i] / scale));
+            Display::drawCanvas.fillRect(x, y - h, 7, h, 0x9cd3);  // #9c9a9c - draw fresh bar
+            Display::lastBarsHeight = max(Display::lastBarsHeight, h);
         }
-        x0 = x1;
-        y0 = y1;
+
+
+        Display::drawCanvas.drawFastHLine(0, y - (int)round(Microphone::basis / scale), DISPLAY__WIDTH, ST77XX_CYAN);
+        // Display::canvas.drawFastHLine(0, y - (int)round(Microphone::fitFAverag / scale), DISPLAY__WIDTH, ST77XX_MAGENTA);
+
+        // the cubic fit curve
+        double x0;
+        double y0;
+        double x1;
+        double y1;
+        uint16_t h0;
+        uint16_t h1;
+        for (uint16_t i = 0; i < AUDIO________NUM_BANDS; i++) {
+            x1 = i;
+            y1 = Microphone::fitFValues[i];
+            if (i > 0) {
+                h0 = round(min(m * 1.0, y0 / scale));
+                h1 = round(min(m * 1.0, y1 / scale));
+                Display::drawCanvas.drawLine(round(x0 * 8 + 6), y - h0, round(x1 * 8 + 6), y - h1, ST77XX_YELLOW);
+                Display::lastBarsHeight = max(Display::lastBarsHeight, h0);
+                Display::lastBarsHeight = max(Display::lastBarsHeight, h1);
+            }
+            x0 = x1;
+            y0 = y1;
+        }
+
+        // for (uint16_t i = 0; i < AUDIO________NUM_BANDS; i++) {
+        //     x1 = i;
+        //     y1 = Microphone::curvValues[i] * 1500;
+        //     if (i > 0) {
+        //         h0 = round(min(m * 1.0, y0 / scale));
+        //         h1 = round(min(m * 1.0, y1 / scale));
+        //         Display::drawCanvas.drawLine(round(x0 * 8 + 6), y - h0, round(x1 * 8 + 6), y - h1, ST77XX_MAGENTA);
+        //         Display::lastBarsHeight = max(Display::lastBarsHeight, h0);
+        //         Display::lastBarsHeight = max(Display::lastBarsHeight, h1);
+        //     }
+        //     x0 = x1;
+        //     y0 = y1;
+        // }
+
+        // the scaled/displayed band bar
+        for (uint16_t i = 0; i < AUDIO________NUM_BANDS; i++) {
+            x = i * 8 + 3;
+            h = min(m, (uint16_t)round(Microphone::bandScaled[i] / scale));
+            Display::drawCanvas.drawRect(x, y - h, 7, h, 0xdefb);  // #dddddd - draw scaled bar
+            Display::lastBarsHeight = max(Display::lastBarsHeight, h);
+        }
+
+        Display::addClip(0, y - max(clearDisplayHeight, Display::lastBarsHeight), DISPLAY__WIDTH, y);
+
+        Display::needsClip = true;
+
     }
-
-    // the scaled/displayed band bar
-    for (uint16_t i = 0; i < AUDIO________NUM_BANDS; i++) {
-        x = i * 8 + 3;
-        h = min(m, (uint16_t)round(Microphone::bandScaled[i] / scale));
-        Display::drawCanvas.drawRect(x, y - h, 7, h, 0xdefb);  // #dddddd - draw scaled bar
-        Display::lastBarsHeight = max(Display::lastBarsHeight, h);
-    }
-
-    Display::addClip(0, y - max(clearDisplayHeight, Display::lastBarsHeight), DISPLAY__WIDTH, y);
-
-    Display::needsClip = true;
 
 }
 
 void Display::drawAcceleration() {
 
-    // Display::clearModus();
+    if (!Display::exceedsDispActiveDuration(millis())) {
 
-    uint16_t x;
-    uint16_t h;
-    const uint16_t y = 124;
-    const uint16_t m = 112;
+        uint16_t x;
+        uint16_t h;
+        const uint16_t y = 124;
+        const uint16_t m = 112;
 
-    uint16_t clearDisplayHeight = Display::lastBarsHeight;
-    Display::drawCanvas.fillRect(0, y - clearDisplayHeight, DISPLAY__WIDTH, clearDisplayHeight, ST77XX_BLACK); // clear previous bars area
+        uint16_t clearDisplayHeight = Display::lastBarsHeight;
+        Display::drawCanvas.fillRect(0, y - clearDisplayHeight, DISPLAY__WIDTH, clearDisplayHeight, ST77XX_BLACK); // clear previous bars area
 
-    Display::drawCanvas.setTextSize(2);
-    Display::drawCanvas.setTextColor(Orientation::isAboveCoefficientThreshold() ? 0xad55 : 0xf800);  // #adaaad : #ff0000
-    Display::drawString(String(Orientation::getCoefficient(), 3), 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
+        Display::drawCanvas.setTextSize(2);
+        Display::drawCanvas.setTextColor(Orientation::isAboveCoefficientThreshold() ? 0xad55 : 0xf800);  // #adaaad : #ff0000
+        Display::drawString(String(Orientation::getCoefficient(), 3), 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
 
-    acceleration__t accelA = Orientation::getAccelA();
-    for (uint16_t i = 0; i < ACCELERATION___SAMPLES; i++) {
-        x = i * 4 + 3;
-        h = min(m, (uint16_t)round(accelA.values[i] * 32));
-        Display::drawCanvas.fillRect(x, y - h, 3, h, 0x9cd3);  // #9c9a9c - draw fresh bar (grey)
+        acceleration__t accelA = Orientation::getAccelA();
+        for (uint16_t i = 0; i < ACCELERATION___SAMPLES; i++) {
+            x = i * 4 + 3;
+            h = min(m, (uint16_t)round(accelA.values[i] * 32));
+            Display::drawCanvas.fillRect(x, y - h, 3, h, 0x9cd3);  // #9c9a9c - draw fresh bar (grey)
+        }
+
+        acceleration__t accelB = Orientation::getAccelB();
+        for (uint16_t i = 0; i < ACCELERATION___SAMPLES; i++) {
+            x = i * 4 + 3;
+            h = min(m, (uint16_t)round(accelB.values[i] * 32));
+            Display::drawCanvas.drawRect(x, y - h, 3, h, 0xdefb);  // #dddddd - draw scaled bar
+        }
+
+        Display::lastBarsHeight = 112;
+        Display::addClip(0, y - max(clearDisplayHeight, Display::lastBarsHeight), DISPLAY__WIDTH, y);
+
+        Display::needsClip = true;
+
     }
-
-    acceleration__t accelB = Orientation::getAccelB();
-    for (uint16_t i = 0; i < ACCELERATION___SAMPLES; i++) {
-        x = i * 4 + 3;
-        h = min(m, (uint16_t)round(accelB.values[i] * 32));
-        Display::drawCanvas.drawRect(x, y - h, 3, h, 0xdefb);  // #dddddd - draw scaled bar
-    }
-
-    Display::lastBarsHeight = 112;
-    Display::addClip(0, y - max(clearDisplayHeight, Display::lastBarsHeight), DISPLAY__WIDTH, y);
-
-    Display::needsClip = true;
 
 }
 
 void Display::drawMatrixState() {
 
-    if (Display::isFirstDrawMatrixState) {
+    if (Display::isFirstDrawMatrixState) { // no need to check for exceedsDispActiveDuration, since called only once
 
         uint8_t rectXPos = 0;
         uint8_t rectYPos = DISPLAY_HEIGHT - 27;
@@ -295,7 +332,7 @@ void Display::drawDeviceRole() {
 
     device_role___e deviceRole = Device::getDeviceRole();
 
-    if (deviceRole != Display::lastDeviceRole) {
+    if (!Display::exceedsDispActiveDuration(millis()) && deviceRole != Display::lastDeviceRole) {
 
         uint16_t roleColors[3] = { 0xce59, ST77XX_YELLOW, ST77XX_MAGENTA };
 
@@ -325,7 +362,7 @@ void Display::drawConnection() {
 
     bool connected = Blesrv::isConnected();
 
-    if (connected != Display::lastConnectionState) {
+    if (!Display::exceedsDispActiveDuration(millis()) && connected != Display::lastConnectionState) {
 
         Display::drawCanvas.setTextSize(1);
         Display::drawCanvas.setTextColor(connected ? ST77XX_WHITE : 0x73ae);  // https://rgbcolorpicker.com/565
@@ -345,7 +382,7 @@ void Display::drawConnection() {
 
 void Display::drawOrientation() {
 
-    if (Orientation::hasBegun) {
+    if (!Display::exceedsDispActiveDuration(millis()) && Orientation::hasBegun) {
 
         Display::drawCanvas.setTextSize(2);
         Display::drawCanvas.setTextColor(Orientation::hasBegun ? 0xad55 : 0xdc30);  // #adaaad : #de8684 // https://rgbcolorpicker.com/565
@@ -391,7 +428,8 @@ void Display::drawOrientation() {
 void Display::drawSignal() {
 
     uint64_t currSignal = Microphone::signal;
-    if (currSignal != Display::lastSignal) {
+
+    if (!Display::exceedsDispActiveDuration(millis()) && currSignal != Display::lastSignal) {
 
         Display::drawCanvas.setTextSize(2);
         Display::drawCanvas.setTextColor(0xad55);  // #AAAAAA

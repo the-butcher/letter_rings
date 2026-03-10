@@ -145,7 +145,6 @@ void runLoopTaskDisplay(void* pvParameters) {
 
         } else if (modus == MODUS________BREAK) {  // frequency
 
-            // TODO :: proceed a single dot
             Matrices::clear();
             Matrices::drawPixel(pixelPos, 6, LED_ON);
 
@@ -177,7 +176,6 @@ void runLoopTaskDisplay(void* pvParameters) {
 
         } else {
 
-            // TODO :: warn about unknown modus on display
             Serial.print("unknown modus: ");
             Serial.println(String(modus));
             vTaskDelay(100);

@@ -1,4 +1,4 @@
-#define DEVICE____________LEFT false
+#define DEVICE____________LEFT true
 
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"
@@ -13,15 +13,16 @@
 #define USE__FORCE_MODUS_ACCEL false // when USE__FORCE_MODUS_ACCEL = true, the device does not have to be PRI to show the bitmap animation
 #define USE_SERIAL_LOOP_OUTPUT false // measure loop duration
 #define USE__________CLIP_DRAW false // draw red clip areas on display
+#define USE__FORCE_BACKLITE_ON false // when USE__FORCE_BACKLITE_ON = true, the display backlite will never turn off, even the display is inactive
 
 #define COMMAND_LABEL_____UUID "067c3c93-eb63-4905-b292-478642f8ae99"  // for remote writing a label (moving over multiple matrices)
 #define COMMAND_WORD______UUID "3dfde050-8432-4f2f-9366-de27c430c05c"  // for remote writing a word (static 4-letter word)
 #define COMMAND_MODUS_____UUID "a8792ef9-c01c-47ee-a063-f8712bf8dd67"  // for remote reading/writing the modus
-#define COMMAND_MODUS_DSC_UUID "ad965bf4-c9fc-4a29-94b0-c443259a06f6"  // for remote reading/writing the modus (description)
+// #define COMMAND_MODUS_DSC_UUID "ad965bf4-c9fc-4a29-94b0-c443259a06f6"  // for remote reading/writing the modus (description)
 #define COMMAND_LIGHT_____UUID "28c64d42-4958-43f0-8845-5a106498bf1d"  // for remote reading/writing the light
-#define COMMAND_LIGHT_DSC_UUID "a10d6f93-c4eb-445c-a154-24548909ccb3"  // for remote reading/writing the light (description)
+// #define COMMAND_LIGHT_DSC_UUID "a10d6f93-c4eb-445c-a154-24548909ccb3"  // for remote reading/writing the light (description)
 #define COMMAND_COEFF_____UUID "cfb68865-9243-4646-af27-750d02d44a3a"  // for remote reading/writing the orientation coefficient
-#define COMMAND_COEFF_DSC_UUID "efb7952e-c767-4272-9c77-f53b72536149"  // for remote reading/writing the orientation coefficient (description)
+// #define COMMAND_COEFF_DSC_UUID "efb7952e-c767-4272-9c77-f53b72536149"  // for remote reading/writing the orientation coefficient (description)
 
 #define AUDIO__________SAMPLES 512    // Must be a power of 2
 #define AUDIO____SAMPLING_FREQ 40000  // Hz, must be 40000 or less due to ADC conversion time. Determines maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
@@ -71,6 +72,7 @@ const gpio_num_t AUDIO______________PIN = GPIO_NUM_8;  // A5
 const uint64_t ROLE_PRI____DURATION_MS = 15000;
 const uint64_t WORD_UPDATE_INTERVAL_MS = 14000;
 const uint64_t PARTY_LABEL_DURATION_MS = 20000;
+const uint64_t DISP_ACTIVE_DURATION_MS = 1000 * 60 * 1; // 1 minute
 
 typedef enum : uint8_t {
     BITMAP_PAC____OPEN_R = 0,
