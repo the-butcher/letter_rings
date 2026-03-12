@@ -119,3 +119,12 @@ bool Orientation::setCoefficientThreshold(double coefficientThreshold) {
 bool Orientation::isAboveCoefficientThreshold() {
     return Orientation::coefficient >= Orientation::coefficientThreshold;
 }
+
+bool Orientation::isAboveSignificantThreshold() {
+    for (uint8_t i = ACCELERATION___SAMPLES / 2; i < ACCELERATION___SAMPLES; i++) {
+        if (Orientation::accelA.values[i] > ACCELERATION_SIG_THRES) {
+            return true;
+        }
+    }
+    return false;
+}

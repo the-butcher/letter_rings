@@ -13,7 +13,7 @@ int Microphone::lineValues[AUDIO________NUM_BANDS];
 int Microphone::peakValues[AUDIO________NUM_BANDS];
 double Microphone::dlt1Values[AUDIO________NUM_BANDS];
 double Microphone::dlt2Values[AUDIO________NUM_BANDS];
-uint8_t Microphone::decay = 25;
+uint8_t Microphone::decay = 20;
 uint64_t Microphone::signal = 0;
 double Microphone::scale = 0.005;
 double Microphone::basis = 2000;
@@ -51,7 +51,7 @@ bool Microphone::powerup() {
         Microphone::fitXValues[i] = i;  // initialize fit-x values
     }
 
-https:  // github.com/stg/ESP32-S3-FastAnalogRead/blob/master/ESP32-S3-FastAnalogRead.ino
+    // https://github.com/stg/ESP32-S3-FastAnalogRead/blob/master/ESP32-S3-FastAnalogRead.ino
     fadcInit(1, AUDIO______________PIN);
 
     return true;
@@ -69,7 +69,7 @@ void Microphone::read() {
     uint16_t analogValue;
     for (int i = 0; i < AUDIO__________SAMPLES; i++) {
         Microphone::newTime = micros();
-        analogValue = analogReadFast(7);  // analogRead(AUDIO______________PIN);  // A conversion takes about 9.7uS on an ESP32
+        analogValue = analogReadFast(7); // A5 is on channel 7  // analogRead(AUDIO______________PIN);  // A conversion takes about 9.7uS on an ESP32
         signalAvg += analogValue;
         Microphone::vReal[i] = analogValue;
         Microphone::vImag[i] = 0;
@@ -140,7 +140,7 @@ void Microphone::read() {
         double delta = Microphone::bandScaled[i] - Microphone::basis;
 
         Microphone::dlt1Values[i] = Microphone::dlt1Values[i] * (1 - Microphone::decay / 100.0);  // decay curr mark
-        Microphone::dlt2Values[i] = Microphone::dlt2Values[i] * 0.96;                             // decay peak mark, 0.96 means 0.04 peak decay
+        Microphone::dlt2Values[i] = Microphone::dlt2Values[i] * 0.97;                             // decay peak mark, 0.96 means 0.04 peak decay
 
         Microphone::dlt1Values[i] = max(Microphone::dlt1Values[i], delta); // push curr mark
         Microphone::dlt2Values[i] = max(Microphone::dlt2Values[i], delta); // push peak mark

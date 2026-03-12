@@ -39,17 +39,26 @@ bool Nowsrv::begin() {
     return Nowsrv::hasBegun;
 }
 
+/**
+ * both left and right send acceleration when in accel mode
+ */
 bool Nowsrv::sendAcceleration() {
     acceleration__t accelA = Orientation::getAccelA();
     esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&accelA, sizeof(acceleration__t));
     return result == ESP_OK;
 }
 
+/**
+ * only the primary device sends bitmaps when in accel mode
+ */
 bool Nowsrv::sendBitmaps(bitmaps_______t sendBitmaps) {
     esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&sendBitmaps, sizeof(bitmaps_______t));
     return result == ESP_OK;
 }
 
+/**
+ * only the device entering primary first sends a role to the other device
+ */
 bool Nowsrv::sendDeviceRole(device_role___t deviceRole) {
     esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&deviceRole, sizeof(device_role___t));
     return result == ESP_OK;
@@ -66,6 +75,9 @@ void Nowsrv::OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
     //   }
 }
 
+/**
+ * data receive callback
+ */
 void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     if (len == sizeof(acceleration__t)) {  // acceleration data from the other device
         acceleration__t incomingAcceleration;
@@ -73,13 +85,13 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
         Orientation::setAccelB(incomingAcceleration);
         Orientation::calculateCoefficient();
         if (Device::getDeviceRole() != DEVICE_ROLE_____SEC) {                                                        // can not change role when in SEC, must remain passive
-            if (Orientation::isAboveCoefficientThreshold()) {                                                // should be PRI
+            if (Orientation::isAboveCoefficientThreshold()) {                                                        // should be PRI
                 if (Device::getDeviceRole() != DEVICE_ROLE_____PRI && Device::setDeviceRole(DEVICE_ROLE_____PRI)) {  // but is not and accepts PRI
-                    Nowsrv::sendDeviceRole({ DEVICE_ROLE_____SEC });                                                   // tell other device to be SEC
+                    Nowsrv::sendDeviceRole({ DEVICE_ROLE_____SEC });                                                 // tell other device to be SEC
                 }
             } else {                                                                                                 // should be ANY
-                if (Device::getDeviceRole() != DEVICE_ROLE_____ANY && Device::setDeviceRole(DEVICE_ROLE_____ANY)) {  // but is not and accepts ANY
-                    Nowsrv::sendDeviceRole({ DEVICE_ROLE_____ANY });                                                   // reset other device to ANY
+                if (Device::getDeviceRole() != DEVICE_ROLE_____ANY && Device::setDeviceRole(DEVICE_ROLE_____ANY)) {  // but is not and accepts ANY (which is only the case after some timeout)
+                    Nowsrv::sendDeviceRole({ DEVICE_ROLE_____ANY });                                                 // reset other device to ANY
                 }
             }
         }

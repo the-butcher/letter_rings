@@ -18,7 +18,7 @@
   ✔ a switch disconnect in the app does not disconnect the device!
 
 - esp
-  - maybe better display in accel mode, where the coedfficient draw a bar with a threshold marker rather than just a number
+  - maybe better display in accel mode, where the coedfficient draws a bar with a threshold marker rather than just a number
   - test with full setup, on arms and powerbank, wear for a while to discover problems, uncomfortable spots, short cables, ...
   ? belts are a bit short when leading over the batteries :: TODO :: good enough?
   ~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
@@ -71,10 +71,10 @@
   ✔ have proper matrix UP/DOWN flip in all modes
   ✔ unify method names Matrices vs. Matrix
   ✔ clearXXX function, execute properly after modus switch
-  ❌ dim TFT a while after the last button press https://forums.adafruit.com/viewtopic.php?t=174096
+  ✔ dim TFT a while after the last button press https://forums.adafruit.com/viewtopic.php?t=174096
   ✔ be able to switch modes
     ✔ through display
-    ✔ through gesture (?)
+    ❌ through gesture (?)
     ✔ through bluetooth / mobile
   ❌ any other attractive modes?
     ❌ a mode "shaking" random chars by acceleration / position
@@ -90,11 +90,11 @@
   ✔ setup task to read orientation in short intervals and keep track of the last n (some power of 2, maybe 32) acceleration vectors
   ✔ create esp-now connection between left and right
   ✔ send acceleration vectors to other device in regular intervals
-  ❌ align vectors time-wise (how?)
+  ✔ align vectors time-wise (how?)
   ✔ calculate pearson correlation coefficient between incoming acceleration data and own acceleration data
   ✔ see if this produces usable similarity results
-  ❌ if both devices agree to have similar acceleration values unlock some (yet to be defines) two device mode
-  ❌ should both devices always have the same mode?
+  ✔ if both devices agree to have similar acceleration values unlock some (yet to be defines) two device mode
+  ✔ should both devices always have the same mode?
   ✔ first device detecting similarity takes the lead
   ✔ other device will not need to check for similarity while paired
   ✔ leading device sends drawing codes, ie. kitt bar signal

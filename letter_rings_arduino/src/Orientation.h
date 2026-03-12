@@ -19,7 +19,13 @@ private:
     static Adafruit_BNO055 baseSensor;
     static vector________t orientation;
     static vector________t gyroscope;
+    /**
+     * own values
+     */
     static acceleration__t accelA;
+    /**
+     * other values
+     */
     static acceleration__t accelB;
     static double coefficient;
     static double coefficientThreshold;
@@ -39,6 +45,10 @@ public:
     static double getCoefficientThreshold();
     static bool setCoefficientThreshold(double coefficientThreshold);
     static bool isAboveCoefficientThreshold();
+    /**
+     * check if one of the recent acceleration values (accelA) is above the significant threshold (ACCELERATION_SIG_THRES)
+     */
+    static bool isAboveSignificantThreshold();
 };
 
 #endif

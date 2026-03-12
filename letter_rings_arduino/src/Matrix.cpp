@@ -1,6 +1,6 @@
 #include <Matrix.h>
 
-Matrix::Matrix(uint8_t addr) : canvasA(8, 8), canvasB(8, 8) {
+Matrix::Matrix(uint8_t addr) {
     this->baseMatrix = Adafruit_8x8matrix();
     this->addr = addr;
     this->hasBegun = false;

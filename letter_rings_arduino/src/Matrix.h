@@ -12,27 +12,24 @@
 class Matrix {
 private:
     Adafruit_8x8matrix baseMatrix;
-    GFXcanvas1 canvasA;
-    GFXcanvas1 canvasB;
     uint8_t addr;
 
 public:
     bool hasBegun;
-    // uint8_t copyOrder[64];
     Matrix(uint8_t addr);
     bool powerup();
+    bool depower();
     void setOrientation(orientation___e orientation);
     uint16_t getWordWidth(String word);
     uint16_t getLabelWidth(String label);
     void drawWord(String word, int16_t offset);
     void drawLabel(String label, int16_t offset);
-    void clear();
-    void write();
     void drawPixel(int16_t x, int16_t y, uint16_t color);
     void drawBars(uint8_t indexMin);
     void drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color);
+    void clear();
+    void write();
     void setBrightness(uint8_t brightness);  // 0 - 15
-    bool depower();
 };
 
 #endif

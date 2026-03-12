@@ -22,6 +22,7 @@ uint64_t lastWordUpdateMillis = 0;
 uint64_t lastLabelUpdateMillis = 0;
 uint64_t lastGeneralUpdateMillis = 0;
 uint64_t lastAccelerationSendMillis = 0;
+uint64_t lastGamOLThresholdMillis = 0;
 
 const int16_t BITMAP_RESET_POS = -10;
 int16_t bitmapPos = BITMAP_RESET_POS;
@@ -43,21 +44,47 @@ bool exceedsPartyLabelDuration(uint64_t currMillis) {
     return (currMillis - lastLabelUpdateMillis) > PARTY_LABEL_DURATION_MS;
 }
 
+bool exceedsGamOLThresholdDuration(uint64_t currMillis) {
+    return (currMillis - lastGamOLThresholdMillis) > GAMOL_______DURATION_MS;
+}
+
 modus_________e determineModus() {
+
+    uint64_t currMillis = millis();
 
     // label needs to be checked outside of MODUS________LABEL clause, so a correct decision can be made when in MODUS________PARTY
     if (Device::label != mainLabel) {
         labelWidth = Matrices::matrixA.getLabelWidth(Device::label);
         mainLabel = Device::label;
-        lastLabelUpdateMillis = millis();
+        lastLabelUpdateMillis = currMillis;
     }
 
     modus_________e modus = Device::getCurrModus();
-    // if in accel mode and paired -> run pacman, fallback to previous mode otherwise
+    // if in accel mode and paired -> run pacman, fallback to previous mode if not paired
     if (modus == MODUS________ACCEL) {
-        if (Device::getDeviceRole() == DEVICE_ROLE_____ANY && !USE__FORCE_MODUS_ACCEL) {  // (not primary, not secondary) = below coefficient threshold
+
+        // (not primary, not secondary) = below coefficient threshold -> fallback to previous mode
+        if (Device::getDeviceRole() == DEVICE_ROLE_____ANY) {
+
             modus = Device::getPrevModus();
+
+            if (Orientation::isAboveSignificantThreshold()) {
+                if (exceedsGamOLThresholdDuration(currMillis)) {
+                    // Serial.println("entering GAMOL");
+                    // TODO :: read matrices to get an initial state
+                }
+                lastGamOLThresholdMillis = currMillis;
+
+            }
+
+            if (!exceedsGamOLThresholdDuration(currMillis)) {
+                modus = MODUS________GAMOL;
+            }
+
+        } else {
+            modus = MODUS________GAMPM; // if the device role is other than ANY, it is PACMAN (paired, orientation similarity)
         }
+
     }
 
     // if in party mode, make a decision for either label or frequency
@@ -87,11 +114,11 @@ void runLoopTaskDisplay(void* pvParameters) {
             Device::setOrientation(ORIENTATION______UP);
         }
 
-        // common display redraws (have to be in this loop to keep the clip logic upright)
-        // this will happen at varying intervals, however all of them in the same magnitude
+        // common display redraws (have to be in this loop to keep the clip logic in a single place)
+        // this will happen at varying intervals, however all of them are in the same magnitude ~100-250ms
         Display::drawConfig(); // only draws when the needsConfigRedraw is true
         Display::drawConnection(); // only draws when the connection state changed
-        Display::drawDeviceRole();  // little box indicators
+        Display::drawDeviceRole();  // little box indicators, only drawn after a change to the role
         Display::drawOrientation(); // will only draw if orientation was properly initialized
         Display::drawSignal(); // will always draw
         Display::drawMatrixState();  // I2C init states of matrices, only draws once
@@ -151,28 +178,31 @@ void runLoopTaskDisplay(void* pvParameters) {
             Display::drawText("");
 
             if (pixelPos > 31) {  // all the way out to the left
-                pixelPos = 0;             // reset to right border
+                pixelPos = 0;     // reset to right border
             }
             pixelPos++;
 
             vTaskDelay(250);
 
-        } else if (modus == MODUS________ACCEL) {
+        } else if (modus == MODUS________GAMPM) {
 
             bitmaps_______t bitmaps = Device::currBitmaps;
 
             // first two calls clear the bitmap ahead and behind
             Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset + 2, bitmaps.bitmapA.color, bitmaps.orientation);
             Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - 2, bitmaps.bitmapA.color, bitmaps.orientation);
-            // third call draw in the space cleared by the previous calls
+            // third call draws into the space cleared by the previous calls
             Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapB.bitmap], bitmaps.bitmapB.offset, bitmaps.bitmapB.color, bitmaps.orientation);
 
             Display::drawAcceleration();
 
-            // once all leds are set by clearing and drawing, flush the matrices
-            // Matrices::write();
-
             vTaskDelay(90);
+
+        } else if (modus == MODUS________GAMOL) {
+
+            Serial.println("GAMOL");
+
+            vTaskDelay(250);
 
         } else {
 
@@ -182,7 +212,8 @@ void runLoopTaskDisplay(void* pvParameters) {
 
         }
 
-        Display::writeClip(); // prepare the clip-buffer that will actually be drawn to the display
+        // prepare the clip-buffer that will actually be drawn to the display
+        Display::writeClip();
 
     }
 
@@ -201,7 +232,8 @@ void runLoopTaskGeneral(void* pvParameters) {
 
             Nowsrv::sendAcceleration();  // consumes ~1 millisecond
 
-            if (USE__FORCE_MODUS_ACCEL || Device::getDeviceRole() == DEVICE_ROLE_____PRI) {
+            modus_________e modus = determineModus(); // see what central logic tells about modus
+            if (modus == MODUS________GAMPM) {
 
                 if (bitmapPos > 64) {
                     bitmapPos = BITMAP_RESET_POS;
@@ -231,7 +263,7 @@ void setup(void) {
 
     // https// forum.arduino.cc/t/shuffle-an-array-of-ints/333494/6
     // use a different seed value so that we don't get same result each time we run this program
-    // this is an attempt to have different random word orders across device starts
+    // this is an attempt to have different random word orders across device starts and therefore different word orders
     randomSeed(analogRead(A0));
 
     Serial.print("setup ");

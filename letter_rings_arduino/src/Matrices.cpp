@@ -127,7 +127,7 @@ void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color,
 
     // if required, return to device orientation
     if (orientation != orientationDevice) {
-        Matrices::setOrientation(orientationDevice);  // temporarily apply that orientation
+        Matrices::setOrientation(orientationDevice);
     }
 
     Matrices::needsWrite = true;
