@@ -42,19 +42,22 @@ public:
     static bool depower();
 
     static void clear();
+    static void clearCanvases();
+    /**
+     * write any pending changes to content or brightness
+     * @return true if changes were made or if the brightness was updated
+     */
+    static bool write();
 
     static void setOrientation(orientation___e orientation);
     static void drawPixel(int16_t x, int16_t y, uint16_t color);
     static void drawBars();
     static void drawWord(String word);
     static void drawLabel(String label, int16_t offset);
-    static void drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color, orientation___e orientation);
+    static void drawBitmapWithOrientation(const uint8_t* bitmap, int16_t offset, uint16_t color, orientation___e orientation);
+    static void drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color);
 
-    /**
-     * write any pending changes to content or brightness
-     * @return true if changes were made or if the brightness was updated
-     */
-    static bool write();
+    static uint32_t* getBuffer();
 
 };
 

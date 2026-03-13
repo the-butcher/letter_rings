@@ -10,6 +10,7 @@
 #define BLE_DEVICE_NAME "LETTER_RINGS_R"
 #endif
 
+#define USE__FORCE_______GAMPM false
 #define USE_SERIAL_LOOP_OUTPUT false // measure loop duration
 #define USE__________CLIP_DRAW false // draw red clip areas on display
 #define USE__FORCE_BACKLITE_ON false // when USE__FORCE_BACKLITE_ON = true, the display backlite will never turn off, even the display is inactive
@@ -32,7 +33,7 @@
 #define ORIENTATION_THRES__MIN 0.6
 #define ORIENTATION_THRES__MAX 0.9
 #define ACCELERATION_OFFSET_AB 0
-#define ACCELERATION_SIG_THRES 7.5 // TODO :: find a usable value, maybe configurable
+#define ACCELERATION_SIG_THRES 7.5 // TODO :: find a usable value, maybe configurable, i.e. 10
 
 #ifndef Define_h
 #define Define_h
@@ -69,7 +70,7 @@ const gpio_num_t AUDIO______________PIN = GPIO_NUM_8;  // A5
 const uint64_t ROLE_PRI____DURATION_MS = 15000;
 const uint64_t WORD_UPDATE_INTERVAL_MS = 14000;
 const uint64_t PARTY_LABEL_DURATION_MS = 20000;
-const uint64_t DISP_ACTIVE_DURATION_MS = 1000 * 60 * 30; // 30 minute :: TODO revert to something lower, i.e. one minute
+const uint64_t DISP_ACTIVE_DURATION_MS = 1000 * 60 * 3; // 3 minutes
 const uint64_t GAMOL_______DURATION_MS = 10000;
 
 typedef enum : uint8_t {
@@ -175,7 +176,8 @@ typedef enum : uint8_t {
     /**
      * pacman, only after pairing in accel mode (acceleration similarity)
      */
-    MODUS________GAMPM,
+    MODUS____GAMPM_PRI,
+    MODUS____GAMPM_SEC,
     /**
      * game of life, when a significant bump has occured
      */
@@ -216,11 +218,6 @@ typedef struct {
      * when paired the device will add additional offset to account for left or right
      */
     int8_t offset;
-    /**
-     * the color with which the bitmap should be drawn
-     * here the color can only by LED_ON (=turn on pixels) or LED_OFF (=turn off pixels)
-     */
-    uint16_t color;
 } bitmap________t;
 
 typedef struct {

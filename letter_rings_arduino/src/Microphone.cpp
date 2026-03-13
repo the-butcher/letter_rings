@@ -28,9 +28,6 @@ double Microphone::curvValues[AUDIO________NUM_BANDS];
 
 bool Microphone::powerup() {
 
-    Serial.print("sampling period us: ");
-    Serial.println(Microphone::sampling_period_us);
-
     double c = 7.0;
     double b = 9.0;
 
@@ -45,9 +42,7 @@ bool Microphone::powerup() {
         // https://www.desmos.com/calculator/o8ajvpoceu?lang=de
         Microphone::curvValues[i] = 1 - pow((i - c) / b, 2); // 1
 
-        Serial.print(i);
-        Serial.print(" -> ");
-        Serial.println(String(Microphone::buckValues[i]));
+        Serial.printf("%02d -> %03d\n", i, Microphone::buckValues[i]);
         Microphone::fitXValues[i] = i;  // initialize fit-x values
     }
 

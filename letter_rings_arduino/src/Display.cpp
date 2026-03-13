@@ -516,8 +516,6 @@ bool Display::writeCopy() {
 #if USE__________CLIP_DRAW == true
             Display::baseDisplay.drawRect(Display::copyExtent.xMin, Display::copyExtent.yMin, copyW, copyH, ST77XX_RED);
 #endif
-            // Display::baseDisplay.drawRGBBitmap(0, 0, drawCanvas.getBuffer(), DISPLAY__WIDTH, DISPLAY_HEIGHT);
-            // Display::baseDisplay.drawRect(Display::clipXMin, Display::clipYMin, clipW, clipH, ST77XX_RED);
         }
 
         Display::needsCopy = false;

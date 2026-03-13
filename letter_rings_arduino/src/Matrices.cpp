@@ -1,9 +1,9 @@
 #include "Matrices.h"
 
-Matrix Matrices::matrixA(0x70);
-Matrix Matrices::matrixB(0x71);
-Matrix Matrices::matrixC(0x72);
-Matrix Matrices::matrixD(0x73);
+Matrix Matrices::matrixA(0x70, "A");
+Matrix Matrices::matrixB(0x71, "B");
+Matrix Matrices::matrixC(0x72, "C");
+Matrix Matrices::matrixD(0x73, "D");
 
 uint8_t Matrices::brightnessCurr = 64;
 uint8_t Matrices::brightnessPend = 0;
@@ -22,7 +22,6 @@ bool Matrices::powerup() {
     if (!Matrices::matrixD.powerup()) {
         // Serial.println("failed to power up matrix D");
     }
-    // Matrices::canvas.getBuffer();
     return true;
 }
 
@@ -105,24 +104,24 @@ void Matrices::drawLabel(String label, int16_t offset) {
     Matrices::needsWrite = true;
 }
 
-void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color, orientation___e orientation) {
+void Matrices::drawBitmapWithOrientation(const uint8_t* bitmap, int16_t offset, uint16_t color, orientation___e orientation) {
 
     orientation___e orientationDevice = Device::getOrientation();
     // if required, temporarily apply that orientation
     if (orientation != orientationDevice) {
         Matrices::setOrientation(orientation);
     }
-    uint16_t sideOffset = BITMAPS_OFF * orientation * 16 + 16;  // either 0 or 32, depensing on side and orientation
+    uint16_t sideOffset = BITMAPS_OFF * orientation * 16 + 16;  // either 0 or 32, depending on side and orientation
     if (orientation == ORIENTATION______UP) {
-        Matrices::matrixA.drawBitmap(bitmap, offset - sideOffset, color);
-        Matrices::matrixB.drawBitmap(bitmap, offset - sideOffset - 8, color);
-        Matrices::matrixC.drawBitmap(bitmap, offset - sideOffset - 16, color);
-        Matrices::matrixD.drawBitmap(bitmap, offset - sideOffset - 24, color);
+        Matrices::matrixA.drawBitmap(bitmap, offset - sideOffset, color, 8);
+        Matrices::matrixB.drawBitmap(bitmap, offset - sideOffset - 8, color, 8);
+        Matrices::matrixC.drawBitmap(bitmap, offset - sideOffset - 16, color, 8);
+        Matrices::matrixD.drawBitmap(bitmap, offset - sideOffset - 24, color, 8);
     } else {
-        Matrices::matrixD.drawBitmap(bitmap, offset - sideOffset, color);
-        Matrices::matrixC.drawBitmap(bitmap, offset - sideOffset - 8, color);
-        Matrices::matrixB.drawBitmap(bitmap, offset - sideOffset - 16, color);
-        Matrices::matrixA.drawBitmap(bitmap, offset - sideOffset - 24, color);
+        Matrices::matrixD.drawBitmap(bitmap, offset - sideOffset, color, 8);
+        Matrices::matrixC.drawBitmap(bitmap, offset - sideOffset - 8, color, 8);
+        Matrices::matrixB.drawBitmap(bitmap, offset - sideOffset - 16, color, 8);
+        Matrices::matrixA.drawBitmap(bitmap, offset - sideOffset - 24, color, 8);
     }
 
     // if required, return to device orientation
@@ -133,11 +132,34 @@ void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color,
     Matrices::needsWrite = true;
 }
 
+void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color) {
+    uint8_t width = sizeof(bitmap) * 8;
+    if (Device::getOrientation() == ORIENTATION______UP) {
+        Matrices::matrixA.drawBitmap(bitmap, offset, color, width);
+        Matrices::matrixB.drawBitmap(bitmap, offset - 8, color, width);
+        Matrices::matrixC.drawBitmap(bitmap, offset - 16, color, width);
+        Matrices::matrixD.drawBitmap(bitmap, offset - 24, color, width);
+    } else {
+        Matrices::matrixD.drawBitmap(bitmap, offset, color, width);
+        Matrices::matrixC.drawBitmap(bitmap, offset - 8, color, width);
+        Matrices::matrixB.drawBitmap(bitmap, offset - 16, color, width);
+        Matrices::matrixA.drawBitmap(bitmap, offset - 24, color, width);
+    }
+    Matrices::needsWrite = true;
+}
+
 void Matrices::clear() {
     Matrices::matrixA.clear();
     Matrices::matrixB.clear();
     Matrices::matrixC.clear();
     Matrices::matrixD.clear();
+}
+
+void Matrices::clearCanvases() {
+    Matrices::matrixA.clearCanvases();
+    Matrices::matrixB.clearCanvases();
+    Matrices::matrixC.clearCanvases();
+    Matrices::matrixD.clearCanvases();
 }
 
 bool Matrices::write() {
@@ -166,4 +188,22 @@ void Matrices::setOrientation(orientation___e orientation) {
     Matrices::matrixB.setOrientation(orientation);
     Matrices::matrixC.setOrientation(orientation);
     Matrices::matrixD.setOrientation(orientation);
+}
+
+uint32_t* Matrices::getBuffer() {
+    uint32_t* buffer32 = new uint32_t[8];
+    uint8_t* bufferA = Matrices::matrixA.getBuffer();
+    uint8_t* bufferB = Matrices::matrixB.getBuffer();
+    uint8_t* bufferC = Matrices::matrixC.getBuffer();
+    uint8_t* bufferD = Matrices::matrixD.getBuffer();
+    if (Device::getOrientation() == ORIENTATION______UP) {
+        for (uint8_t i = 0; i < 8; i++) {
+            buffer32[i] = (bufferA[i] << 24) | (bufferB[i] << 16) | (bufferC[i] << 8) | (bufferD[i]);
+        }
+    } else {
+        for (uint8_t i = 0; i < 8; i++) {
+            buffer32[i] = (bufferD[i] << 24) | (bufferC[i] << 16) | (bufferB[i] << 8) | (bufferA[i]);
+        }
+    }
+    return buffer32;
 }

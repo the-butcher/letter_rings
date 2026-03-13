@@ -30,13 +30,11 @@ class BlesrvCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
         Serial.println("something connected");
         Display::setNeedsConfigRedraw(); // not actually a config redraw, but the display should still wake up
-        // Display::setNeedsStatusRedraw();
     };
     void onDisconnect(BLEServer* pServer) {
         pServer->getAdvertising()->start();
         Serial.println("something disconnected");
         Display::setNeedsConfigRedraw(); // not actually a config redraw, but the display should still wake up
-        // Display::setNeedsStatusRedraw();
     }
 };
 
@@ -46,12 +44,6 @@ class BlesrvCallbacks : public BLEServerCallbacks {
 class LabelCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
-
-        // size_t pDataLength = pCharacteristic->getLength();
-        // Serial.print("pDataLength: ");
-        // Serial.print(String(pDataLength));
-        // Serial.print(", core: ");
-        // Serial.println(xPortGetCoreID());
 
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         String newString = (char*)newValue;
@@ -67,12 +59,6 @@ class WordsCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
 
-        // size_t pDataLength = pCharacteristic->getLength();
-        // Serial.print("pDataLength: ");
-        // Serial.print(String(pDataLength));
-        // Serial.print(", core: ");
-        // Serial.println(xPortGetCoreID());
-
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         String newString = (char*)newValue;
         Device::word = newString;
@@ -87,20 +73,13 @@ class ModusCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
 
-        // size_t pDataLength = pCharacteristic->getLength();
-        // Serial.print("pDataLength: ");
-        // Serial.print(String(pDataLength));
-        // Serial.print(", core: ");
-        // Serial.print(xPortGetCoreID());
-        // Serial.print(", newValue: ");
-        // Serial.println(String(newValue[0]));
-
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         uint8_t bModus = newValue[0];
         if (bModus >= MODUS________WORDS && bModus <= MODUS________ACCEL) {
             Device::setCurrModus((modus_________e)bModus);
             Display::setNeedsConfigRedraw();
         }
+
     }
 };
 
@@ -110,14 +89,6 @@ class ModusCallbacks : public BLECharacteristicCallbacks {
 class LightCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
-
-        // size_t pDataLength = pCharacteristic->getLength();
-        // Serial.print("pDataLength: ");
-        // Serial.print(String(pDataLength));
-        // Serial.print(", core: ");
-        // Serial.print(xPortGetCoreID());
-        // Serial.print(", newValue: ");
-        // Serial.println(String(newValue[0]));
 
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         if (Matrices::setBrightness(newValue[0])) {
@@ -134,14 +105,6 @@ class LightCallbacks : public BLECharacteristicCallbacks {
 class CoeffCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
-
-        // size_t pDataLength = pCharacteristic->getLength();
-        // Serial.print("pDataLength: ");
-        // Serial.print(String(pDataLength));
-        // Serial.print(", core: ");
-        // Serial.print(xPortGetCoreID());
-        // Serial.print(", newValue: ");
-        // Serial.println(String(newValue[0]));
 
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         if (Orientation::setCoefficientThreshold(newValue[0] / 100.0)) {
@@ -199,11 +162,8 @@ bool Blesrv::begin() {
     pAdvertising->addServiceUUID(COMMAND_LABEL_____UUID);
     pAdvertising->addServiceUUID(COMMAND_WORD______UUID);
     pAdvertising->addServiceUUID(COMMAND_MODUS_____UUID);
-    // pAdvertising->addServiceUUID(COMMAND_MODUS_DSC_UUID);
     pAdvertising->addServiceUUID(COMMAND_LIGHT_____UUID);
-    // pAdvertising->addServiceUUID(COMMAND_LIGHT_DSC_UUID);
     pAdvertising->addServiceUUID(COMMAND_COEFF_____UUID);
-    // pAdvertising->addServiceUUID(COMMAND_COEFF_DSC_UUID);
     pServer->getAdvertising()->start();
 
     const uint8_t* bleAdress = esp_bt_dev_get_address();
@@ -211,14 +171,9 @@ bool Blesrv::begin() {
     sprintf(bleStr, "%02X:%02X:%02X:%02X:%02X:%02X", (int)bleAdress[0], (int)bleAdress[1], (int)bleAdress[2], (int)bleAdress[3], (int)bleAdress[4], (int)bleAdress[5]);
     Blesrv::macAdress = String(bleStr);
 
-
-    // Serial.print("bleAddress: ");
-    // Serial.println(Blesrv::macAdress);
-
     // WiFi.mode(WIFI_STA);
     // WiFi.begin();
     // String staString = WiFi.macAddress();
-
     // Serial.print("staAddress: ");
     // Serial.println(staString);
 

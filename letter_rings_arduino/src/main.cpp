@@ -8,6 +8,7 @@
 #include "Microphone.h"
 #include "Nowsrv.h"
 #include "Orientation.h"
+#include "GamOL.h"
 
 uint16_t pixelPos = 0;
 int16_t labelPos = 33;
@@ -44,8 +45,18 @@ bool exceedsPartyLabelDuration(uint64_t currMillis) {
     return (currMillis - lastLabelUpdateMillis) > PARTY_LABEL_DURATION_MS;
 }
 
+/**
+ * check if the GamOL animation has run a full cycle
+ * will always return true until lastGamOLThresholdMillis has been set to a value higher than zero,
+ * this is to prevent a GamOL animation from starting right after a device boot
+ */
 bool exceedsGamOLThresholdDuration(uint64_t currMillis) {
-    return (currMillis - lastGamOLThresholdMillis) > GAMOL_______DURATION_MS;
+    if (lastGamOLThresholdMillis == 0) {
+        return true;
+    } else {
+        return (currMillis - lastGamOLThresholdMillis) > GAMOL_______DURATION_MS;
+    }
+
 }
 
 modus_________e determineModus() {
@@ -63,26 +74,30 @@ modus_________e determineModus() {
     // if in accel mode and paired -> run pacman, fallback to previous mode if not paired
     if (modus == MODUS________ACCEL) {
 
-        // (not primary, not secondary) = below coefficient threshold -> fallback to previous mode
-        if (Device::getDeviceRole() == DEVICE_ROLE_____ANY) {
+        if (USE__FORCE_______GAMPM || Device::getDeviceRole() == DEVICE_ROLE_____PRI) {
+
+            modus = MODUS____GAMPM_PRI;
+
+        } else if (Device::getDeviceRole() == DEVICE_ROLE_____SEC) {
+
+            modus = MODUS____GAMPM_SEC;
+
+        } else {
 
             modus = Device::getPrevModus();
 
             if (Orientation::isAboveSignificantThreshold()) {
                 if (exceedsGamOLThresholdDuration(currMillis)) {
-                    // Serial.println("entering GAMOL");
-                    // TODO :: read matrices to get an initial state
+                    GamOL::readFieldState();
                 }
                 lastGamOLThresholdMillis = currMillis;
-
             }
 
-            if (!exceedsGamOLThresholdDuration(currMillis)) {
+            // keep the GamOL animation running even after a significant threshold event
+            if (!exceedsGamOLThresholdDuration(currMillis)) { // Game of Life
                 modus = MODUS________GAMOL;
             }
 
-        } else {
-            modus = MODUS________GAMPM; // if the device role is other than ANY, it is PACMAN (paired, orientation similarity)
         }
 
     }
@@ -173,6 +188,7 @@ void runLoopTaskDisplay(void* pvParameters) {
         } else if (modus == MODUS________BREAK) {  // frequency
 
             Matrices::clear();
+            Matrices::clearCanvases();
             Matrices::drawPixel(pixelPos, 6, LED_ON);
 
             Display::drawText("");
@@ -184,15 +200,16 @@ void runLoopTaskDisplay(void* pvParameters) {
 
             vTaskDelay(250);
 
-        } else if (modus == MODUS________GAMPM) {
+        } else if (modus == MODUS____GAMPM_PRI || modus == MODUS____GAMPM_SEC) {
 
             bitmaps_______t bitmaps = Device::currBitmaps;
 
+            Matrices::clearCanvases();
             // first two calls clear the bitmap ahead and behind
-            Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset + 2, bitmaps.bitmapA.color, bitmaps.orientation);
-            Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - 2, bitmaps.bitmapA.color, bitmaps.orientation);
+            Matrices::drawBitmapWithOrientation(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset + 2, LED_OFF, bitmaps.orientation);
+            Matrices::drawBitmapWithOrientation(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - 2, LED_OFF, bitmaps.orientation);
             // third call draws into the space cleared by the previous calls
-            Matrices::drawBitmap(BITMAP_STORE[bitmaps.bitmapB.bitmap], bitmaps.bitmapB.offset, bitmaps.bitmapB.color, bitmaps.orientation);
+            Matrices::drawBitmapWithOrientation(BITMAP_STORE[bitmaps.bitmapB.bitmap], bitmaps.bitmapB.offset, LED_ON, bitmaps.orientation);
 
             Display::drawAcceleration();
 
@@ -200,9 +217,10 @@ void runLoopTaskDisplay(void* pvParameters) {
 
         } else if (modus == MODUS________GAMOL) {
 
-            Serial.println("GAMOL");
+            GamOL::drawFieldState();
+            GamOL::stepFieldState();
 
-            vTaskDelay(250);
+            vTaskDelay(200);
 
         } else {
 
@@ -233,7 +251,7 @@ void runLoopTaskGeneral(void* pvParameters) {
             Nowsrv::sendAcceleration();  // consumes ~1 millisecond
 
             modus_________e modus = determineModus(); // see what central logic tells about modus
-            if (modus == MODUS________GAMPM) {
+            if (modus == MODUS____GAMPM_PRI) {
 
                 if (bitmapPos > 64) {
                     bitmapPos = BITMAP_RESET_POS;
@@ -266,11 +284,11 @@ void setup(void) {
     // this is an attempt to have different random word orders across device starts and therefore different word orders
     randomSeed(analogRead(A0));
 
-    Serial.print("setup ");
-    Serial.print(BLE_DEVICE_NAME);
-    Serial.println(" ...");
-    Serial.print("core: ");
-    Serial.println(xPortGetCoreID());
+    String separator = "--------------";
+    Serial.println(separator);
+    Serial.println(BLE_DEVICE_NAME);
+    Serial.println(separator);
+    Serial.println("setup ...");
 
     Display::powerup();
     delay(100);
@@ -297,6 +315,7 @@ void setup(void) {
     xTaskCreatePinnedToCore(runLoopTaskDisplay, "run-loop-display", 10000, NULL, 2, NULL, 0);
 
     Serial.println("... setup");
+    Serial.println(separator);
 }
 
 /**
