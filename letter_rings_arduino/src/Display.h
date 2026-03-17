@@ -69,8 +69,6 @@ private:
     static uint16_t lastBarsHeight;
 
 public:
-    static bool powerup();
-    static bool depower();
 
     static bool exceedsDispActiveDuration(uint64_t currMillis);
 
@@ -99,6 +97,10 @@ public:
      * write actual canvas updates to the display, if required
      */
     static bool writeCopy();
+
+    static bool powerup();
+    static bool depower();
+
 };
 
 #endif

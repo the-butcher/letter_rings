@@ -12,19 +12,21 @@
 class Matrix {
 private:
     Adafruit_8x8matrix baseMatrix;
+    /**
+     * internal canvas that stores pixels that need to be turned on
+     */
     GFXcanvas1 writeCanvas;
+    /**
+     * internal canvas that stores pixels that need to be turned off
+     */
     GFXcanvas1 clearCanvas;
     uint8_t addr;
     String name;
 
 public:
 
-    void setBrightness(uint8_t brightness);  // 0 - 15
-
-    bool hasBegun;
     Matrix(uint8_t addr, String name);
-    bool powerup();
-    bool depower();
+    void setBrightness(uint8_t brightness);  // 0 - 15
     void setOrientation(orientation___e orientation);
     uint16_t getWordWidth(String word);
     uint16_t getLabelWidth(String label);
@@ -34,11 +36,21 @@ public:
     void drawBars(uint8_t indexMin);
     void drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color, uint8_t width);
 
-    void clear();
-    void clearCanvases();
+    /**
+     * clear canvases and or display
+     * CLEAR_MATRIX_CANVAS, clear canvases only
+     * CLEAR_MATRIX___DISP, clear display only
+     * CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP, clear canvases and display
+     */
+    void clear(uint8_t flags);
     void write();
 
     uint8_t* getBuffer();
+
+    bool powered;
+    bool powerup();
+    bool depower();
+
 
 };
 

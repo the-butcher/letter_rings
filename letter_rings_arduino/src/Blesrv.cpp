@@ -9,20 +9,6 @@ BLECharacteristic* Blesrv::pLightCharacteristic;
 BLECharacteristic* Blesrv::pCoeffCharacteristic;
 String Blesrv::macAdress;
 
-// // Function to convert a struct to a byte array
-// // https://wokwi.com/projects/384215584338530305
-// template <typename T>
-// void serializeData(const T& inputStruct, uint8_t* outputBytes) {
-//     memcpy(outputBytes, &inputStruct, sizeof(T));
-// }
-
-// // Function to convert a byte array to a struct
-// // https://wokwi.com/projects/384215584338530305
-// template <typename T>
-// void deserializeData(const uint8_t* inputBytes, uint16_t offset, T& outputStruct) {
-//     memcpy(&outputStruct, inputBytes + offset, sizeof(T));
-// }
-
 /**
  * bluetooth connection callbacks
  */
@@ -119,7 +105,7 @@ bool Blesrv::isConnected() {
     return Blesrv::pServer->getConnectedCount() > 0;
 }
 
-bool Blesrv::begin() {
+bool Blesrv::powerup() {
 
     BLEDevice::init(BLE_DEVICE_NAME);
 
@@ -171,13 +157,11 @@ bool Blesrv::begin() {
     sprintf(bleStr, "%02X:%02X:%02X:%02X:%02X:%02X", (int)bleAdress[0], (int)bleAdress[1], (int)bleAdress[2], (int)bleAdress[3], (int)bleAdress[4], (int)bleAdress[5]);
     Blesrv::macAdress = String(bleStr);
 
-    // WiFi.mode(WIFI_STA);
-    // WiFi.begin();
-    // String staString = WiFi.macAddress();
-    // Serial.print("staAddress: ");
-    // Serial.println(staString);
+    Serial.print("ble: ");
+    Serial.println(Blesrv::macAdress);
 
     return true;
+
 }
 
 bool Blesrv::writeModus() {

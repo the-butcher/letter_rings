@@ -4,15 +4,15 @@ Matrix::Matrix(uint8_t addr, String name) : writeCanvas(8, 8), clearCanvas(8, 8)
     this->baseMatrix = Adafruit_8x8matrix();
     this->addr = addr;
     this->name = name;
-    this->hasBegun = false;
+    this->powered = false;
 }
 
 bool Matrix::powerup() {
-    this->hasBegun = this->baseMatrix.begin(this->addr);  // pass in the address
-    if (this->hasBegun) {
+    this->powered = this->baseMatrix.begin(this->addr);  // pass in the address
+    if (this->powered) {
         this->baseMatrix.setRotation(2);
     }
-    return this->hasBegun;
+    return this->powered;
 }
 
 bool Matrix::depower() {
@@ -21,7 +21,7 @@ bool Matrix::depower() {
 }
 
 void Matrix::setOrientation(orientation___e orientation) {
-    if (this->hasBegun) {
+    if (this->powered) {
         this->baseMatrix.setRotation(orientation == ORIENTATION______UP ? 2 : 0);
     }
 }
@@ -55,9 +55,8 @@ uint16_t Matrix::getLabelWidth(String label) {
 }
 
 void Matrix::drawBars(uint8_t indexMin) {
-    this->clear();
-    this->clearCanvases();
-    if (this->hasBegun) {
+    this->clear(CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP);
+    if (this->powered) {
         double val1;
         double val2;
         double bar1;
@@ -76,9 +75,8 @@ void Matrix::drawBars(uint8_t indexMin) {
 }
 
 void Matrix::drawWord(String word, int16_t offset) {
-    this->clear();
-    this->clearCanvases();
-    if (this->hasBegun) {
+    this->clear(CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP);
+    if (this->powered) {
         this->writeCanvas.setCursor(offset, 7);  // y-offset 7 is specifically for the 7x8 font
         this->writeCanvas.setFont(&Font7x8FixedMono);
         this->writeCanvas.setTextWrap(false);
@@ -89,9 +87,8 @@ void Matrix::drawWord(String word, int16_t offset) {
 }
 
 void Matrix::drawLabel(String label, int16_t offset) {
-    this->clear();
-    this->clearCanvases();
-    if (this->hasBegun) {
+    this->clear(CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP);
+    if (this->powered) {
         this->writeCanvas.setCursor(offset, 0);  // y-offset 7 is specifically for the 7x8 font
         this->writeCanvas.setFont();
         this->writeCanvas.setTextWrap(false);
@@ -102,13 +99,13 @@ void Matrix::drawLabel(String label, int16_t offset) {
 }
 
 void Matrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
-    if (this->hasBegun) {
+    if (this->powered) {
         this->writeCanvas.drawPixel(x, y, color);
     }
 }
 
 void Matrix::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color, uint8_t width) {
-    if (this->hasBegun) {
+    if (this->powered) {
         if (color == LED_ON) {
             this->writeCanvas.drawBitmap(offset, 0, bitmap, width, 8, LED_ON);
         } else {
@@ -117,21 +114,20 @@ void Matrix::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color, u
     }
 }
 
-void Matrix::clear() {
-    if (this->hasBegun) {
-        this->baseMatrix.clear();
-    }
-}
-
-void Matrix::clearCanvases() {
-    if (this->hasBegun) {
-        this->clearCanvas.fillRect(0, 0, 8, 8, LED_OFF);
-        this->writeCanvas.fillRect(0, 0, 8, 8, LED_OFF);
+void Matrix::clear(uint8_t flags) {
+    if (this->powered) {
+        if ((flags & CLEAR_MATRIX_CANVAS) != 0) {
+            this->clearCanvas.fillRect(0, 0, 8, 8, LED_OFF);
+            this->writeCanvas.fillRect(0, 0, 8, 8, LED_OFF);
+        }
+        if ((flags & CLEAR_MATRIX___DISP) != 0) {
+            this->baseMatrix.clear();
+        }
     }
 }
 
 void Matrix::write() {
-    if (this->hasBegun) {
+    if (this->powered) {
         this->baseMatrix.drawBitmap(0, 0, this->clearCanvas.getBuffer(), 8, 8, LED_OFF);
         this->baseMatrix.drawBitmap(0, 0, this->writeCanvas.getBuffer(), 8, 8, LED_ON);
         this->baseMatrix.writeDisplay();
@@ -139,7 +135,7 @@ void Matrix::write() {
 }
 
 void Matrix::setBrightness(uint8_t brightness) {
-    if (this->hasBegun) {
+    if (this->powered) {
         this->baseMatrix.setBrightness(brightness);
     }
 }

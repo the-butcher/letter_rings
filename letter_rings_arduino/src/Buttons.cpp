@@ -45,7 +45,7 @@ void Buttons::handleInterruptA() {
                 Microphone::decay += 5;
             } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT && Matrices::setBrightness(Matrices::getBrightness() + 1)) {
                 Blesrv::writeLight();
-            } else if (Orientation::setCoefficientThreshold(min(ORIENTATION_THRES__MAX, Orientation::getCoefficientThreshold() + 0.05))) {
+            } else if (Orientation::setCoefficientThreshold(min(COEFFICIENT_THRES__MAX, Orientation::getCoefficientThreshold() + 0.05))) {
                 Blesrv::writeCoeff();
             }
         }
@@ -97,7 +97,7 @@ void Buttons::handleInterruptC() {
                 Microphone::decay -= 5;
             } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT && Matrices::setBrightness(Matrices::getBrightness() - 1)) {
                 Blesrv::writeLight();
-            } else if (Orientation::setCoefficientThreshold(max(ORIENTATION_THRES__MIN, Orientation::getCoefficientThreshold() - 0.05))) {
+            } else if (Orientation::setCoefficientThreshold(max(COEFFICIENT_THRES__MIN, Orientation::getCoefficientThreshold() - 0.05))) {
                 Blesrv::writeCoeff();
             }
         }

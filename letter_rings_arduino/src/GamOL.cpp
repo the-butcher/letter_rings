@@ -98,8 +98,7 @@ void GamOL::drawFieldState() {
     // }
     // Serial.println();
 
-    Matrices::clear();
-    Matrices::clearCanvases();
+    Matrices::clear(CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP);
     Matrices::drawBitmap(bitmap, 0, LED_ON);
 
 }

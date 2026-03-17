@@ -310,13 +310,13 @@ void Display::drawMatrixState() {
 
         uint8_t rectXPos = 0;
         uint8_t rectYPos = DISPLAY_HEIGHT - 27;
-        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixA.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixA.powered ? ST77XX_GREEN : ST77XX_RED);
         rectXPos += 8;
-        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixB.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixB.powered ? ST77XX_GREEN : ST77XX_RED);
         rectXPos += 8;
-        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixC.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixC.powered ? ST77XX_GREEN : ST77XX_RED);
         rectXPos += 8;
-        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixD.hasBegun ? ST77XX_GREEN : ST77XX_RED);
+        Display::drawCanvas.fillRect(rectXPos, rectYPos, 6, 6, Matrices::matrixD.powered ? ST77XX_GREEN : ST77XX_RED);
 
         Display::addClip(0, rectYPos, 32, rectYPos + 6);
 
@@ -382,10 +382,10 @@ void Display::drawConnection() {
 
 void Display::drawOrientation() {
 
-    if (!Display::exceedsDispActiveDuration(millis()) && Orientation::hasBegun) {
+    if (!Display::exceedsDispActiveDuration(millis()) && Orientation::powered) {
 
         Display::drawCanvas.setTextSize(2);
-        Display::drawCanvas.setTextColor(Orientation::hasBegun ? 0xad55 : 0xdc30);  // #adaaad : #de8684 // https://rgbcolorpicker.com/565
+        Display::drawCanvas.setTextColor(Orientation::powered ? 0xad55 : 0xdc30);  // #adaaad : #de8684 // https://rgbcolorpicker.com/565
 
         vector________t orientation = Orientation::getOrientation();
 

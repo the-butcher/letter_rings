@@ -15,7 +15,20 @@ double Microphone::dlt1Values[AUDIO________NUM_BANDS];
 double Microphone::dlt2Values[AUDIO________NUM_BANDS];
 uint8_t Microphone::decay = 20;
 uint64_t Microphone::signal = 0;
-double Microphone::scale = 0.005;
+
+/**
+ * used to fit the signal to the 8 pixels available
+ * no     music: ~0.002
+ * silent music: ~0.002
+ * load (private): 0.0008-0.0006
+ */
+double Microphone::scale = AUDIO________MAX_SCALE;
+/**
+ * used for a bottomline
+ * no     music: ~ 800
+ * silent music: ~1200
+ * load (private): ~1800-2500
+ */
 double Microphone::basis = 2000;
 
 double Microphone::fitFAverag;
@@ -42,7 +55,7 @@ bool Microphone::powerup() {
         // https://www.desmos.com/calculator/o8ajvpoceu?lang=de
         Microphone::curvValues[i] = 1 - pow((i - c) / b, 2); // 1
 
-        Serial.printf("%02d -> %03d\n", i, Microphone::buckValues[i]);
+        Serial.printf("frequ bucket %02d -> %03d\n", i, Microphone::buckValues[i]);
         Microphone::fitXValues[i] = i;  // initialize fit-x values
     }
 
@@ -112,7 +125,7 @@ void Microphone::read() {
 
     // 27ms to here
 
-    double f = 0.002;  // the speed at which the low pass filter adapts
+    double f = 0.001;  // the speed at which the low pass filter adapts
     Microphone::fitFAverag = 0;
     double x;
     double y;
@@ -135,7 +148,7 @@ void Microphone::read() {
         double delta = Microphone::bandScaled[i] - Microphone::basis;
 
         Microphone::dlt1Values[i] = Microphone::dlt1Values[i] * (1 - Microphone::decay / 100.0);  // decay curr mark
-        Microphone::dlt2Values[i] = Microphone::dlt2Values[i] * 0.97;                             // decay peak mark, 0.96 means 0.04 peak decay
+        Microphone::dlt2Values[i] = Microphone::dlt2Values[i] * 0.96;                             // decay peak mark, 0.96 means 0.04 peak decay
 
         Microphone::dlt1Values[i] = max(Microphone::dlt1Values[i], delta); // push curr mark
         Microphone::dlt2Values[i] = max(Microphone::dlt2Values[i], delta); // push peak mark
@@ -157,12 +170,12 @@ void Microphone::read() {
     }
 
     if (numOutliers0015U > 0) {
-        Microphone::scale *= 0.999;
+        Microphone::scale *= AUDIO_BASE_SCALE_DECAY; // decreases the value
         // Serial.print("decrease scale: ");
         // Serial.println(String(Microphone::scale, 5));
     } else {
-        if (Microphone::scale < 0.01) {
-            Microphone::scale *= 1.001;
+        if (Microphone::scale < AUDIO________MAX_SCALE) { // limit scale increase or noise will dominate when rather silent
+            Microphone::scale /= AUDIO_BASE_SCALE_DECAY; // increases the value
             // Serial.print("increase scale: ");
             // Serial.println(String(Microphone::scale, 5));
         } else {
@@ -171,11 +184,9 @@ void Microphone::read() {
     }
 
     if (numOutliers0015L > 2) {
-        Microphone::basis *= 0.999;
-        // Serial.print("decrease scale: ");
-        // Serial.println(String(Microphone::scale, 5));
+        Microphone::basis *= AUDIO_BASE_SCALE_DECAY; // decreases the value
     } else {
-        Microphone::basis *= 1.001;
+        Microphone::basis /= AUDIO_BASE_SCALE_DECAY; // increases the value
     }
 
     // 28ms to here

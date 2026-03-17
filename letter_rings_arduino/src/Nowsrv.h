@@ -10,17 +10,30 @@
 #include "Orientation.h"
 
 class Nowsrv {
-   private:
+private:
+    /**
+     * the remote peer info
+     */
     static esp_now_peer_info_t peerInfo;
 
-   public:
+    static uint64_t millisSend;
+    static uint64_t millisRecv;
+    /**
+     * the expected latency
+     */
+    static uint64_t destMillisWait;
+
+
+public:
     static void OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status);
     static void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len);
-    static bool hasBegun;
-    static bool begin();
-    static bool sendDeviceRole(device_role___t deviceRole);
-    static bool sendAcceleration();
-    static bool sendBitmaps(bitmaps_______t sendBitmaps);
+    static bool sendDeviceData();
+
+    static bool powered;
+    static bool powerup();
+    static bool depower();
+
+
 };
 
 #endif

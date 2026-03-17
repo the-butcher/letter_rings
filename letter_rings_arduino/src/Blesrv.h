@@ -29,7 +29,6 @@ public:
      * the device's bluetooth mac address
      */
     static String macAdress;
-    static bool begin();
     /**
      * check if the device is currently connected (has at least 1 connection)
      */
@@ -46,6 +45,11 @@ public:
      * write new coeff value when changed on the device
      */
     static bool writeCoeff();
+    /**
+     * initialize bluetooth, build characteristics and start advertising
+     */
+    static bool powerup();
+
 };
 
 #endif

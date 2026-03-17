@@ -1,19 +1,24 @@
-#define DEVICE____________LEFT false
+#define DEVICE____________LEFT true
 
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"
 #define DEVICE____________SIDE "L"
 #define BLE_DEVICE_NAME "LETTER_RINGS_L"
+#define ACCEPT__ROLE_DOWNGRADE false
 #else
 #define COMMAND_SERVICE___UUID "d0e5a78d-614b-4f8c-86cd-e782d832228f"
 #define DEVICE____________SIDE "R"
 #define BLE_DEVICE_NAME "LETTER_RINGS_R"
+#define ACCEPT__ROLE_DOWNGRADE true
 #endif
 
 #define USE__FORCE_______GAMPM false
 #define USE_SERIAL_LOOP_OUTPUT false // measure loop duration
 #define USE__________CLIP_DRAW false // draw red clip areas on display
-#define USE__FORCE_BACKLITE_ON false // when USE__FORCE_BACKLITE_ON = true, the display backlite will never turn off, even the display is inactive
+#define USE__FORCE_BACKLITE_ON false // when USE__FORCE_BACKLITE_ON = true, the display backlite will never turn off, even when the display is inactive
+#define USE_____MICVALS_OUTPUT false
+#define USE_SERIAL_SYNC_OUTPUT false // write sync related messages (send, revc, millis) to the console
+
 
 #define COMMAND_LABEL_____UUID "067c3c93-eb63-4905-b292-478642f8ae99"  // for remote writing a label (moving over multiple matrices)
 #define COMMAND_WORD______UUID "3dfde050-8432-4f2f-9366-de27c430c05c"  // for remote writing a word (static 4-letter word)
@@ -25,15 +30,16 @@
 #define AUDIO____SAMPLING_FREQ 40000  // Hz, must be 40000 or less due to ADC conversion time. Determines maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
 #define AUDIO________NUM_BANDS 16
 #define AUDIO________NUM_ORDER 3
+#define AUDIO________MAX_SCALE 0.0015 // a bit louder than silence (PC fan and else) which yields 0.002
+#define AUDIO_BASE_SCALE_DECAY 0.9999
 
 #define BUTTON_DEBOUNCE_MILLIS 100
 
 #define ACCELERATION___SAMPLES 32
 #define ACCELERATION_THRESHOLD 0.8  // threshold for the correlation value considered to be good enough
-#define ORIENTATION_THRES__MIN 0.6
-#define ORIENTATION_THRES__MAX 0.9
-#define ACCELERATION_OFFSET_AB 0
 #define ACCELERATION_SIG_THRES 7.5 // TODO :: find a usable value, maybe configurable, i.e. 10
+#define COEFFICIENT_THRES__MIN 0.6
+#define COEFFICIENT_THRES__MAX 0.9
 
 #ifndef Define_h
 #define Define_h
@@ -72,6 +78,11 @@ const uint64_t WORD_UPDATE_INTERVAL_MS = 14000;
 const uint64_t PARTY_LABEL_DURATION_MS = 20000;
 const uint64_t DISP_ACTIVE_DURATION_MS = 1000 * 60 * 3; // 3 minutes
 const uint64_t GAMOL_______DURATION_MS = 10000;
+
+/**
+ * the interval we want the primary loop to run at (50ms -> 20 times/second)
+ */
+const uint64_t MAIN_LOOP_______DEST_MS = 50;
 
 typedef enum : uint8_t {
     BITMAP_PAC____OPEN_R = 0,
@@ -136,6 +147,11 @@ typedef enum : int8_t {
     ORIENTATION______UP = -1,  // fingers pointing up, matrix bottom is where the pins are
     ORIENTATION____DOWN = 1    // fingers pointing down, matrix top is where the pins are
 } orientation___e;
+
+typedef enum : uint8_t {
+    CLEAR_MATRIX_CANVAS = 1,  // clear the internal canvas elements
+    CLEAR_MATRIX___DISP = 2   // clear the actual display
+} clear_matrix__e;
 
 /**
  * configurable actions
@@ -205,8 +221,8 @@ typedef struct {
 
 typedef struct {
     float values[ACCELERATION___SAMPLES];
+    int64_t millisWait;
 } acceleration__t;
-// 128 - const a = sizeof(acceleration__t);
 
 typedef struct {
     /**
@@ -225,7 +241,6 @@ typedef struct {
     bitmap________t bitmapB;      // drawing
     orientation___e orientation;  // the orientation of the primary device
 } bitmaps_______t;
-// 4 - const b = sizeof(bitmaps_______t);
 
 typedef enum : uint8_t {
     /**
@@ -243,8 +258,10 @@ typedef enum : uint8_t {
 } device_role___e;
 
 typedef struct {
-    device_role___e deviceRole;
-} device_role___t;
-// 1 - const b = sizeof(device_role___t);
+    device_role___e deviceRole; // the own role, TODO :: adapt in recv callback
+    bitmaps_______t bitmaps;
+    acceleration__t acceleration;
+} device_data___t;
+// const a = sizeof(device_data___t); // 144
 
 #endif

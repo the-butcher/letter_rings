@@ -1,7 +1,10 @@
 #include "Nowsrv.h"
 
 esp_now_peer_info_t Nowsrv::peerInfo;
-bool Nowsrv::hasBegun;
+bool Nowsrv::powered;
+uint64_t Nowsrv::millisSend = 0;
+uint64_t Nowsrv::millisRecv = 0;
+uint64_t Nowsrv::destMillisWait = 2;
 
 // Function to convert a struct to a byte array
 // https://wokwi.com/projects/384215584338530305
@@ -18,88 +21,166 @@ void deserializeData(const uint8_t* inputBytes, uint16_t offset, T& outputStruct
 }
 
 // https://randomnerdtutorials.com/esp-now-two-way-communication-esp32/
-bool Nowsrv::begin() {
+bool Nowsrv::powerup() {
 
     WiFi.mode(WIFI_STA);
 
-    Nowsrv::hasBegun = esp_now_init() == ESP_OK;
+    // String staString = WiFi.macAddress();
+    Serial.print("sta: ");
+    Serial.println(WiFi.macAddress());
 
-    if (Nowsrv::hasBegun) {
+    Nowsrv::powered = esp_now_init() == ESP_OK;
+
+    if (Nowsrv::powered) {
 
         esp_now_register_send_cb(esp_now_send_cb_t(Nowsrv::OnDataSent));
 
         memcpy(Nowsrv::peerInfo.peer_addr, STA_ADDRESS_OUT, 6);
-        peerInfo.channel = 0;
-        peerInfo.encrypt = false;
+        Nowsrv::peerInfo.channel = 0;
+        Nowsrv::peerInfo.encrypt = false;
 
-        Nowsrv::hasBegun &= esp_now_add_peer(&peerInfo) == ESP_OK;
+        Nowsrv::powered &= esp_now_add_peer(&Nowsrv::peerInfo) == ESP_OK;
 
         esp_now_register_recv_cb(esp_now_recv_cb_t(Nowsrv::OnDataRecv));
     }
-    return Nowsrv::hasBegun;
+
+    return Nowsrv::powered;
+
+}
+
+bool Nowsrv::depower() {
+
+    esp_now_deinit();
+
+    esp_now_unregister_send_cb();
+    esp_now_unregister_recv_cb();
+
+    // TODO :: WIFI off (?)
+
+    return true;
+
 }
 
 /**
  * both left and right send acceleration when in accel mode
  */
-bool Nowsrv::sendAcceleration() {
-    acceleration__t accelA = Orientation::getAccelA();
-    esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&accelA, sizeof(acceleration__t));
-    return result == ESP_OK;
-}
+bool Nowsrv::sendDeviceData() {
 
-/**
- * only the primary device sends bitmaps when in accel mode
- */
-bool Nowsrv::sendBitmaps(bitmaps_______t sendBitmaps) {
-    esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&sendBitmaps, sizeof(bitmaps_______t));
-    return result == ESP_OK;
-}
+#if USE_SERIAL_SYNC_OUTPUT == true
+    Serial.print(DEVICE____________SIDE);
+    Serial.print(", ms: ");
+    Serial.print(String(millis()));
+    Serial.print(", send data on core ");
+    Serial.println(xPortGetCoreID());
+#endif
 
-/**
- * only the device entering primary first sends a role to the other device
- */
-bool Nowsrv::sendDeviceRole(device_role___t deviceRole) {
-    esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&deviceRole, sizeof(device_role___t));
+    Nowsrv::millisSend = millis();
+
+    // device_role___e deviceRole = Device::getDeviceRole();
+    // Serial.print("outgoing device role ");
+    // Serial.println(deviceRole);
+
+    device_data___t deviceData = {
+        Device::getDeviceRole(),
+        Device::currBitmaps,
+        Orientation::getAccelA()
+    };
+
+    esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&deviceData, sizeof(acceleration__t));
     return result == ESP_OK;
 }
 
 void Nowsrv::OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
-    //   if (status ==0){
-    //     success = "Delivery Success :)";
-    //   }
-    //   else{
-    //     success = "Delivery Fail :(";
-    //   }
+    Orientation::setAccelAMillisWait(-1); // set a negative value, will either be calculated upon recv, or remain -1 in case of failure which can prevent extra-delays in the case
+    if (status == 0) {
+#if USE_SERIAL_SYNC_OUTPUT == true
+        Serial.print(DEVICE____________SIDE);
+        Serial.print(", ms: ");
+        Serial.print(String(millis()));
+        Serial.print(", sent data on core ");
+        Serial.println(xPortGetCoreID());
+#endif
+    } else {
+#if USE_SERIAL_SYNC_OUTPUT == true
+        Serial.print(DEVICE____________SIDE);
+        Serial.print(", ms: ");
+        Serial.print(String(millis()));
+        Serial.print(", fail data on core ");
+        Serial.println(xPortGetCoreID());
+#endif
+    }
 }
 
 /**
  * data receive callback
  */
 void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
-    if (len == sizeof(acceleration__t)) {  // acceleration data from the other device
-        acceleration__t incomingAcceleration;
-        memcpy(&incomingAcceleration, incomingData, sizeof(acceleration__t));
-        Orientation::setAccelB(incomingAcceleration);
-        Orientation::calculateCoefficient();
-        if (Device::getDeviceRole() != DEVICE_ROLE_____SEC) {                                                        // can not change role when in SEC, must remain passive
-            if (Orientation::isAboveCoefficientThreshold()) {                                                        // should be PRI
-                if (Device::getDeviceRole() != DEVICE_ROLE_____PRI && Device::setDeviceRole(DEVICE_ROLE_____PRI)) {  // but is not and accepts PRI
-                    Nowsrv::sendDeviceRole({ DEVICE_ROLE_____SEC });                                                 // tell other device to be SEC
-                }
-            } else {                                                                                                 // should be ANY
-                if (Device::getDeviceRole() != DEVICE_ROLE_____ANY && Device::setDeviceRole(DEVICE_ROLE_____ANY)) {  // but is not and accepts ANY (which is only the case after some timeout)
-                    Nowsrv::sendDeviceRole({ DEVICE_ROLE_____ANY });                                                 // reset other device to ANY
-                }
+
+    Nowsrv::millisRecv = millis();
+    Orientation::setAccelAMillisWait((Nowsrv::millisRecv - Nowsrv::millisSend) - Nowsrv::destMillisWait);
+
+    device_data___t incominingDeviceData;
+    memcpy(&incominingDeviceData, incomingData, sizeof(device_data___t));
+    Orientation::setAccelB(incominingDeviceData.acceleration); // will recalculate coefficient
+
+    // Serial.print("incoming device role ");
+    // Serial.print(incominingDeviceData.deviceRole);
+    // Serial.print(", ACCEPT__ROLE_DOWNGRADE ");
+    // Serial.println(ACCEPT__ROLE_DOWNGRADE ? "true" : "false");
+
+    // the other device has sent to be pri -> switch to sec if not already
+    if (incominingDeviceData.deviceRole == DEVICE_ROLE_____PRI && Device::getDeviceRole() != DEVICE_ROLE_____SEC) {
+        bool success = Device::setDeviceRole(DEVICE_ROLE_____SEC);
+        // Serial.print("set DEVICE_ROLE_____SEC due to incoming DEVICE_ROLE_____PRI, ");
+        // Serial.println(success);
+    }
+    // the other device has sent to be any -> switch to any if in sec
+    if (incominingDeviceData.deviceRole == DEVICE_ROLE_____ANY && Device::getDeviceRole() == DEVICE_ROLE_____SEC) {
+        bool success = Device::setDeviceRole(DEVICE_ROLE_____ANY);
+        // Serial.print("set DEVICE_ROLE_____ANY due to incoming DEVICE_ROLE_____ANY, ");
+        // Serial.println(success);
+    }
+
+
+    if (Device::getDeviceRole() == DEVICE_ROLE_____SEC) {          // must accept bitmaps when in sec
+        Device::currBitmaps = incominingDeviceData.bitmaps;
+        // Serial.print("incoming bitmapA ");
+        // Serial.print(incominingDeviceData.bitmaps.bitmapA.bitmap);
+        // Serial.print(" offset ");
+        // Serial.print(incominingDeviceData.bitmaps.bitmapA.offset);
+        // Serial.print(", incoming bitmapB ");
+        // Serial.print(incominingDeviceData.bitmaps.bitmapB.bitmap);
+        // Serial.print(" offset ");
+        // Serial.print(incominingDeviceData.bitmaps.bitmapB.offset);
+        // Serial.print(", orientation ");
+        // Serial.println(incominingDeviceData.bitmaps.orientation);
+    } else {
+        // make a role decision based on orientation threshold, only when not in SEC (must remain passive in SEC)
+        if (Orientation::isAboveCoefficientThreshold()) {          // should be PRI
+            if (Device::getDeviceRole() != DEVICE_ROLE_____PRI) {  // but is not
+                bool success = Device::setDeviceRole(DEVICE_ROLE_____PRI);     // set to pri
+                // Serial.print("set DEVICE_ROLE_____PRI due to coefficient threshold, ");
+                // Serial.println(success);
+            }
+        } else {                                                   // should be ANY
+            if (Device::getDeviceRole() != DEVICE_ROLE_____ANY) {  // but is not
+                bool success = Device::setDeviceRole(DEVICE_ROLE_____ANY);        // set to any
+                // Serial.print("set DEVICE_ROLE_____ANY due to coefficient threshold, ");
+                // Serial.println(success);
             }
         }
-    } else if (len == sizeof(bitmaps_______t)) {  // bitmaps from the other device
-        bitmaps_______t incomingBitmaps;
-        memcpy(&incomingBitmaps, incomingData, sizeof(bitmaps_______t));
-        Device::currBitmaps = incomingBitmaps;
-    } else if (len == sizeof(device_role___t)) {  // device role from the other device
-        device_role___t incomingDevciveRole;
-        memcpy(&incomingDevciveRole, incomingData, sizeof(device_role___t));
-        Device::setDeviceRole(incomingDevciveRole.deviceRole);
     }
+
+#if USE_SERIAL_SYNC_OUTPUT == true
+    Serial.print(DEVICE____________SIDE);
+    Serial.print(", ms: ");
+    Serial.print(String(millis()));
+    Serial.print(", recv data on core ");
+    Serial.print(xPortGetCoreID());
+    Serial.print(", millisWait: ");
+    Serial.print(String(Orientation::getAccelA().millisWait));
+    Serial.print(", millisWait: ");
+    Serial.println(String(Orientation::getAccelB().millisWait));
+#endif
+
 }

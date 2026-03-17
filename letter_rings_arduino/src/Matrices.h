@@ -38,11 +38,14 @@ public:
     static Matrix matrixC;
     static Matrix matrixD;
 
-    static bool powerup();
-    static bool depower();
+    /**
+     * clear canvases and or display
+     * CLEAR_MATRIX_CANVAS, clear canvases only
+     * CLEAR_MATRIX___DISP, clear display only
+     * CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP, clear canvases and display
+     */
+    static void clear(uint8_t flags);
 
-    static void clear();
-    static void clearCanvases();
     /**
      * write any pending changes to content or brightness
      * @return true if changes were made or if the brightness was updated
@@ -58,6 +61,9 @@ public:
     static void drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color);
 
     static uint32_t* getBuffer();
+
+    static bool powerup();
+    static bool depower();
 
 };
 

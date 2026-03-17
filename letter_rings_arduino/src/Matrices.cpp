@@ -148,18 +148,11 @@ void Matrices::drawBitmap(const uint8_t* bitmap, int16_t offset, uint16_t color)
     Matrices::needsWrite = true;
 }
 
-void Matrices::clear() {
-    Matrices::matrixA.clear();
-    Matrices::matrixB.clear();
-    Matrices::matrixC.clear();
-    Matrices::matrixD.clear();
-}
-
-void Matrices::clearCanvases() {
-    Matrices::matrixA.clearCanvases();
-    Matrices::matrixB.clearCanvases();
-    Matrices::matrixC.clearCanvases();
-    Matrices::matrixD.clearCanvases();
+void Matrices::clear(uint8_t flags) {
+    Matrices::matrixA.clear(flags);
+    Matrices::matrixB.clear(flags);
+    Matrices::matrixC.clear(flags);
+    Matrices::matrixD.clear(flags);
 }
 
 bool Matrices::write() {

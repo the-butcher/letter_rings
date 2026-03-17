@@ -46,13 +46,17 @@ public:
     static int lineValues[AUDIO________NUM_BANDS];  // the values actually shown
     static int peakValues[AUDIO________NUM_BANDS];
     static int bandValues[AUDIO________NUM_BANDS];  // actual band values direclty after sampling
+
     /**
      * how fast to decay the lines (not the peak, which is hardcoded)
      */
     static uint8_t decay;
-    static bool powerup();
+
     static void read();
+
+    static bool powerup();
     static bool depower();
+
 };
 
 #endif

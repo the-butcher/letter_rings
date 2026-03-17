@@ -7,7 +7,7 @@
 #include "Matrices.h"
 
 class Device {
-   private:
+private:
     /**
      * last measured device orientation
      */
@@ -31,15 +31,13 @@ class Device {
      */
     static uint64_t lastRolePriAssignmentMillis;
 
-   public:
+public:
     /**
      * a label to be shown running through all letters of the matrix
      */
     static String label;
     static String word;
     static bitmaps_______t currBitmaps;
-    static bool powerup();
-    static bool depower();
     static void setCurrModus(modus_________e currModus);
     static modus_________e getPrevModus();
     static modus_________e getCurrModus();
@@ -51,6 +49,10 @@ class Device {
      * return true if the role was accepted, false otherwise
      */
     static bool setDeviceRole(device_role___e deviceRole);
+
+    static bool powerup();
+    static bool depower();
+
 };
 
 #endif

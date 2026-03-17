@@ -35,6 +35,7 @@ uint64_t durationAC = 0;
 #if USE_SERIAL_LOOP_OUTPUT == true
 uint64_t totalLoopMillis = 0;
 uint64_t totalLoopNumber = 0;
+uint64_t lastLoopMillis = 0;
 #endif
 
 bool exceedsWordUpdateInterval(uint64_t currMillis) {
@@ -187,8 +188,7 @@ void runLoopTaskDisplay(void* pvParameters) {
 
         } else if (modus == MODUS________BREAK) {  // frequency
 
-            Matrices::clear();
-            Matrices::clearCanvases();
+            Matrices::clear(CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP);
             Matrices::drawPixel(pixelPos, 6, LED_ON);
 
             Display::drawText("");
@@ -204,7 +204,7 @@ void runLoopTaskDisplay(void* pvParameters) {
 
             bitmaps_______t bitmaps = Device::currBitmaps;
 
-            Matrices::clearCanvases();
+            Matrices::clear(CLEAR_MATRIX_CANVAS);
             // first two calls clear the bitmap ahead and behind
             Matrices::drawBitmapWithOrientation(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset + 2, LED_OFF, bitmaps.orientation);
             Matrices::drawBitmapWithOrientation(BITMAP_STORE[bitmaps.bitmapA.bitmap], bitmaps.bitmapB.offset - 2, LED_OFF, bitmaps.orientation);
@@ -220,7 +220,7 @@ void runLoopTaskDisplay(void* pvParameters) {
             GamOL::drawFieldState();
             GamOL::stepFieldState();
 
-            vTaskDelay(200);
+            vTaskDelay(75);
 
         } else {
 
@@ -243,12 +243,14 @@ void runLoopTaskGeneral(void* pvParameters) {
 
 #if USE_SERIAL_LOOP_OUTPUT == true
         Serial.print("loopMillis (avg): ");
-        Serial.println(String(totalLoopMillis * 1.0 / totalLoopNumber, 2));
+        Serial.print(String(totalLoopMillis * 1.0 / totalLoopNumber, 2));
+        Serial.print(", totalLoopNumber: ");
+        Serial.print(String(totalLoopNumber));
+        Serial.print(", lastMillis: ");
+        Serial.println(String(lastLoopMillis));
 #endif
 
         if (Device::getCurrModus() == MODUS________ACCEL) {  // must refer to actual curr device modus or it will not happen due to prevMode
-
-            Nowsrv::sendAcceleration();  // consumes ~1 millisecond
 
             modus_________e modus = determineModus(); // see what central logic tells about modus
             if (modus == MODUS____GAMPM_PRI) {
@@ -261,8 +263,10 @@ void runLoopTaskGeneral(void* pvParameters) {
                 Device::currBitmaps.bitmapB.offset = bitmapPos;
                 Device::currBitmaps.bitmapB.bitmap = (bitmap________e)((bitmapPos + 64) % 2);  // open and close mouth, keep the number going into modulo in positive range
                 Device::currBitmaps.orientation = Device::getOrientation();
-                Nowsrv::sendBitmaps(Device::currBitmaps);
+
             }
+
+            // Nowsrv::sendDeviceData();
 
         } else {
             bitmapPos = BITMAP_RESET_POS;  // TODO :: this could be done when "modus", not "Device::getCurrModus()" != ACCEL, so it also resets when in fallback mode
@@ -274,6 +278,87 @@ void runLoopTaskGeneral(void* pvParameters) {
 
 }
 
+/**
+ * primary loop running on core-1
+ * attempts have been made that everything disturbing the microphone in terms of unwanted frequencies is happening here
+ * however, ESP-NOW and Bluetooth still consume energy and produce unwanted signal since the callback functions run async from this loop
+ */
+void runLoopTaskPrimary(void* pvParameters) {
+
+    while (true) {
+
+        millisAPri = millis();
+
+        modus_________e modus = determineModus();
+        if (modus == MODUS________FREQU) {
+            Microphone::read();
+            Matrices::drawBars();  // 7ms
+        }
+
+        modus_________e deviceModus = Device::getCurrModus();
+        if (deviceModus == MODUS________ACCEL) { // must refer to actual curr device modus or it will not happen due to prevMode
+            Nowsrv::sendDeviceData();
+        }
+
+        Matrices::write();  // only writes if required
+
+        // only writes if required
+        // with clipBuffer a single write consumes ~5ms
+        Display::writeCopy();
+
+        Orientation::read();
+
+        // spend some time to destination loop duration, if any
+        while ((millis() - millisAPri) < MAIN_LOOP_______DEST_MS) {
+            vTaskDelay(1);  // wait until 200 millis have passed since millisA
+            yield();
+        }
+
+#if USE_SERIAL_LOOP_OUTPUT == true
+        lastLoopMillis = (millis() - millisAPri);
+        totalLoopMillis += lastLoopMillis;
+        totalLoopNumber++;
+#endif
+
+        if (deviceModus == MODUS________ACCEL) { // must refer to actual curr device modus or it will not happen due to prevMode
+            uint64_t accelBMillisWait = Orientation::getAccelB().millisWait;
+            uint64_t accelAMillisWait = Orientation::getAccelA().millisWait;
+            // some extra delay to sync devices, once synced this would be in the one-digit millisecond range
+            // some safety added to not get caught with long delays in edge cases
+            if (accelAMillisWait < accelBMillisWait && accelAMillisWait >= 4 && accelAMillisWait < (MAIN_LOOP_______DEST_MS * 2)) {
+                uint64_t extraDelay = accelAMillisWait / 4L;
+#if USE_SERIAL_SYNC_OUTPUT == true
+                Serial.print(DEVICE____________SIDE);
+                Serial.print(", ms: ");
+                Serial.print(String(millis()));
+                Serial.print(", extraDelay: ");
+                Serial.println(String(extraDelay));
+#endif
+                vTaskDelay(extraDelay);
+            }
+
+        }
+
+    }
+
+}
+
+#if USE_____MICVALS_OUTPUT == true
+void runLoopTaskMicVals(void* pvParameters) {
+
+    while (true) {
+
+        Serial.print("basis: ");
+        Serial.println(String(Microphone::basis, 2));
+        Serial.print("scale: ");
+        Serial.println(String(Microphone::scale, 5));
+
+        vTaskDelay(2000);
+    }
+
+}
+#endif
+
 void setup(void) {
 
     Serial.begin(9600);
@@ -284,11 +369,10 @@ void setup(void) {
     // this is an attempt to have different random word orders across device starts and therefore different word orders
     randomSeed(analogRead(A0));
 
-    String separator = "--------------";
+    String separator = "----------------------";
     Serial.println(separator);
     Serial.println(BLE_DEVICE_NAME);
     Serial.println(separator);
-    Serial.println("setup ...");
 
     Display::powerup();
     delay(100);
@@ -302,64 +386,30 @@ void setup(void) {
     Buttons::powerup();
     delay(100);
 
-    Nowsrv::begin();
-    delay(100);
-
     Orientation::powerup();
     delay(100);
 
-    Blesrv::begin();
+    Serial.println(separator);
+
+    Nowsrv::powerup();
+    delay(100);
+
+    Blesrv::powerup();
     delay(100);
 
     xTaskCreatePinnedToCore(runLoopTaskGeneral, "run-loop-general", 10000, NULL, 2, NULL, 0);
     xTaskCreatePinnedToCore(runLoopTaskDisplay, "run-loop-display", 10000, NULL, 2, NULL, 0);
+    xTaskCreatePinnedToCore(runLoopTaskPrimary, "run-loop-primary", 10000, NULL, 2, NULL, 1); // run on primary core
+#if USE_____MICVALS_OUTPUT == true
+    xTaskCreatePinnedToCore(runLoopTaskMicVals, "run-loop-micvals", 10000, NULL, 2, NULL, 0);
+#endif
 
-    Serial.println("... setup");
     Serial.println(separator);
 }
 
-/**
- * primary loop running on core-1
- * attempts have been made to have everything disturbing the microphone in terms of unwanted frequencies is happening here
- */
+
 void loop() {
 
-    millisAPri = millis();
-
-    modus_________e modus = determineModus();
-    if (modus == MODUS________FREQU) {
-        Microphone::read();    // samples * 25 +
-        Matrices::drawBars();  // 7ms
-    }
-    Matrices::write();  // only writes if required
-
-#if USE_SERIAL_LOOP_OUTPUT == true
-    uint64_t millisBPri = millis();
-#endif
-
-    // only writes if required, a single write consumes ~14ms
-    // with clipBuffer a single write consumes ~5ms
-    bool written = Display::writeCopy();
-
-    // in frequency modus ~40ms to here
-
-    durationAB = millis() - millisAPri;
-    if (durationAB < 45) {
-        delay(45 - durationAB);  // wait until 55 millis have passed since millisA
-    }
-
-    Orientation::read();
-
-#if USE_SERIAL_LOOP_OUTPUT == true
-    totalLoopMillis += (millis() - millisAPri);
-    totalLoopNumber++;
-#endif
-
-    // ~48ms to here
-
-    durationAC = millis() - millisAPri;
-    if (durationAC < 50) {
-        delay(50 - durationAC);  // wait until 60 millis have passed since millisA
-    }
+    delay(1000);
 
 }
