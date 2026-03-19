@@ -74,6 +74,18 @@ void Matrix::drawBars(uint8_t indexMin) {
     }
 }
 
+void Matrix::drawChar(char__________t character, int16_t offset) {
+    // no clearing here, must be done centrally
+    if (this->powered) {
+        this->writeCanvas.setCursor(offset + character.matrixX, character.matrixY);
+        this->writeCanvas.setFont(&Font5x6FixedMono);
+        this->writeCanvas.setTextWrap(false);
+        this->writeCanvas.setTextSize(1);
+        this->writeCanvas.setTextColor(LED_ON);
+        this->writeCanvas.print(String(character.character));
+    }
+}
+
 void Matrix::drawWord(String word, int16_t offset) {
     this->clear(CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP);
     if (this->powered) {

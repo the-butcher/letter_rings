@@ -27,7 +27,9 @@ void Buttons::handleInterruptA() {
         if (!Display::exceedsDispActiveDuration(millis())) { // ignore actual action if display is inactive
             if (Buttons::buttonAction == BUTTON_ACTION_MODUS) {
                 modus_________e currModus = Device::getCurrModus();
-                if (currModus == MODUS________WORDS) {
+                if (currModus == MODUS________CHARS) {
+                    Device::setCurrModus(MODUS________WORDS);
+                } else if (currModus == MODUS________WORDS) {
                     Device::setCurrModus(MODUS________LABEL);
                 } else if (currModus == MODUS________LABEL) {
                     Device::setCurrModus(MODUS________FREQU);
@@ -38,7 +40,7 @@ void Buttons::handleInterruptA() {
                 } else if (currModus == MODUS________PARTY) {
                     Device::setCurrModus(MODUS________ACCEL);
                 } else {
-                    Device::setCurrModus(MODUS________WORDS);
+                    Device::setCurrModus(MODUS________CHARS);
                 }
                 Blesrv::writeModus();  // send the new value over BLE (when connected)
             } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY && Microphone::decay < 80) {
@@ -89,6 +91,8 @@ void Buttons::handleInterruptC() {
                     Device::setCurrModus(MODUS________LABEL);
                 } else if (currModus == MODUS________LABEL) {
                     Device::setCurrModus(MODUS________WORDS);
+                } else if (currModus == MODUS________WORDS) {
+                    Device::setCurrModus(MODUS________CHARS);
                 } else {
                     Device::setCurrModus(MODUS________ACCEL);
                 }

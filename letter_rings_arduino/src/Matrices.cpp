@@ -74,6 +74,21 @@ void Matrices::drawBars() {
     Matrices::needsWrite = true;
 }
 
+void Matrices::drawChar(char__________t character) {
+    if (Device::getOrientation() == ORIENTATION______UP) {
+        Matrices::matrixA.drawChar(character, 0);
+        Matrices::matrixB.drawChar(character, -8);
+        Matrices::matrixC.drawChar(character, -16);
+        Matrices::matrixD.drawChar(character, -24);
+    } else {
+        Matrices::matrixD.drawChar(character, 0);
+        Matrices::matrixC.drawChar(character, -8);
+        Matrices::matrixB.drawChar(character, -16);
+        Matrices::matrixA.drawChar(character, -24);
+    }
+    Matrices::needsWrite = true;
+}
+
 void Matrices::drawWord(String word) {
     if (Device::getOrientation() == ORIENTATION______UP) {
         Matrices::matrixA.drawWord(word, 0);

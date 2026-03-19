@@ -127,6 +127,7 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun setupRadioButtons() {
+        setupRadioButton( R.id.radio_chars, MODUS________CHARS)
         setupRadioButton( R.id.radio_words, MODUS________WORDS)
         setupRadioButton( R.id.radio_label, MODUS________LABEL)
         setupRadioButton( R.id.radio_frequ, MODUS________FREQU)
@@ -231,7 +232,11 @@ class MainActivity : AppCompatActivity() {
         // TODO :: warn if settings are inconsistent
 
         Log.d(LOG_TAG_BLUE, "set modus ($modus)")
-        if (modus.toInt() == MODUS________WORDS) {
+        if (modus.toInt() == MODUS________CHARS) {
+            val rgModusChars: RadioButton =  findViewById (R.id.radio_chars)
+            Log.d(LOG_TAG_BLUE, "rgModusChars will be checked on ui-thread")
+            this@MainActivity.runOnUiThread { rgModusChars.setChecked(true) }
+        } else if (modus.toInt() == MODUS________WORDS) {
             val rgModusWords: RadioButton =  findViewById (R.id.radio_words)
             Log.d(LOG_TAG_BLUE, "rgModusWords will be checked on ui-thread")
             this@MainActivity.runOnUiThread { rgModusWords.setChecked(true) }

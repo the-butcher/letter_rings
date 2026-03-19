@@ -61,7 +61,7 @@ class ModusCallbacks : public BLECharacteristicCallbacks {
 
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
         uint8_t bModus = newValue[0];
-        if (bModus >= MODUS________WORDS && bModus <= MODUS________ACCEL) {
+        if (bModus >= MODUS________CHARS && bModus <= MODUS________ACCEL) {
             Device::setCurrModus((modus_________e)bModus);
             Display::setNeedsConfigRedraw();
         }
@@ -107,7 +107,7 @@ bool Blesrv::isConnected() {
 
 bool Blesrv::powerup() {
 
-    BLEDevice::init(BLE_DEVICE_NAME);
+    BLEDevice::init(DEVICE____________NAME);
 
     Blesrv::pServer = BLEDevice::createServer();
     Blesrv::pServer->setCallbacks(new BlesrvCallbacks());

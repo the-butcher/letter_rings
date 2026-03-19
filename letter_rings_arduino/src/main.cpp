@@ -9,6 +9,7 @@
 #include "Nowsrv.h"
 #include "Orientation.h"
 #include "GamOL.h"
+#include "Chars.h"
 
 uint16_t pixelPos = 0;
 int16_t labelPos = 33;
@@ -139,7 +140,27 @@ void runLoopTaskDisplay(void* pvParameters) {
         Display::drawSignal(); // will always draw
         Display::drawMatrixState();  // I2C init states of matrices, only draws once
 
-        if (modus == MODUS________WORDS) {
+        if (modus == MODUS________CHARS) {
+
+            Chars::step();
+
+            Matrices::clear(CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP);
+            for (int i = 0; i < CHARS______________NUM; i++) {
+                Matrices::drawChar(Chars::chars[i]);
+                // Serial.print(String(Chars::chars[i].character));
+                // Serial.print(", x: ");
+                // Serial.print(Chars::chars[i].position.x);
+                // Serial.print(", x: ");
+                // Serial.print(Chars::chars[i].matrixX);
+                // Serial.print(", y: ");
+                // Serial.println(Chars::chars[i].position.y);
+                // Serial.print(", y: ");
+                // Serial.println(Chars::chars[i].matrixY);
+            }
+
+            vTaskDelay(100);
+
+        } else if (modus == MODUS________WORDS) {
 
             if (exceedsWordUpdateInterval(currMillis)) {
                 uint64_t randomWordIndex = random(0, WORD_COUNT - 1);
@@ -295,6 +316,13 @@ void runLoopTaskPrimary(void* pvParameters) {
             Matrices::drawBars();  // 7ms
         }
 
+        // ~29ms here when in frequency mode
+
+        while ((millis() - millisAPri) < 30) {
+            vTaskDelay(1);
+            yield();
+        }
+
         modus_________e deviceModus = Device::getCurrModus();
         if (deviceModus == MODUS________ACCEL) { // must refer to actual curr device modus or it will not happen due to prevMode
             Nowsrv::sendDeviceData();
@@ -306,19 +334,26 @@ void runLoopTaskPrimary(void* pvParameters) {
         // with clipBuffer a single write consumes ~5ms
         Display::writeCopy();
 
-        Orientation::read();
+        // ~42ms here when in frequ/accel mode
 
-        // spend some time to destination loop duration, if any
-        while ((millis() - millisAPri) < MAIN_LOOP_______DEST_MS) {
-            vTaskDelay(1);  // wait until 200 millis have passed since millisA
+        while ((millis() - millisAPri) < 43) {
+            vTaskDelay(1);
             yield();
         }
+
+        Orientation::read();
 
 #if USE_SERIAL_LOOP_OUTPUT == true
         lastLoopMillis = (millis() - millisAPri);
         totalLoopMillis += lastLoopMillis;
         totalLoopNumber++;
 #endif
+
+        // ~49ms here when in frequ/accel mode
+
+        while ((millis() - millisAPri) < MAIN_LOOP_______DEST_MS) { // wait until 200 millis have passed since millisA
+            yield();
+        }
 
         if (deviceModus == MODUS________ACCEL) { // must refer to actual curr device modus or it will not happen due to prevMode
             uint64_t accelBMillisWait = Orientation::getAccelB().millisWait;
@@ -343,7 +378,7 @@ void runLoopTaskPrimary(void* pvParameters) {
 
 }
 
-#if USE_____MICVALS_OUTPUT == true
+#if USE_SERIAL__MIC_OUTPUT == true
 void runLoopTaskMicVals(void* pvParameters) {
 
     while (true) {
@@ -371,7 +406,7 @@ void setup(void) {
 
     String separator = "----------------------";
     Serial.println(separator);
-    Serial.println(BLE_DEVICE_NAME);
+    Serial.println(DEVICE____________NAME);
     Serial.println(separator);
 
     Display::powerup();
@@ -384,6 +419,9 @@ void setup(void) {
     delay(100);
 
     Buttons::powerup();
+    delay(100);
+
+    Chars::powerup();
     delay(100);
 
     Orientation::powerup();
@@ -400,7 +438,7 @@ void setup(void) {
     xTaskCreatePinnedToCore(runLoopTaskGeneral, "run-loop-general", 10000, NULL, 2, NULL, 0);
     xTaskCreatePinnedToCore(runLoopTaskDisplay, "run-loop-display", 10000, NULL, 2, NULL, 0);
     xTaskCreatePinnedToCore(runLoopTaskPrimary, "run-loop-primary", 10000, NULL, 2, NULL, 1); // run on primary core
-#if USE_____MICVALS_OUTPUT == true
+#if USE_SERIAL__MIC_OUTPUT == true
     xTaskCreatePinnedToCore(runLoopTaskMicVals, "run-loop-micvals", 10000, NULL, 2, NULL, 0);
 #endif
 

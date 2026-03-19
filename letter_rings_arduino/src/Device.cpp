@@ -1,8 +1,8 @@
 #include <Device.h>
 
 // Adafruit_8x8matrix Matrix::baseMatrix();
-modus_________e Device::prevModus = MODUS________BREAK;
-modus_________e Device::currModus = MODUS________BREAK;
+modus_________e Device::prevModus = MODUS________CHARS;
+modus_________e Device::currModus = MODUS________CHARS;
 
 orientation___e Device::orientation = ORIENTATION______UP;
 

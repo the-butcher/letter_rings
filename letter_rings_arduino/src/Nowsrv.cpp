@@ -42,12 +42,16 @@ bool Nowsrv::powerup() {
         Nowsrv::powered &= esp_now_add_peer(&Nowsrv::peerInfo) == ESP_OK;
 
         esp_now_register_recv_cb(esp_now_recv_cb_t(Nowsrv::OnDataRecv));
+
     }
 
     return Nowsrv::powered;
 
 }
 
+/**
+ * not used currently
+ */
 bool Nowsrv::depower() {
 
     esp_now_deinit();
@@ -55,7 +59,7 @@ bool Nowsrv::depower() {
     esp_now_unregister_send_cb();
     esp_now_unregister_recv_cb();
 
-    // TODO :: WIFI off (?)
+    WiFi.mode(WIFI_OFF);
 
     return true;
 

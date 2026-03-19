@@ -7,6 +7,7 @@
 
 #include "Define.h"
 #include "Font7x8FixedMono.h"
+#include "Font5x6FixedMono.h"
 #include "Microphone.h"
 
 class Matrix {
@@ -30,6 +31,7 @@ public:
     void setOrientation(orientation___e orientation);
     uint16_t getWordWidth(String word);
     uint16_t getLabelWidth(String label);
+    void drawChar(char__________t character, int16_t offset);
     void drawWord(String word, int16_t offset);
     void drawLabel(String label, int16_t offset);
     void drawPixel(int16_t x, int16_t y, uint16_t color);

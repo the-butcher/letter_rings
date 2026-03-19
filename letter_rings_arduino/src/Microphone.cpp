@@ -4,7 +4,7 @@ unsigned int Microphone::sampling_period_us = round(1000000 * (1.0 / AUDIO____SA
 double Microphone::vReal[AUDIO__________SAMPLES];
 double Microphone::vImag[AUDIO__________SAMPLES];
 ArduinoFFT<double> Microphone::FFT(Microphone::vReal, Microphone::vImag, AUDIO__________SAMPLES, AUDIO____SAMPLING_FREQ);
-unsigned long Microphone::newTime;
+unsigned long Microphone::lastSampleTime;
 int Microphone::bandValues[AUDIO________NUM_BANDS];
 
 int Microphone::buckValueMax;
@@ -14,7 +14,11 @@ int Microphone::peakValues[AUDIO________NUM_BANDS];
 double Microphone::dlt1Values[AUDIO________NUM_BANDS];
 double Microphone::dlt2Values[AUDIO________NUM_BANDS];
 uint8_t Microphone::decay = 20;
-uint64_t Microphone::signal = 0;
+
+uint64_t Microphone::signalSum = 0;
+uint64_t Microphone::signalNum = 0;
+uint64_t Microphone::signalAvg = 0;
+// uint64_t Microphone::signal = 0;
 
 /**
  * used to fit the signal to the 8 pixels available
@@ -53,7 +57,7 @@ bool Microphone::powerup() {
         Microphone::buckValues[i] = 0 + round(pow(i * 1.0 / AUDIO________NUM_BANDS, 2.00) * Microphone::buckValueMax);
 
         // https://www.desmos.com/calculator/o8ajvpoceu?lang=de
-        Microphone::curvValues[i] = 1 - pow((i - c) / b, 2); // 1
+        Microphone::curvValues[i] = 1; // 1 - pow((i - c) / b, 2); // 1
 
         Serial.printf("frequ bucket %02d -> %03d\n", i, Microphone::buckValues[i]);
         Microphone::fitXValues[i] = i;  // initialize fit-x values
@@ -65,6 +69,10 @@ bool Microphone::powerup() {
     return true;
 }
 
+uint64_t Microphone::getSignalAvg() {
+    return  Microphone::signalAvg;
+}
+
 void Microphone::read() {
 
     // Reset bandValues[]
@@ -73,25 +81,26 @@ void Microphone::read() {
     }
 
     // collect samples
-    double signalAvg = 0;
     uint16_t analogValue;
+    double sampleSum = 0;
     for (int i = 0; i < AUDIO__________SAMPLES; i++) {
-        Microphone::newTime = micros();
+        Microphone::lastSampleTime = micros();
         analogValue = analogReadFast(7); // A5 is on channel 7  // analogRead(AUDIO______________PIN);  // A conversion takes about 9.7uS on an ESP32
-        signalAvg += analogValue;
+        sampleSum += analogValue;
         Microphone::vReal[i] = analogValue;
         Microphone::vImag[i] = 0;
-        while ((micros() - Microphone::newTime) < Microphone::sampling_period_us) {
+        while ((micros() - Microphone::lastSampleTime) < Microphone::sampling_period_us) {
             // do nothing, just let time pass
         }
     }
-    signalAvg = signalAvg / AUDIO__________SAMPLES;
-    Microphone::signal = (uint64_t)round(signalAvg);
+    Microphone::signalSum += (uint64_t)round(sampleSum / AUDIO__________SAMPLES);
+    Microphone::signalNum++;
+    Microphone::signalAvg = Microphone::signalSum / Microphone::signalNum;
 
     // https://leobot.net/tutorial/1067?srsltid=AfmBOopGwK3bNLB8GH9lWKwbYeUN1UAsiPBQsh7GJRLy7i_L0Uc4ghWd
-    // for (int i = 0; i < AUDIO__________SAMPLES; i++) {
-    //     Microphone::vReal[i] = Microphone::vReal[i] - signalAvg;
-    // }
+    for (int i = 0; i < AUDIO__________SAMPLES; i++) {
+        Microphone::vReal[i] = Microphone::vReal[i] - Microphone::signalAvg;
+    }
 
     // 13ms to here
 
@@ -125,14 +134,13 @@ void Microphone::read() {
 
     // 27ms to here
 
-    double f = 0.001;  // the speed at which the low pass filter adapts
     Microphone::fitFAverag = 0;
     double x;
     double y;
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
         x = i * 1.0;
         y = Microphone::coefValues[0] * pow(x, 3) + Microphone::coefValues[1] * pow(x, 2) + Microphone::coefValues[2] * x + Microphone::coefValues[3];
-        Microphone::fitFValues[i] = Microphone::fitFValues[i] * (1 - f) + y * f;  // low pass
+        Microphone::fitFValues[i] = Microphone::fitFValues[i] * (1 - AUDIO_FIT________DECAY) + y * AUDIO_FIT________DECAY;  // low pass
         Microphone::fitFAverag += Microphone::fitFValues[i];
     }
     Microphone::fitFAverag /= AUDIO________NUM_BANDS;
@@ -143,12 +151,13 @@ void Microphone::read() {
         Microphone::bandScaled[i] = Microphone::bandValues[i] * Microphone::curvValues[i] * Microphone::fitFAverag / Microphone::fitFValues[i];
     }
 
+    double delta;
     for (int i = 0; i < AUDIO________NUM_BANDS; i++) {
 
-        double delta = Microphone::bandScaled[i] - Microphone::basis;
+        delta = Microphone::bandScaled[i] - Microphone::basis;
 
         Microphone::dlt1Values[i] = Microphone::dlt1Values[i] * (1 - Microphone::decay / 100.0);  // decay curr mark
-        Microphone::dlt2Values[i] = Microphone::dlt2Values[i] * 0.96;                             // decay peak mark, 0.96 means 0.04 peak decay
+        Microphone::dlt2Values[i] = Microphone::dlt2Values[i] * AUDIO_PEAK_______DECAY;                             // decay peak mark, 0.96 means 0.04 peak decay
 
         Microphone::dlt1Values[i] = max(Microphone::dlt1Values[i], delta); // push curr mark
         Microphone::dlt2Values[i] = max(Microphone::dlt2Values[i], delta); // push peak mark

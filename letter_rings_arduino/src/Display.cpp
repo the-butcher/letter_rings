@@ -124,7 +124,9 @@ void Display::drawConfig() {
         String value;
         if (Buttons::buttonAction == BUTTON_ACTION_MODUS) {
             modus_________e currModus = Device::getCurrModus();
-            if (currModus == MODUS________WORDS) {
+            if (currModus == MODUS________CHARS) {
+                value = "CHARS";
+            } else if (currModus == MODUS________WORDS) {
                 value = "WORDS";
             } else if (currModus == MODUS________LABEL) {
                 value = "LABEL";
@@ -427,7 +429,7 @@ void Display::drawOrientation() {
 
 void Display::drawSignal() {
 
-    uint64_t currSignal = Microphone::signal;
+    uint64_t currSignal = Microphone::getSignalAvg();
 
     if (!Display::exceedsDispActiveDuration(millis()) && currSignal != Display::lastSignal) {
 
@@ -438,14 +440,14 @@ void Display::drawSignal() {
 
         uint16_t yPosS = yPosOffset - 17 * 2;  // same as o label
         String signalString;
-        if (Microphone::signal >= 1000) {
-            signalString = String(Microphone::signal);
-        } else if (Microphone::signal >= 100) {
-            signalString = " " + String(Microphone::signal);
-        } else if (Microphone::signal >= 10) {
-            signalString = "  " + String(Microphone::signal);
+        if (currSignal >= 1000) {
+            signalString = String(currSignal);
+        } else if (currSignal >= 100) {
+            signalString = " " + String(currSignal);
+        } else if (currSignal >= 10) {
+            signalString = "  " + String(currSignal);
         } else {
-            signalString = "   " + String(Microphone::signal);
+            signalString = "   " + String(currSignal);
         }
         if (Display::isFirstDrawSignal) {
             Display::drawString("S: ", 0, yPosS, TEXT_HALIGN___LEFT);

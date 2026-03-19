@@ -3,20 +3,20 @@
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"
 #define DEVICE____________SIDE "L"
-#define BLE_DEVICE_NAME "LETTER_RINGS_L"
+#define DEVICE____________NAME "LETTER_RINGS_L"
 #define ACCEPT__ROLE_DOWNGRADE false
 #else
 #define COMMAND_SERVICE___UUID "d0e5a78d-614b-4f8c-86cd-e782d832228f"
 #define DEVICE____________SIDE "R"
-#define BLE_DEVICE_NAME "LETTER_RINGS_R"
+#define DEVICE____________NAME "LETTER_RINGS_R"
 #define ACCEPT__ROLE_DOWNGRADE true
 #endif
 
-#define USE__FORCE_______GAMPM false
-#define USE_SERIAL_LOOP_OUTPUT false // measure loop duration
+#define USE__FORCE_______GAMPM false // when true (and mode ACCEL) mode GAMPM will be active, regardless of device pairing
 #define USE__________CLIP_DRAW false // draw red clip areas on display
-#define USE__FORCE_BACKLITE_ON false // when USE__FORCE_BACKLITE_ON = true, the display backlite will never turn off, even when the display is inactive
-#define USE_____MICVALS_OUTPUT false
+#define USE__FORCE_BACKLITE_ON false // when true, the display backlite will never turn off, even when the display is inactive
+#define USE_SERIAL_LOOP_OUTPUT false // measure loop duration and write to console
+#define USE_SERIAL__MIC_OUTPUT false // write microphone related messages (basis, scale) to the console
 #define USE_SERIAL_SYNC_OUTPUT false // write sync related messages (send, revc, millis) to the console
 
 
@@ -32,14 +32,20 @@
 #define AUDIO________NUM_ORDER 3
 #define AUDIO________MAX_SCALE 0.0015 // a bit louder than silence (PC fan and else) which yields 0.002
 #define AUDIO_BASE_SCALE_DECAY 0.9999
+#define AUDIO_PEAK_______DECAY 0.96
+#define AUDIO_FIT________DECAY 0.001
 
 #define BUTTON_DEBOUNCE_MILLIS 100
 
-#define ACCELERATION___SAMPLES 32
-#define ACCELERATION_THRESHOLD 0.8  // threshold for the correlation value considered to be good enough
-#define ACCELERATION_SIG_THRES 7.5 // TODO :: find a usable value, maybe configurable, i.e. 10
+#define ACCELERATION___SAMPLES 32  // ~ 1.5 seconds at a sample rate of 50ms, maybe half of that would do as well
+#define ACCELERATION_THRESHOLD 0.8 // threshold for the correlation value considered to be good enough
+#define ACCELERATION_SIG_THRES 7.0
 #define COEFFICIENT_THRES__MIN 0.6
 #define COEFFICIENT_THRES__MAX 0.9
+
+#define CHARS______________NUM 6
+#define CHARS______FIELD_DIM_X 40
+#define CHARS______FIELD_DIM_Y 10
 
 #ifndef Define_h
 #define Define_h
@@ -61,14 +67,14 @@ static const uint16_t DISPLAY_HEIGHT = 240;
 static const char* WORDS[] PROGMEM = { "LOVE", "ICON", "GAIN", "HYPE", "UNDO", "COOL", "HOPE", "KISS", "MOON", "FEEL", "HELP", "DEAL", "FACT", "GAME", "KIND", "MIND", "DARE", "EARN", "WELL", "GROW", "JUMP", "KEEP", "BOLD", "CALM", "DEEP", "EASY", "GOOD", "FULL", "GLAD", "HIGH", "NEAR", "PULL", "PLUS", "SAVE", "FAST", "LIKE", "FREE", "HERO", "BEST", "BODY", "DEAR", "FACE", "FLOW", "LEAD", "USER", "YEAH", "PEAK", "FUND", "LIST", "NEWS",
                                       "PAIR", "LIST", "NOTE", "SELF", "BASS", "FINE", "BLUE", "HALF", "LIVE", "LONG", "HOUR", "LOOK", "MARK", "MOVE", "LIFT", "GOAL", "BAND", "SOFT", "CARE", "PURE", "FUND", "STAY", "MORE", "WARM", "LAMB", "TEAM", "VIEW", "REAL", "HAVE", "LINK", "RISE", "RELY", "WISH", "WAIT", "TALK", "REST", "MANY", "RICH", "KNOW", "JOIN", "RIDE", "TIDY", "HUGE", "HEAL", "NICE", "OKAY", "FAIR", "NEAT", "TRUE", "LIFE" };
 static const uint8_t WORD_COUNT = 100;
-static const uint8_t STA_ADDRESS_OUT[] = { 0x64, 0xE8, 0x33, 0x73, 0xF1, 0x48 };  // sta address of right device
-static const int8_t BITMAPS_OFF = 1;                                            // 1 * ORIENTATION * 16 + 16 -> 0 when UP, 32 when DOWN
+static const uint8_t STA_ADDRESS_OUT[] = { 0x64, 0xE8, 0x33, 0x73, 0xF1, 0x48 }; // sta address of right device
+static const int8_t BITMAPS_OFF = 1;                                             // 1 * ORIENTATION * 16 + 16 -> 0 when UP, 32 when DOWN
 #else
 static const char* WORDS[] PROGMEM = { "HATE", "FAIL", "GANG", "JUNK", "FAKE", "BAIT", "CAGE", "SCAR", "SLOW", "WOLF", "PAIN", "TINY", "LUSH", "FIRE", "FUCK", "LESS", "LOSS", "BURN", "DENY", "FALL", "FEAR", "HURT", "KILL", "NONE", "EVIL", "DULL", "FOUL", "GRIM", "DAMN", "GORE", "GOSH", "HELL", "LATE", "DUST", "DARK", "DUTY", "RISK", "WARN", "SLIP", "UGLY", "WILD", "VAIN", "POOR", "MEAN", "RUDE", "SORE", "VOID", "ANTI", "DIRE", "COPE",
                                       "COST", "PUSH", "MYTH", "URGE", "RAIN", "REDO", "NEED", "SEEM", "LONE", "VAST", "PALE", "SICK", "RARE", "BEEF", "FOOL", "DEAF", "DRUG", "ITCH", "PITY", "LACK", "WANT", "SEEK", "TRIP", "DOWN", "GREY", "RULE", "WORK", "TASK", "STOP", "LOUD", "MUST", "GIVE", "LOSE", "TORN", "ONLY", "SOLO", "TRAP", "FLOP", "QUIT", "SUNK", "HOWL", "ENVY", "CYST", "COLD", "DROP", "BASE", "FLEE", "OVER", "HARD", "PASS" };
 static const uint8_t WORD_COUNT = 100;
-static const uint8_t STA_ADDRESS_OUT[] = { 0xD0, 0xCF, 0x13, 0x0A, 0xE1, 0xC8 };  // sta address of left device
-static const int8_t BITMAPS_OFF = -1;                                          // -1 * ORIENTATION * 16 + 16 -> 32 when UP, 0 when DOWN
+static const uint8_t STA_ADDRESS_OUT[] = { 0xD0, 0xCF, 0x13, 0x0A, 0xE1, 0xC8 }; // sta address of left device
+static const int8_t BITMAPS_OFF = -1;                                            // -1 * ORIENTATION * 16 + 16 -> 32 when UP, 0 when DOWN
 #endif
 
 const gpio_num_t AUDIO______________PIN = GPIO_NUM_8;  // A5
@@ -166,6 +172,10 @@ typedef enum : uint8_t {
 
 typedef enum : uint8_t {
     /**
+     * show random
+     */
+    MODUS________CHARS,
+    /**
      * show single 4-digit words
      */
     MODUS________WORDS,
@@ -242,6 +252,14 @@ typedef struct {
     orientation___e orientation;  // the orientation of the primary device
 } bitmaps_______t;
 
+typedef struct {
+    char character;
+    vector________t position;
+    vector________t velocity;
+    int8_t matrixX;
+    int8_t matrixY;
+} char__________t;
+
 typedef enum : uint8_t {
     /**
      * the device is not paired
@@ -258,7 +276,7 @@ typedef enum : uint8_t {
 } device_role___e;
 
 typedef struct {
-    device_role___e deviceRole; // the own role, TODO :: adapt in recv callback
+    device_role___e deviceRole;
     bitmaps_______t bitmaps;
     acceleration__t acceleration;
 } device_data___t;
