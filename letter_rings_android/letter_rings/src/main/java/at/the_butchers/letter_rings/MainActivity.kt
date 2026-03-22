@@ -96,7 +96,8 @@ class MainActivity : AppCompatActivity() {
 
         setupRadioButtons()
         setupLightBar()
-        setupCoeffBar()
+        setupCoefPBar()
+        setupCoefGBar()
         setupConnButton(Side.LEFT)
         setupConnButton(Side.RIGHT)
 
@@ -168,20 +169,39 @@ class MainActivity : AppCompatActivity() {
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun setupCoeffBar() {
-        val sbCoeff: SeekBar =  findViewById (R.id.sbCoeff)
-        sbCoeff.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+    fun setupCoefPBar() {
+        val sbCoefP: SeekBar =  findViewById (R.id.sbCoefP)
+        sbCoefP.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onStopTrackingTouch(seekBar: SeekBar) {
-                Log.i(LOG_TAG_MAIN, "stop-tracking-touch (${R.id.sbCoeff})")
-                bleDeviceInstanceMap[Side.LEFT]?.writeCoeffValue(sbCoeff.progress)
-                bleDeviceInstanceMap[Side.RIGHT]?.writeCoeffValue(sbCoeff.progress)
+                Log.i(LOG_TAG_MAIN, "stop-tracking-touch (${R.id.sbCoefP})")
+                bleDeviceInstanceMap[Side.LEFT]?.writeCoefPValue(sbCoefP.progress)
+                bleDeviceInstanceMap[Side.RIGHT]?.writeCoefPValue(sbCoefP.progress)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar) {
-//                Log.i(LOG_TAG_MAIN, "onStartTrackingTouch (${side.sbCoeff}, ${sbCoeff.progress})")
+//                Log.i(LOG_TAG_MAIN, "onStartTrackingTouch (${side.sbCoefP}, ${sbCoefP.progress})")
             }
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-//                Log.i(LOG_TAG_MAIN, "onProgressChanged (${side.sbCoeff}, ${progress})")
+//                Log.i(LOG_TAG_MAIN, "onProgressChanged (${side.sbCoefP}, ${progress})")
+            }
+        })
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun setupCoefGBar() {
+        val sbCoefG: SeekBar =  findViewById (R.id.sbCoefG)
+        sbCoefG.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                Log.i(LOG_TAG_MAIN, "stop-tracking-touch (${R.id.sbCoefG})")
+                bleDeviceInstanceMap[Side.LEFT]?.writeCoefGValue(sbCoefG.progress)
+                bleDeviceInstanceMap[Side.RIGHT]?.writeCoefGValue(sbCoefG.progress)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+//                Log.i(LOG_TAG_MAIN, "onStartTrackingTouch (${side.sbCoefG}, ${sbCoefG.progress})")
+            }
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+//                Log.i(LOG_TAG_MAIN, "onProgressChanged (${side.sbCoefG}, ${progress})")
             }
         })
     }
@@ -274,13 +294,23 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun setCoeff(coeff: Byte) {
+    fun setCoefP(coefP: Byte) {
 
         // TODO :: warn if settings are inconsistent
 
-        val sbCoeff: SeekBar =  findViewById (R.id.sbCoeff)
-        Log.d(LOG_TAG_BLUE, "sbCoeff will be changed on ui-thread")
-        this@MainActivity.runOnUiThread { sbCoeff.setProgress((coeff.toInt())) }
+        val sbCoefP: SeekBar =  findViewById (R.id.sbCoefP)
+        Log.d(LOG_TAG_BLUE, "sbCoefP will be changed on ui-thread")
+        this@MainActivity.runOnUiThread { sbCoefP.setProgress((coefP.toInt())) }
+
+    }
+
+    fun setCoefG(coefG: Byte) {
+
+        // TODO :: warn if settings are inconsistent
+
+        val sbCoefG: SeekBar =  findViewById (R.id.sbCoefG)
+        Log.d(LOG_TAG_BLUE, "sbCoefG will be changed on ui-thread")
+        this@MainActivity.runOnUiThread { sbCoefG.setProgress((coefG.toInt())) }
 
     }
 

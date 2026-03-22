@@ -2,10 +2,12 @@
 
 Adafruit_BNO055 Orientation::baseSensor(55, 0x28);
 vector________t Orientation::orientation = { 0, 0, 0 };
-acceleration__t Orientation::accelA;
-acceleration__t Orientation::accelB;
-double Orientation::coefficient;
-double Orientation::coefficientThreshold = 0.8;
+magnitudes___t Orientation::magnitudesA;
+magnitudes___t Orientation::magnitudesB;
+acceleration_t Orientation::accelerationsA;
+double Orientation::coefP;
+double Orientation::coefPThreshold = 0.80;
+double Orientation::coefGThreshold = 0.75;
 
 bool Orientation::powered = false;
 
@@ -33,11 +35,18 @@ bool Orientation::read() {
 
     // move all accel values up
     for (uint8_t i = 0; i < ACCELERATION___SAMPLES - 1; i++) {
-        Orientation::accelA.values[i] = Orientation::accelA.values[i + 1];
+        Orientation::magnitudesA.values[i] = Orientation::magnitudesA.values[i + 1];
+        Orientation::accelerationsA.valuesX[i] = Orientation::accelerationsA.valuesX[i + 1];
+        Orientation::accelerationsA.valuesY[i] = Orientation::accelerationsA.valuesY[i + 1];
+        Orientation::accelerationsA.valuesZ[i] = Orientation::accelerationsA.valuesZ[i + 1];
     }
-    // calculate last value and put it
+
+    // calculate last value and put it in last position
     float accelerationMagnitude = sqrt(pow(accelerationData.acceleration.x, 2) + pow(accelerationData.acceleration.y, 2) + pow(accelerationData.acceleration.z, 2));
-    Orientation::accelA.values[ACCELERATION___SAMPLES - 1] = accelerationMagnitude;
+    Orientation::magnitudesA.values[ACCELERATION___SAMPLES - 1] = accelerationMagnitude;
+    Orientation::accelerationsA.valuesX[ACCELERATION___SAMPLES - 1] = accelerationData.acceleration.x;
+    Orientation::accelerationsA.valuesY[ACCELERATION___SAMPLES - 1] = accelerationData.acceleration.y;
+    Orientation::accelerationsA.valuesZ[ACCELERATION___SAMPLES - 1] = accelerationData.acceleration.z;
 
     Orientation::orientation = { orientationData.orientation.x, orientationData.orientation.y, orientationData.orientation.z };
 
@@ -45,80 +54,121 @@ bool Orientation::read() {
 
 }
 
+acceleration_t Orientation::getAccelerationsA() {
+    return Orientation::accelerationsA;
+}
+
 vector________t Orientation::getOrientation() {
     return Orientation::orientation;
 }
 
-acceleration__t Orientation::getAccelA() {
-    return Orientation::accelA;
+magnitudes___t Orientation::getMagnitudesA() {
+    return Orientation::magnitudesA;
 }
 
-acceleration__t Orientation::getAccelB() {
-    return Orientation::accelB;
+magnitudes___t Orientation::getMagnitudesB() {
+    return Orientation::magnitudesB;
 }
 
-void Orientation::setAccelAMillisWait(int64_t millisWaitA) {
-    Orientation::accelA.millisWait = millisWaitA;
+void Orientation::setMillisWaitA(int64_t millisWaitA) {
+    Orientation::magnitudesA.millisWait = millisWaitA;
 }
 
-void Orientation::setAccelB(acceleration__t accelB) {
+void Orientation::setMagnitudesB(magnitudes___t accelB) {
     for (uint8_t i = 0; i < ACCELERATION___SAMPLES; i++) {
-        Orientation::accelB.values[i] = accelB.values[i];
+        Orientation::magnitudesB.values[i] = accelB.values[i];
     }
-    Orientation::accelB.millisWait = accelB.millisWait;
-    Orientation::calculateCoefficient();
+    Orientation::magnitudesB.millisWait = accelB.millisWait;
+    Orientation::calculateCoefP();
 }
 
 // https://unacademy.com/content/jee/study-material/mathematics/pearson-correlation-coefficient/
-void Orientation::calculateCoefficient() {
+void Orientation::calculateCoefP() {
+
+    double coefP = Orientation::calculateCoefficient(Orientation::magnitudesA.values, Orientation::magnitudesB.values);
+    if (!isnan(coefP)) {
+        double f = coefP > Orientation::coefP ? 0.10 : 0.01;                  // the speed at which the low pass filter adapts
+        Orientation::coefP = Orientation::coefP * (1 - f) + coefP * f;  // low pass
+    }
+
+}
+
+double Orientation::calculateCoefficient(float valuesA[ACCELERATION___SAMPLES], float valuesB[ACCELERATION___SAMPLES], uint8_t count) {
 
     double sumA = 0;
     double sumB = 0;
     double sumAB = 0;
     double sumAS = 0;
     double sumBS = 0;
-    for (uint8_t i = 0; i < ACCELERATION___SAMPLES; i++) {
-        sumA += Orientation::accelA.values[i];
-        sumB += Orientation::accelB.values[i];
-        sumAB += Orientation::accelA.values[i] * Orientation::accelB.values[i];
-        sumAS += Orientation::accelA.values[i] * Orientation::accelA.values[i];
-        sumBS += Orientation::accelB.values[i] * Orientation::accelB.values[i];
+    for (uint8_t i = 0; i < count; i++) {
+        sumA += valuesA[i];
+        sumB += valuesB[i];
+        sumAB += valuesA[i] * valuesB[i];
+        sumAS += valuesA[i] * valuesA[i];
+        sumBS += valuesB[i] * valuesB[i];
     }
-    double r0 = ACCELERATION___SAMPLES * sumAB - sumA * sumB;
-    double r1 = sqrt((ACCELERATION___SAMPLES * sumAS - sumA * sumA) * (ACCELERATION___SAMPLES * sumBS - sumB * sumB));
-    double coefficient = r0 / r1;
+    double r0 = count * sumAB - sumA * sumB;
+    double r1 = sqrt((count * sumAS - sumA * sumA) * (count * sumBS - sumB * sumB));
+    return r0 / r1;
 
-    if (!isnan(coefficient)) {
-        double f = coefficient > Orientation::coefficient ? 0.10 : 0.01;                  // the speed at which the low pass filter adapts
-        Orientation::coefficient = Orientation::coefficient * (1 - f) + coefficient * f;  // low pass
+}
+
+bool Orientation::matchGesture(acceleration_t gesture, float threshold) {
+
+    double coefX = Orientation::calculateCoefficient(Orientation::accelerationsA.valuesX, (float*)gesture.valuesX, 22);
+    double coefY = Orientation::calculateCoefficient(Orientation::accelerationsA.valuesY, (float*)gesture.valuesY, 22);
+
+    if ((coefX + coefY) > threshold) {
+        // Serial.print("x: ");
+        // Serial.print(coefX);
+        // Serial.print(", y: ");
+        // Serial.print(coefY);
+        // Serial.print(", s: ");
+        // Serial.println((coefX + coefY));
+        return true;
+    } else {
+        return false;
     }
 
 }
 
-double Orientation::getCoefficient() {
-    return Orientation::coefficient;
+double Orientation::getCoefP() {
+    return Orientation::coefP;
 }
 
-double Orientation::getCoefficientThreshold() {
-    return Orientation::coefficientThreshold;
+double Orientation::getCoefPThreshold() {
+    return Orientation::coefPThreshold;
 }
 
-bool Orientation::setCoefficientThreshold(double coefficientThreshold) {
-    if (coefficientThreshold >= COEFFICIENT_THRES__MIN && coefficientThreshold <= COEFFICIENT_THRES__MAX) {
-        Orientation::coefficientThreshold = coefficientThreshold;
+bool Orientation::setCoefPThreshold(double coefPThreshold) {
+    if (coefPThreshold >= COEFF________THRES_MIN && coefPThreshold <= COEFF________THRES_MAX) {
+        Orientation::coefPThreshold = coefPThreshold;
         return true;
     } else {
         return false;
     }
 }
 
-bool Orientation::isAboveCoefficientThreshold() {
-    return Orientation::coefficient >= Orientation::coefficientThreshold;
+double Orientation::getCoefGThreshold() {
+    return Orientation::coefGThreshold;
 }
 
-bool Orientation::isAboveSignificantThreshold() {
-    for (uint8_t i = ACCELERATION___SAMPLES / 2; i < ACCELERATION___SAMPLES; i++) {
-        if (Orientation::accelA.values[i] > ACCELERATION_SIG_THRES) {
+bool Orientation::setCoefGThreshold(double coefGThreshold) {
+    if (coefGThreshold >= COEFF________THRES_MIN && coefGThreshold <= COEFF________THRES_MAX) {
+        Orientation::coefGThreshold = coefGThreshold;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool Orientation::isAboveCoefPThreshold() {
+    return Orientation::coefP >= Orientation::coefPThreshold;
+}
+
+bool Orientation::isAboveSignificantThreshold(float threshold, uint8_t fromIndex, uint8_t toIndex) {
+    for (uint8_t i = fromIndex; i < toIndex; i++) { // ACCELERATION___SAMPLES / 2
+        if (Orientation::magnitudesA.values[i] > threshold) {
             return true;
         }
     }

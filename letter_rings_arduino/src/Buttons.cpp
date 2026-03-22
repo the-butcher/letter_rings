@@ -47,8 +47,10 @@ void Buttons::handleInterruptA() {
                 Microphone::decay += 5;
             } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT && Matrices::setBrightness(Matrices::getBrightness() + 1)) {
                 Blesrv::writeLight();
-            } else if (Orientation::setCoefficientThreshold(min(COEFFICIENT_THRES__MAX, Orientation::getCoefficientThreshold() + 0.05))) {
-                Blesrv::writeCoeff();
+            } else if (Buttons::buttonAction == BUTTON_ACTION_COEFP && Orientation::setCoefPThreshold(min(COEFF________THRES_MAX, Orientation::getCoefPThreshold() + 0.05))) {
+                Blesrv::writeCoefP();
+            } else if (Orientation::setCoefGThreshold(min(COEFF________THRES_MAX, Orientation::getCoefGThreshold() + 0.05))) {
+                Blesrv::writeCoefP();
             }
         }
         Buttons::buttonA.lastInterruptMillis = interruptMillis;
@@ -65,7 +67,9 @@ void Buttons::handleInterruptB() {
             } else if (Buttons::buttonAction == BUTTON_ACTION_DECAY) {
                 Buttons::buttonAction = BUTTON_ACTION_LIGHT;
             } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT) {
-                Buttons::buttonAction = BUTTON_ACTION_COEFF;
+                Buttons::buttonAction = BUTTON_ACTION_COEFP;
+            } else if (Buttons::buttonAction == BUTTON_ACTION_COEFP) {
+                Buttons::buttonAction = BUTTON_ACTION_COEFG;
             } else {
                 Buttons::buttonAction = BUTTON_ACTION_MODUS;
             }
@@ -101,8 +105,10 @@ void Buttons::handleInterruptC() {
                 Microphone::decay -= 5;
             } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT && Matrices::setBrightness(Matrices::getBrightness() - 1)) {
                 Blesrv::writeLight();
-            } else if (Orientation::setCoefficientThreshold(max(COEFFICIENT_THRES__MIN, Orientation::getCoefficientThreshold() - 0.05))) {
-                Blesrv::writeCoeff();
+            } else if (Buttons::buttonAction == BUTTON_ACTION_COEFP && Orientation::setCoefPThreshold(max(COEFF________THRES_MIN, Orientation::getCoefPThreshold() - 0.05))) {
+                Blesrv::writeCoefP();
+            } else if (Orientation::setCoefGThreshold(max(COEFF________THRES_MIN, Orientation::getCoefGThreshold() - 0.05))) {
+                Blesrv::writeCoefG();
             }
         }
         Buttons::buttonC.lastInterruptMillis = interruptMillis;

@@ -6,7 +6,8 @@ BLECharacteristic* Blesrv::pLabelCharacteristic;
 BLECharacteristic* Blesrv::pWordCharacteristic;
 BLECharacteristic* Blesrv::pModusCharacteristic;
 BLECharacteristic* Blesrv::pLightCharacteristic;
-BLECharacteristic* Blesrv::pCoeffCharacteristic;
+BLECharacteristic* Blesrv::pCoefPCharacteristic;
+BLECharacteristic* Blesrv::pCoefGCharacteristic;
 String Blesrv::macAdress;
 
 /**
@@ -86,14 +87,30 @@ class LightCallbacks : public BLECharacteristicCallbacks {
 };
 
 /**
- * light write callback (incoming coeff values)
+ * coefP write callback (incoming coefP values)
  */
-class CoeffCallbacks : public BLECharacteristicCallbacks {
+class CoefPCallbacks : public BLECharacteristicCallbacks {
 
     void onWrite(BLECharacteristic* pCharacteristic) {
 
         uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
-        if (Orientation::setCoefficientThreshold(newValue[0] / 100.0)) {
+        if (Orientation::setCoefPThreshold(newValue[0] / 100.0)) {
+            Display::setNeedsConfigRedraw();
+        }
+
+    }
+
+};
+
+/**
+ * coefG write callback (incoming coefG values)
+ */
+class CoefGCallbacks : public BLECharacteristicCallbacks {
+
+    void onWrite(BLECharacteristic* pCharacteristic) {
+
+        uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
+        if (Orientation::setCoefGThreshold(newValue[0] / 100.0)) {
             Display::setNeedsConfigRedraw();
         }
 
@@ -112,7 +129,7 @@ bool Blesrv::powerup() {
     Blesrv::pServer = BLEDevice::createServer();
     Blesrv::pServer->setCallbacks(new BlesrvCallbacks());
 
-    Blesrv::pService = pServer->createService(COMMAND_SERVICE___UUID);
+    Blesrv::pService = pServer->createService(BLEUUID(COMMAND_SERVICE___UUID), 30, 0);
 
     // setup label characteristic, write only
     Blesrv::pLabelCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_LABEL_____UUID, BLECharacteristic::PROPERTY_WRITE);
@@ -134,11 +151,17 @@ bool Blesrv::powerup() {
     Blesrv::pLightCharacteristic->setCallbacks(new LightCallbacks());
     Blesrv::writeLight();
 
-    // setup light characteristic, read and write, can be changed from both device and app
-    Blesrv::pCoeffCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_COEFF_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
-    Blesrv::pCoeffCharacteristic->addDescriptor(new BLE2902());
-    Blesrv::pCoeffCharacteristic->setCallbacks(new CoeffCallbacks());
-    Blesrv::writeCoeff();
+    // setup coefP characteristic, read and write, can be changed from both device and app
+    Blesrv::pCoefPCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_COEFP_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
+    Blesrv::pCoefPCharacteristic->addDescriptor(new BLE2902());
+    Blesrv::pCoefPCharacteristic->setCallbacks(new CoefPCallbacks());
+    Blesrv::writeCoefP();
+
+    // setup coefG characteristic, read and write, can be changed from both device and app
+    Blesrv::pCoefGCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_COEFG_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
+    Blesrv::pCoefGCharacteristic->addDescriptor(new BLE2902());
+    Blesrv::pCoefGCharacteristic->setCallbacks(new CoefGCallbacks());
+    Blesrv::writeCoefG();
 
     Blesrv::pService->start();
 
@@ -149,7 +172,9 @@ bool Blesrv::powerup() {
     pAdvertising->addServiceUUID(COMMAND_WORD______UUID);
     pAdvertising->addServiceUUID(COMMAND_MODUS_____UUID);
     pAdvertising->addServiceUUID(COMMAND_LIGHT_____UUID);
-    pAdvertising->addServiceUUID(COMMAND_COEFF_____UUID);
+    pAdvertising->addServiceUUID(COMMAND_COEFP_____UUID);
+    pAdvertising->addServiceUUID(COMMAND_COEFG_____UUID);
+
     pServer->getAdvertising()->start();
 
     const uint8_t* bleAdress = esp_bt_dev_get_address();
@@ -186,11 +211,22 @@ bool Blesrv::writeLight() {
     }
 }
 
-bool Blesrv::writeCoeff() {
-    int cCoeff = (int)round(Orientation::getCoefficientThreshold() * 100);
-    Blesrv::pCoeffCharacteristic->setValue(cCoeff);
+bool Blesrv::writeCoefP() {
+    int cCoefP = (int)round(Orientation::getCoefPThreshold() * 100);
+    Blesrv::pCoefPCharacteristic->setValue(cCoefP);
     if (Blesrv::isConnected()) {
-        Blesrv::pCoeffCharacteristic->notify();
+        Blesrv::pCoefPCharacteristic->notify();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool Blesrv::writeCoefG() {
+    int cCoefG = (int)round(Orientation::getCoefGThreshold() * 100);
+    Blesrv::pCoefGCharacteristic->setValue(cCoefG);
+    if (Blesrv::isConnected()) {
+        Blesrv::pCoefGCharacteristic->notify();
         return true;
     } else {
         return false;

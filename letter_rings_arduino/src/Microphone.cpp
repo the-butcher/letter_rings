@@ -18,7 +18,6 @@ uint8_t Microphone::decay = 20;
 uint64_t Microphone::signalSum = 0;
 uint64_t Microphone::signalNum = 0;
 uint64_t Microphone::signalAvg = 0;
-// uint64_t Microphone::signal = 0;
 
 /**
  * used to fit the signal to the 8 pixels available
@@ -40,7 +39,7 @@ double Microphone::fitXValues[AUDIO________NUM_BANDS];      // a list of ascendi
 double Microphone::fitYValues[AUDIO________NUM_BANDS];      // bandValues as double values
 double Microphone::fitFValues[AUDIO________NUM_BANDS];      // values along the fit curve
 int Microphone::bandScaled[AUDIO________NUM_BANDS];         // band values scaled from fit curve to fit average
-double Microphone::coefValues[AUDIO________NUM_ORDER + 1];  // the curve coefficients after fitting
+double Microphone::coefValues[AUDIO________NUM_ORDER + 1];  // the curve coef after fitting
 double Microphone::curvValues[AUDIO________NUM_BANDS];
 
 bool Microphone::powerup() {

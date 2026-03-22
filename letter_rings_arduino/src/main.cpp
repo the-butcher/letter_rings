@@ -88,8 +88,8 @@ modus_________e determineModus() {
 
             modus = Device::getPrevModus();
 
-            if (Orientation::isAboveSignificantThreshold()) {
-                if (exceedsGamOLThresholdDuration(currMillis)) {
+            if (Orientation::isAboveSignificantThreshold(ACCELERATION_SIG_THRES)) {
+                if (exceedsGamOLThresholdDuration(currMillis)) { // init field upon first exeeding threshold
                     GamOL::readFieldState();
                 }
                 lastGamOLThresholdMillis = currMillis;
@@ -121,7 +121,7 @@ void runLoopTaskDisplay(void* pvParameters) {
 
         uint64_t currMillis = millis();
 
-        modus_________e modus = determineModus();
+        modus_________e determModus = determineModus();
 
         orientation___e matricesOrientation = Device::getOrientation();
         if (matricesOrientation == ORIENTATION______UP && Orientation::getOrientation().y > 20) {
@@ -140,7 +140,7 @@ void runLoopTaskDisplay(void* pvParameters) {
         Display::drawSignal(); // will always draw
         Display::drawMatrixState();  // I2C init states of matrices, only draws once
 
-        if (modus == MODUS________CHARS) {
+        if (determModus == MODUS________CHARS) {
 
             Chars::step();
 
@@ -160,7 +160,7 @@ void runLoopTaskDisplay(void* pvParameters) {
 
             vTaskDelay(100);
 
-        } else if (modus == MODUS________WORDS) {
+        } else if (determModus == MODUS________WORDS) {
 
             if (exceedsWordUpdateInterval(currMillis)) {
                 uint64_t randomWordIndex = random(0, WORD_COUNT - 1);
@@ -188,7 +188,7 @@ void runLoopTaskDisplay(void* pvParameters) {
                 vTaskDelay(100);
             }
 
-        } else if (modus == MODUS________LABEL) {
+        } else if (determModus == MODUS________LABEL) {
 
             Matrices::drawLabel(mainLabel, labelPos);
             Display::drawText(mainLabel);
@@ -198,16 +198,16 @@ void runLoopTaskDisplay(void* pvParameters) {
             }
             labelPos--;
 
-            vTaskDelay(max(50.0, 150 - Orientation::getOrientation().z));
+            vTaskDelay(max(50.0f, 150.0f - Orientation::getOrientation().z));
 
-        } else if (modus == MODUS________FREQU) {  // frequency
+        } else if (determModus == MODUS________FREQU) {  // frequency
 
-            // Matrices are draw in primary loop
+            // Matrices are drawn in primary loop
             Display::drawFrequ();
 
             vTaskDelay(100);  // effectively do nothing, just wait a bit
 
-        } else if (modus == MODUS________BREAK) {  // frequency
+        } else if (determModus == MODUS________BREAK) {  // frequency
 
             Matrices::clear(CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP);
             Matrices::drawPixel(pixelPos, 6, LED_ON);
@@ -221,7 +221,7 @@ void runLoopTaskDisplay(void* pvParameters) {
 
             vTaskDelay(250);
 
-        } else if (modus == MODUS____GAMPM_PRI || modus == MODUS____GAMPM_SEC) {
+        } else if (determModus == MODUS____GAMPM_PRI || determModus == MODUS____GAMPM_SEC) {
 
             bitmaps_______t bitmaps = Device::currBitmaps;
 
@@ -236,7 +236,7 @@ void runLoopTaskDisplay(void* pvParameters) {
 
             vTaskDelay(90);
 
-        } else if (modus == MODUS________GAMOL) {
+        } else if (determModus == MODUS________GAMOL) {
 
             GamOL::drawFieldState();
             GamOL::stepFieldState();
@@ -245,8 +245,8 @@ void runLoopTaskDisplay(void* pvParameters) {
 
         } else {
 
-            Serial.print("unknown modus: ");
-            Serial.println(String(modus));
+            Serial.print("unknown determModus: ");
+            Serial.println(String(determModus));
             vTaskDelay(100);
 
         }
@@ -258,8 +258,33 @@ void runLoopTaskDisplay(void* pvParameters) {
 
 }
 
+// void logValues(float values[ACCELERATION___SAMPLES]) {
+//     Serial.print("{");
+//     for (uint8_t i = 0; i < ACCELERATION___SAMPLES; i++) {
+//         Serial.print(String(values[i], 3));
+//         if (i < ACCELERATION___SAMPLES - 1) {
+//             Serial.print(",");
+//         }
+//     }
+//     Serial.print("}");
+// }
+
+#if DEVICE____________LEFT == true
+void applyGestureModus(modus_________e gestureModus) {
+    if (Device::getCurrModus() == MODUS________ACCEL && Device::getPrevModus() != gestureModus) { // if in ACCEL, set to WORDS, then reapply ACCEL
+        Device::setCurrModus(gestureModus);
+        Device::setCurrModus(MODUS________ACCEL);
+        Blesrv::writeModus();
+    } else if (Device::getCurrModus() != gestureModus) {
+        Device::setCurrModus(gestureModus);
+        Blesrv::writeModus();
+    }
+}
+#endif
+
 void runLoopTaskGeneral(void* pvParameters) {
 
+    uint64_t counterGeneral = 0;
     while (true) {
 
 #if USE_SERIAL_LOOP_OUTPUT == true
@@ -271,29 +296,60 @@ void runLoopTaskGeneral(void* pvParameters) {
         Serial.println(String(lastLoopMillis));
 #endif
 
-        if (Device::getCurrModus() == MODUS________ACCEL) {  // must refer to actual curr device modus or it will not happen due to prevMode
+        if (counterGeneral % 2 == 0) { // every second iteration of this loop
+            if (Device::getCurrModus() == MODUS________ACCEL) {  // must refer to actual curr device modus or it will not happen due to prevMode
 
-            modus_________e modus = determineModus(); // see what central logic tells about modus
-            if (modus == MODUS____GAMPM_PRI) {
+                modus_________e determModus = determineModus(); // see what central logic tells about modus
+                if (determModus == MODUS____GAMPM_PRI) {
 
-                if (bitmapPos > 64) {
-                    bitmapPos = BITMAP_RESET_POS;
+                    if (bitmapPos > 64) {
+                        bitmapPos = BITMAP_RESET_POS;
+                    }
+                    bitmapPos++;
+
+                    Device::currBitmaps.bitmapB.offset = bitmapPos;
+                    Device::currBitmaps.bitmapB.bitmap = (bitmap________e)((bitmapPos + 64) % 2);  // open and close mouth, keep the number going into modulo in positive range
+                    Device::currBitmaps.orientation = Device::getOrientation();
+
                 }
-                bitmapPos++;
 
-                Device::currBitmaps.bitmapB.offset = bitmapPos;
-                Device::currBitmaps.bitmapB.bitmap = (bitmap________e)((bitmapPos + 64) % 2);  // open and close mouth, keep the number going into modulo in positive range
-                Device::currBitmaps.orientation = Device::getOrientation();
-
+            } else {
+                bitmapPos = BITMAP_RESET_POS;  // TODO :: this could be done when "modus", not "Device::getCurrModus()" != ACCEL, so it also resets when in fallback mode
             }
-
-            // Nowsrv::sendDeviceData();
-
-        } else {
-            bitmapPos = BITMAP_RESET_POS;  // TODO :: this could be done when "modus", not "Device::getCurrModus()" != ACCEL, so it also resets when in fallback mode
         }
 
-        vTaskDelay(100);
+        // if (Orientation::isAboveSignificantThreshold((float)ACCELERATION_TAP_THRES, ACCELERATION___SAMPLES - 5, ACCELERATION___SAMPLES - 3)) {
+        //     acceleration_t accelerationsA = Orientation::getAccelerationsA();
+        //     Serial.println("{");
+        //     logValues(accelerationsA.valuesX);
+        //     Serial.println(",");
+        //     logValues(accelerationsA.valuesY);
+        //     Serial.println(",");
+        //     logValues(accelerationsA.valuesZ);
+        //     Serial.println();
+        //     Serial.println("}");
+        // }
+
+#if DEVICE____________LEFT == true
+
+        double coefG = Orientation::getCoefGThreshold();
+
+        bool isGestureW = Orientation::matchGesture(ACCEL_W, 1.87 * coefG); // 1.12@0.6 - 1.40@0.75 - 1.68@0.9
+        bool isGestureF = Orientation::matchGesture(ACCEL_F, 2.07 * coefG); // 1.42@0.6 - 1.55@0.75 - 1.86@0.9
+        bool isGestureC = Orientation::matchGesture(ACCEL_C, 2.13 * coefG); // 1.28@0.6 - 1.60@0.75 - 1.92@0.9
+
+        if (isGestureW) {
+            applyGestureModus(MODUS________WORDS);
+        } else if (isGestureF) {
+            applyGestureModus(MODUS________PARTY);
+        } else if (isGestureC) {
+            applyGestureModus(MODUS________CHARS);
+        }
+
+#endif
+
+        counterGeneral++;
+        vTaskDelay(50);
 
     }
 
@@ -310,8 +366,8 @@ void runLoopTaskPrimary(void* pvParameters) {
 
         millisAPri = millis();
 
-        modus_________e modus = determineModus();
-        if (modus == MODUS________FREQU) {
+        modus_________e determModus = determineModus();
+        if (determModus == MODUS________FREQU) {
             Microphone::read();
             Matrices::drawBars();  // 7ms
         }
@@ -356,12 +412,12 @@ void runLoopTaskPrimary(void* pvParameters) {
         }
 
         if (deviceModus == MODUS________ACCEL) { // must refer to actual curr device modus or it will not happen due to prevMode
-            uint64_t accelBMillisWait = Orientation::getAccelB().millisWait;
-            uint64_t accelAMillisWait = Orientation::getAccelA().millisWait;
+            uint64_t millisWaitB = Orientation::getMagnitudesB().millisWait;
+            uint64_t millisWaitA = Orientation::getMagnitudesA().millisWait;
             // some extra delay to sync devices, once synced this would be in the one-digit millisecond range
             // some safety added to not get caught with long delays in edge cases
-            if (accelAMillisWait < accelBMillisWait && accelAMillisWait >= 4 && accelAMillisWait < (MAIN_LOOP_______DEST_MS * 2)) {
-                uint64_t extraDelay = accelAMillisWait / 4L;
+            if (millisWaitA < millisWaitB && millisWaitA >= 4 && millisWaitA < (MAIN_LOOP_______DEST_MS * 2)) {
+                uint64_t extraDelay = millisWaitA / 4L;
 #if USE_SERIAL_SYNC_OUTPUT == true
                 Serial.print(DEVICE____________SIDE);
                 Serial.print(", ms: ");
@@ -376,7 +432,7 @@ void runLoopTaskPrimary(void* pvParameters) {
 
     }
 
-}
+        }
 
 #if USE_SERIAL__MIC_OUTPUT == true
 void runLoopTaskMicVals(void* pvParameters) {
@@ -443,7 +499,7 @@ void setup(void) {
 #endif
 
     Serial.println(separator);
-}
+    }
 
 
 void loop() {

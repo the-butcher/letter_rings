@@ -11,8 +11,8 @@
 
 /**
  * orientation.x has axis normal to sensor plane
- * orientation.y has axis perpendicular to cable
- * orientation.z has axis along cable
+ * orientation.y has axis on sensor plane, perpendicular to cable
+ * orientation.z has axis sensor plane, along cable
  */
 class Orientation {
 private:
@@ -21,59 +21,84 @@ private:
     static vector________t orientation;
 
     /**
-     * own acceleration values
+     * own magnitude values
      */
-    static acceleration__t accelA;
-    /**
-     * other acceleration values
-     */
-    static acceleration__t accelB;
+    static magnitudes___t magnitudesA;
 
-    static double coefficient;
-    static double coefficientThreshold;
+    /**
+     * other magnitude values
+     */
+    static magnitudes___t magnitudesB;
+
+    /**
+     * most recent acceleration values
+     */
+    static acceleration_t accelerationsA;
+
+    static double coefP;
+    static double coefPThreshold;
+
+    static double coefGThreshold;
 
 public:
 
     static bool read();
     static vector________t getOrientation();
 
-    static acceleration__t getAccelA();
-    static acceleration__t getAccelB();
+    static magnitudes___t getMagnitudesA();
+    static magnitudes___t getMagnitudesB();
 
-    static void setAccelAMillisWait(int64_t millisWaitA);
+    static acceleration_t getAccelerationsA();
 
-    static void setAccelB(acceleration__t accelB);
+    static void setMillisWaitA(int64_t millisWaitA);
+
+    static void setMagnitudesB(magnitudes___t magnitudesB);
 
     /**
-     * calculate a new coefficent based on the current accelA and accelB values
+     * calculate a new coefP based on the current magnitudesA and magnitudesB values
      */
-    static void calculateCoefficient();
+    static void calculateCoefP();
+
+    static double calculateCoefficient(float valuesA[ACCELERATION___SAMPLES], float valuesB[ACCELERATION___SAMPLES], uint8_t count = ACCELERATION___SAMPLES);
+
+    static bool matchGesture(acceleration_t gesture, float threshold = 1.5);
 
     /**
-     * get the current coefficient value
+     * get the current coefG (gesture) value
      */
-    static double getCoefficient();
+    static double getCoefGThreshold();
 
     /**
-     * get the current coefficient threshold
-     */
-    static double getCoefficientThreshold();
-
-    /**
-     * set a new coffeficient threshold value
+     * set a new coefP threshold value
      * @return true if the value could be set (was within min/max values), false otherwise
      */
-    static bool setCoefficientThreshold(double coefficientThreshold);
+    static bool setCoefGThreshold(double coefGThreshold);
 
     /**
-     * check if the current coefficient is above the current coefficient threshold
+     * get the current coefP value
      */
-    static bool isAboveCoefficientThreshold();
+    static double getCoefP();
 
     /**
-     * check if one of the recent acceleration values (in accelA) is above the significant threshold (ACCELERATION_SIG_THRES)
+     * get the current coefP threshold
      */
-    static bool isAboveSignificantThreshold();
+    static double getCoefPThreshold();
+
+    /**
+     * set a new coefP threshold value
+     * @return true if the value could be set (was within min/max values), false otherwise
+     */
+    static bool setCoefPThreshold(double coefPThreshold);
+
+    /**
+     * check if the current coefP is above the current coefP threshold
+     */
+    static bool isAboveCoefPThreshold();
+
+    /**
+     * check if one of the recent acceleration values (in magnitudesA) is above the significant threshold (ACCELERATION_SIG_THRES)
+     */
+    static bool isAboveSignificantThreshold(float threshold, uint8_t fromIndex = ACCELERATION___SAMPLES / 2, uint8_t toIndex = ACCELERATION___SAMPLES);
 
     static bool powered;
     static bool powerup();

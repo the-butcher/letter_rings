@@ -1,4 +1,4 @@
-#define DEVICE____________LEFT true
+#define DEVICE____________LEFT false
 
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"
@@ -19,12 +19,12 @@
 #define USE_SERIAL__MIC_OUTPUT false // write microphone related messages (basis, scale) to the console
 #define USE_SERIAL_SYNC_OUTPUT false // write sync related messages (send, revc, millis) to the console
 
-
 #define COMMAND_LABEL_____UUID "067c3c93-eb63-4905-b292-478642f8ae99"  // for remote writing a label (moving over multiple matrices)
 #define COMMAND_WORD______UUID "3dfde050-8432-4f2f-9366-de27c430c05c"  // for remote writing a word (static 4-letter word)
 #define COMMAND_MODUS_____UUID "a8792ef9-c01c-47ee-a063-f8712bf8dd67"  // for remote reading/writing the modus
 #define COMMAND_LIGHT_____UUID "28c64d42-4958-43f0-8845-5a106498bf1d"  // for remote reading/writing the light
-#define COMMAND_COEFF_____UUID "cfb68865-9243-4646-af27-750d02d44a3a"  // for remote reading/writing the orientation coefficient
+#define COMMAND_COEFP_____UUID "cfb68865-9243-4646-af27-750d02d44a3a"  // for remote reading/writing the coefP (pairing coefficient)
+#define COMMAND_COEFG_____UUID "2151fc75-d815-4b69-8b68-2bd56f93c1dc"  // for remote reading/writing the coefG (gesture coefficient)
 
 #define AUDIO__________SAMPLES 512    // Must be a power of 2
 #define AUDIO____SAMPLING_FREQ 40000  // Hz, must be 40000 or less due to ADC conversion time. Determines maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
@@ -38,10 +38,10 @@
 #define BUTTON_DEBOUNCE_MILLIS 100
 
 #define ACCELERATION___SAMPLES 32  // ~ 1.5 seconds at a sample rate of 50ms, maybe half of that would do as well
-#define ACCELERATION_THRESHOLD 0.8 // threshold for the correlation value considered to be good enough
+#define COEFF________THRES_MIN 0.6
+#define COEFF________THRES_MAX 0.9
 #define ACCELERATION_SIG_THRES 7.0
-#define COEFFICIENT_THRES__MIN 0.6
-#define COEFFICIENT_THRES__MAX 0.9
+#define ACCELERATION_TAP_THRES 5.0
 
 #define CHARS______________NUM 6
 #define CHARS______FIELD_DIM_X 40
@@ -97,6 +97,8 @@ typedef enum : uint8_t {
     BITMAP_GHOST_____B_R = 3,
     BITMAP_GHOST_____C_R = 4
 } bitmap________e;
+
+
 
 const uint8_t PROGMEM BITMAP_STORE[5][8] = { {
                                                 B00111100,  // PACMAN_______OPEN_R
@@ -157,6 +159,7 @@ typedef enum : int8_t {
 typedef enum : uint8_t {
     CLEAR_MATRIX_CANVAS = 1,  // clear the internal canvas elements
     CLEAR_MATRIX___DISP = 2   // clear the actual display
+    // next value would have to be 4
 } clear_matrix__e;
 
 /**
@@ -167,12 +170,13 @@ typedef enum : uint8_t {
     BUTTON_ACTION_MODUS,
     BUTTON_ACTION_DECAY,  // the decay of the frequency bands
     BUTTON_ACTION_LIGHT,
-    BUTTON_ACTION_COEFF
+    BUTTON_ACTION_COEFP,
+    BUTTON_ACTION_COEFG
 } button_action_e;
 
 typedef enum : uint8_t {
     /**
-     * show random
+     * show the chars of my first name
      */
     MODUS________CHARS,
     /**
@@ -200,12 +204,12 @@ typedef enum : uint8_t {
      */
     MODUS________ACCEL,
     /**
-     * pacman, only after pairing in accel mode (acceleration similarity)
+     * pacman, only after pairing in accel mode (magnitude similarity)
      */
     MODUS____GAMPM_PRI,
     MODUS____GAMPM_SEC,
     /**
-     * game of life, when a significant bump has occured
+     * game of life, after a significant bump has occured
      */
     MODUS________GAMOL
 } modus_________e;
@@ -217,9 +221,9 @@ typedef enum : uint8_t {
 } text_halign___e;
 
 typedef struct {
-    double x;
-    double y;
-    double z;
+    float x;
+    float y;
+    float z;
 } vector________t;
 
 typedef struct {
@@ -232,7 +236,29 @@ typedef struct {
 typedef struct {
     float values[ACCELERATION___SAMPLES];
     int64_t millisWait;
-} acceleration__t;
+} magnitudes___t;
+
+typedef struct {
+    float valuesX[ACCELERATION___SAMPLES];
+    float valuesY[ACCELERATION___SAMPLES];
+    float valuesZ[ACCELERATION___SAMPLES];
+} acceleration_t;
+
+const acceleration_t ACCEL_W = {
+    { 0.440, 0.483, 0.379,-0.041,-0.996,-1.680,-1.183,-0.124, 0.996, 1.183, 0.389,-0.269,-1.036,-1.629,-1.996,-1.447, 0.397, 2.007, 2.369, 0.377,-0.866,-1.026},
+    {-0.434,-0.673,-0.814,-0.149, 1.239, 2.611, 1.363,-0.093,-0.897,-1.284,-0.057,-0.390, 0.659, 1.859, 2.084, 0.684, 0.244,-1.483,-0.749, 0.310,-0.021,-0.187},
+    {-0.307,-0.298,-0.190, 0.009, 0.444, 0.486, 0.041,-0.011,-0.083,-0.456,-0.030,-0.320, 0.019, 0.293, 0.149, 0.370,-0.034,-0.757,-1.081, 0.143, 0.266, 0.016}
+};
+const acceleration_t ACCEL_C = {
+    { 0.003, 0.214, 0.294, 0.444, 0.581, 0.810, 1.061, 1.270, 1.534, 1.699, 1.494, 0.830,-0.419,-2.227,-3.739,-3.900,-2.744,-0.947, 0.927, 2.294, 1.539, 0.670},
+    { 0.269, 0.183, 0.046,-0.011, 0.220, 0.177, 0.174, 0.196, 0.287,-0.361,-0.673,-1.554,-1.976,-1.270,-0.139, 1.467, 1.816, 1.764, 1.211, 0.196,-1.329,-0.481},
+    {-0.067,-0.001, 0.051, 0.116, 0.154,-0.086,-0.124,-0.459,-0.254,-0.389,-0.359,-0.156, 0.116, 0.893, 0.790, 0.869, 0.927, 0.054,-0.694,-1.550,-0.927,-0.179}
+};
+const acceleration_t ACCEL_F = {
+    { 1.336, 3.204, 3.423, 2.484, 1.239, 0.240,-0.313,-0.159, 0.063, 0.219,-0.086,-1.160,-2.257,-3.403,-3.354,-1.530, 1.721, 3.393, 3.159, 0.763,-0.394,-0.520},
+    { 0.279, 0.294,-0.151,-0.756,-0.839,-1.220,-0.750,-0.373, 0.696, 1.076, 1.341, 1.504, 1.461,-0.214,-0.119,-0.004,-0.687,-0.404,-0.690,-0.246,-0.350,-0.273},
+    {-0.809,-0.440,-0.331, 0.190, 0.596, 0.860, 0.681, 0.001,-0.793,-1.359,-1.141,-0.566, 0.217, 0.719, 1.100, 0.939,-1.279,-1.059,-0.997, 0.429, 0.537, 0.101}
+};
 
 typedef struct {
     /**
@@ -278,7 +304,7 @@ typedef enum : uint8_t {
 typedef struct {
     device_role___e deviceRole;
     bitmaps_______t bitmaps;
-    acceleration__t acceleration;
+    magnitudes___t magnitudes;
 } device_data___t;
 // const a = sizeof(device_data___t); // 144
 

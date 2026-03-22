@@ -18,15 +18,17 @@
   ✔ a switch disconnect in the app does not disconnect the device!
 
 - esp
-  - maybe it would work to record some accel patterns (i.e. bumping hands n-times, circling a hand), then calculating coefficients like in accel mode against those pattersn.
-    - determine duration a coefficient calculation consumes to get a feeling how often this can be done within loop limits
-	- what would happen in case this works?
   - maybe better display in accel mode, where the coefficient draws a bar with a threshold marker rather than just a number
   - test with full setup, on arms and powerbank, wear for a while to discover problems, uncomfortable spots, short cables, ...
   ? belts are a bit short when leading over the batteries :: TODO :: good enough?
   ~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
   ~ test with high volume and noise as good as possible, experiment with gain settings on the microphone
     - https://leobot.net/tutorial/1067?srsltid=AfmBOopGwK3bNLB8GH9lWKwbYeUN1UAsiPBQsh7GJRLy7i_L0Uc4ghWd
+  ✔ maybe it would work to record some accel patterns (i.e. bumping hands n-times, circling a hand), then calculating coefficients like in accel mode against those pattersn.
+    ✔ determine duration a coefficient calculation consumes to get a feeling how often this can be done within loop limits
+	✔ what would happen in case this works? - mode switch, "recognize now", ...
+	✔ how would recording patterns work?
+	✔ would recorded patterns have to be longer than the currently used accel pattern for pairing?
   ✔ condition when in accel mode where device becomes sluggish :: was due to extraDelay having large values after mode change
   ✔ introduce extra-delay
   ❌ introduce mutex around accelB (?) :: maybe not needed the way it is implemented, copying values into accelB

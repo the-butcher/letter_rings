@@ -115,8 +115,10 @@ void Display::drawConfig() {
             baText = "DECAY";
         } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT) {
             baText = "LIGHT";
+        } else if (Buttons::buttonAction == BUTTON_ACTION_COEFP) {
+            baText = "COEFP";
         } else {
-            baText = "COEFF";
+            baText = "COEFG";
         }
         Display::drawString(baText, DISPLAY__WIDTH / 2, configYPos, TEXT_HALIGN_CENTER);
         Display::drawString("+", DISPLAY__WIDTH, configYPos, TEXT_HALIGN__RIGHT);
@@ -145,8 +147,10 @@ void Display::drawConfig() {
             value = String(Microphone::decay);
         } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT) {
             value = String(Matrices::getBrightness());
-        } else {
-            value = String((int)round(Orientation::getCoefficientThreshold() * 100));
+        } else if (Buttons::buttonAction == BUTTON_ACTION_COEFP) {
+            value = String((int)round(Orientation::getCoefPThreshold() * 100));
+        } else { // coefG
+            value = String((int)round(Orientation::getCoefGThreshold() * 100));
         }
 
         Display::drawString(value, DISPLAY__WIDTH / 2, configYPos - 17, TEXT_HALIGN_CENTER, DISPLAY__WIDTH / 2);
@@ -280,17 +284,17 @@ void Display::drawAcceleration() {
         Display::drawCanvas.fillRect(0, y - clearDisplayHeight, DISPLAY__WIDTH, clearDisplayHeight, ST77XX_BLACK); // clear previous bars area
 
         Display::drawCanvas.setTextSize(2);
-        Display::drawCanvas.setTextColor(Orientation::isAboveCoefficientThreshold() ? 0xad55 : 0xf800);  // #adaaad : #ff0000
-        Display::drawString(String(Orientation::getCoefficient(), 3), 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
+        Display::drawCanvas.setTextColor(Orientation::isAboveCoefPThreshold() ? 0xad55 : 0xf800);  // #adaaad : #ff0000
+        Display::drawString(String(Orientation::getCoefP(), 3), 0, 20, TEXT_HALIGN___LEFT, DISPLAY__WIDTH);
 
-        acceleration__t accelA = Orientation::getAccelA();
+        magnitudes___t magnitudesA = Orientation::getMagnitudesA();
         for (uint16_t i = 0; i < ACCELERATION___SAMPLES; i++) {
             x = i * 4 + 3;
-            h = min(m, (uint16_t)round(accelA.values[i] * 32));
+            h = min(m, (uint16_t)round(magnitudesA.values[i] * 32));
             Display::drawCanvas.fillRect(x, y - h, 3, h, 0x9cd3);  // #9c9a9c - draw fresh bar (grey)
         }
 
-        acceleration__t accelB = Orientation::getAccelB();
+        magnitudes___t accelB = Orientation::getMagnitudesB();
         for (uint16_t i = 0; i < ACCELERATION___SAMPLES; i++) {
             x = i * 4 + 3;
             h = min(m, (uint16_t)round(accelB.values[i] * 32));

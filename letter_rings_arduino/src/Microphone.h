@@ -35,7 +35,7 @@ private:
     static double fitFAverag;
     static double fitXValues[AUDIO________NUM_BANDS];      // a list of ascending double values
     static double fitYValues[AUDIO________NUM_BANDS];      //
-    static double coefValues[AUDIO________NUM_ORDER + 1];  // the coefficients of a cubic curve fitted to the signal
+    static double coefValues[AUDIO________NUM_ORDER + 1];  // the coefs of a cubic curve fitted to the signal
 
     static uint64_t signalSum;
     static uint64_t signalNum;

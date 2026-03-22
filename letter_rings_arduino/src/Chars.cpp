@@ -9,11 +9,11 @@ bool Chars::powerup() {
     for (int i = 0; i < CHARS______________NUM; i++) {
         Chars::chars[i].character = hannes[i]; // (char)random(0x41, 0x5A);
         Chars::chars[i].position = {
-            (double)random(0, CHARS______FIELD_DIM_X),
-            (double)random(0, CHARS______FIELD_DIM_Y)
+            (float)random(0, CHARS______FIELD_DIM_X),
+            (float)random(0, CHARS______FIELD_DIM_Y)
         };
-        double direction = (double)(random(0, 100) * PI / 200.0);
-        double velocity = (double)(random(100, 200) / 200.0);
+        float direction = (float)(random(0, 100) * PI / 200.0);
+        float velocity = (float)(random(100, 200) / 200.0);
         Chars::chars[i].velocity = {
             cos(direction) * velocity,
             sin(direction) * velocity

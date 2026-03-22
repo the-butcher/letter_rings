@@ -87,15 +87,15 @@ bool Nowsrv::sendDeviceData() {
     device_data___t deviceData = {
         Device::getDeviceRole(),
         Device::currBitmaps,
-        Orientation::getAccelA()
+        Orientation::getMagnitudesA()
     };
 
-    esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&deviceData, sizeof(acceleration__t));
+    esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&deviceData, sizeof(magnitudes___t));
     return result == ESP_OK;
 }
 
 void Nowsrv::OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
-    Orientation::setAccelAMillisWait(-1); // set a negative value, will either be calculated upon recv, or remain -1 in case of failure which can prevent extra-delays in the case
+    Orientation::setMillisWaitA(-1); // set a negative value, will either be calculated upon recv, or remain -1 in case of failure which can prevent extra-delays in the case
     if (status == 0) {
 #if USE_SERIAL_SYNC_OUTPUT == true
         Serial.print(DEVICE____________SIDE);
@@ -121,11 +121,11 @@ void Nowsrv::OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
 void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
 
     Nowsrv::millisRecv = millis();
-    Orientation::setAccelAMillisWait((Nowsrv::millisRecv - Nowsrv::millisSend) - Nowsrv::destMillisWait);
+    Orientation::setMillisWaitA((Nowsrv::millisRecv - Nowsrv::millisSend) - Nowsrv::destMillisWait);
 
     device_data___t incominingDeviceData;
     memcpy(&incominingDeviceData, incomingData, sizeof(device_data___t));
-    Orientation::setAccelB(incominingDeviceData.acceleration); // will recalculate coefficient
+    Orientation::setMagnitudesB(incominingDeviceData.magnitudes); // will recalculate coefP
 
     // Serial.print("incoming device role ");
     // Serial.print(incominingDeviceData.deviceRole);
@@ -160,16 +160,16 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
         // Serial.println(incominingDeviceData.bitmaps.orientation);
     } else {
         // make a role decision based on orientation threshold, only when not in SEC (must remain passive in SEC)
-        if (Orientation::isAboveCoefficientThreshold()) {          // should be PRI
+        if (Orientation::isAboveCoefPThreshold()) {          // should be PRI
             if (Device::getDeviceRole() != DEVICE_ROLE_____PRI) {  // but is not
                 bool success = Device::setDeviceRole(DEVICE_ROLE_____PRI);     // set to pri
-                // Serial.print("set DEVICE_ROLE_____PRI due to coefficient threshold, ");
+                // Serial.print("set DEVICE_ROLE_____PRI due to coefP threshold, ");
                 // Serial.println(success);
             }
         } else {                                                   // should be ANY
             if (Device::getDeviceRole() != DEVICE_ROLE_____ANY) {  // but is not
                 bool success = Device::setDeviceRole(DEVICE_ROLE_____ANY);        // set to any
-                // Serial.print("set DEVICE_ROLE_____ANY due to coefficient threshold, ");
+                // Serial.print("set DEVICE_ROLE_____ANY due to coefP threshold, ");
                 // Serial.println(success);
             }
         }
