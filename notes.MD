@@ -1,9 +1,9 @@
 ✔️ reply to host
 
 - android app
-  ! try to identify code that can fail and handle errors accordingly, read more BLE tutorials
-  ? when the device disconnects before the gatt-services are in place there is no event or other notification
-  ? attempting to connect from this state returns the app to a stable state (gatt connect fails and the UI shows the button again after that)
+  ~~ try to identify code that can fail and handle errors accordingly, read more BLE tutorials
+  ❌ when the device disconnects before the gatt-services are in place there is no event or other notification
+  ❌ attempting to connect from this state returns the app to a stable state (gatt connect fails and the UI shows the button again after that)
   ✔ integrate ChatGPT word list
   ✔ adapt the app so changes apply to all connected devices, this will simplify the UI and reduce room for error
   ✔ address does not hide when connection is lost
@@ -18,12 +18,14 @@
   ✔ a switch disconnect in the app does not disconnect the device!
 
 - esp
-  - maybe better display in accel mode, where the coefficient draws a bar with a threshold marker rather than just a number
-  - test with full setup, on arms and powerbank, wear for a while to discover problems, uncomfortable spots, short cables, ...
-  ? belts are a bit short when leading over the batteries :: TODO :: good enough?
-  ~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
-  ~ test with high volume and noise as good as possible, experiment with gain settings on the microphone
-    - https://leobot.net/tutorial/1067?srsltid=AfmBOopGwK3bNLB8GH9lWKwbYeUN1UAsiPBQsh7GJRLy7i_L0Uc4ghWd
+  -- when entering words mode through gesture it can take a few seconds for the first words to appear
+     -- also when changing UP/DOWN orientation it may take a bit
+  -- test with full setup, on arms and powerbank, wear for a while to discover problems, uncomfortable spots, short cables, ...
+  ~~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
+  ~~ test with high volume and noise as good as possible, experiment with gain settings on the microphone
+     - https://leobot.net/tutorial/1067?srsltid=AfmBOopGwK3bNLB8GH9lWKwbYeUN1UAsiPBQsh7GJRLy7i_L0Uc4ghWd
+  ❌ maybe better display in accel mode, where the coefficient draws a bar with a threshold marker rather than just a number
+  ✔ belts are a bit short when leading over the batteries :: TODO :: good enough?
   ✔ maybe it would work to record some accel patterns (i.e. bumping hands n-times, circling a hand), then calculating coefficients like in accel mode against those pattersn.
     ✔ determine duration a coefficient calculation consumes to get a feeling how often this can be done within loop limits
 	✔ what would happen in case this works? - mode switch, "recognize now", ...

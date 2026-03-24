@@ -84,6 +84,7 @@ const uint64_t WORD_UPDATE_INTERVAL_MS = 14000;
 const uint64_t PARTY_LABEL_DURATION_MS = 20000;
 const uint64_t DISP_ACTIVE_DURATION_MS = 1000 * 60 * 3; // 3 minutes
 const uint64_t GAMOL_______DURATION_MS = 10000;
+const uint8_t  WORD_____TRANSITION_NUM = 15; // the number of random words when transitioning from one word to another
 
 /**
  * the interval we want the primary loop to run at (50ms -> 20 times/second)

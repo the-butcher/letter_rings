@@ -9,6 +9,10 @@
 
 class Matrices {
 private:
+    /**
+     * internal flag describing the need for an actual write
+     * if false (and no brightness update pending), a call to the write method will return false
+     */
     static bool needsWrite;
     /**
      * the brightness currently set

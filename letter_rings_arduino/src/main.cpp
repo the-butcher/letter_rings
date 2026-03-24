@@ -18,12 +18,9 @@ uint16_t labelWidth = 32;  // start value, will be recalculated upon first text 
 
 String mainWord = "";
 uint8_t wordProgress = 0;
-const uint8_t WORD_TRANSITION_COUNT = 15;
 
 uint64_t lastWordUpdateMillis = 0;
 uint64_t lastLabelUpdateMillis = 0;
-uint64_t lastGeneralUpdateMillis = 0;
-uint64_t lastAccelerationSendMillis = 0;
 uint64_t lastGamOLThresholdMillis = 0;
 
 const int16_t BITMAP_RESET_POS = -10;
@@ -147,15 +144,6 @@ void runLoopTaskDisplay(void* pvParameters) {
             Matrices::clear(CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP);
             for (int i = 0; i < CHARS______________NUM; i++) {
                 Matrices::drawChar(Chars::chars[i]);
-                // Serial.print(String(Chars::chars[i].character));
-                // Serial.print(", x: ");
-                // Serial.print(Chars::chars[i].position.x);
-                // Serial.print(", x: ");
-                // Serial.print(Chars::chars[i].matrixX);
-                // Serial.print(", y: ");
-                // Serial.println(Chars::chars[i].position.y);
-                // Serial.print(", y: ");
-                // Serial.println(Chars::chars[i].matrixY);
             }
 
             vTaskDelay(100);
@@ -173,14 +161,14 @@ void runLoopTaskDisplay(void* pvParameters) {
                 lastWordUpdateMillis = currMillis;
             }
 
-            if (wordProgress < WORD_TRANSITION_COUNT) {
+            if (wordProgress < WORD_____TRANSITION_NUM) {
                 wordProgress++;
                 String word = WORDS[random(0, WORD_COUNT - 1)];
                 Matrices::drawWord(word);
                 Display::drawText(word);
                 vTaskDelay(75);
             } else {
-                if (wordProgress == WORD_TRANSITION_COUNT) {
+                if (wordProgress == WORD_____TRANSITION_NUM) {
                     wordProgress++;
                     Matrices::drawWord(mainWord);
                     Display::drawText(mainWord);
@@ -234,7 +222,7 @@ void runLoopTaskDisplay(void* pvParameters) {
 
             Display::drawAcceleration();
 
-            vTaskDelay(90);
+            vTaskDelay(100);
 
         } else if (determModus == MODUS________GAMOL) {
 
@@ -333,7 +321,6 @@ void runLoopTaskGeneral(void* pvParameters) {
 #if DEVICE____________LEFT == true
 
         double coefG = Orientation::getCoefGThreshold();
-
         bool isGestureW = Orientation::matchGesture(ACCEL_W, 1.87 * coefG); // 1.12@0.6 - 1.40@0.75 - 1.68@0.9
         bool isGestureF = Orientation::matchGesture(ACCEL_F, 2.07 * coefG); // 1.42@0.6 - 1.55@0.75 - 1.86@0.9
         bool isGestureC = Orientation::matchGesture(ACCEL_C, 2.13 * coefG); // 1.28@0.6 - 1.60@0.75 - 1.92@0.9
@@ -432,7 +419,7 @@ void runLoopTaskPrimary(void* pvParameters) {
 
     }
 
-        }
+}
 
 #if USE_SERIAL__MIC_OUTPUT == true
 void runLoopTaskMicVals(void* pvParameters) {
@@ -499,7 +486,7 @@ void setup(void) {
 #endif
 
     Serial.println(separator);
-    }
+}
 
 
 void loop() {
