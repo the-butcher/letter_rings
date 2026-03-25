@@ -17,7 +17,29 @@ object WorkHandler {
 
     // https://www.tothenew.com/blog/using-work-managers-periodic-work-for-less-than-15-minutes/
 
-    fun scheduleWordPairWork() {
+    fun scheduleWordPairWork(delaySeconds: Long = 10) {
+
+        val workManagerInstance = WorkManager.getInstance(MainActivity.instance.get() as Context)
+
+        val workInfos = workManagerInstance.getWorkInfosByTag(WORK___WORDS)
+        var currentlyRunning = false
+        try {
+
+            val workInfoList: List<WorkInfo> = workInfos.get()
+            for (workInfo in workInfoList) {
+                currentlyRunning = currentlyRunning || (workInfo.state == WorkInfo.State.RUNNING)
+            }
+
+        } catch (_: Exception) {
+            // do nothing
+        }
+
+        if (currentlyRunning) {
+            MainActivity.instance.get()?.runOnUiThread {
+                Toast.makeText(MainActivity.instance.get(), "word pair worker already running", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
 
         cancelPreviousWork(WORK___WORDS)
 
@@ -26,19 +48,18 @@ object WorkHandler {
             .build()
 
         val workRequest = OneTimeWorkRequestBuilder<WordPairWorker>()
-            .setInitialDelay(10, TimeUnit.SECONDS)
+            .setInitialDelay(delaySeconds, TimeUnit.SECONDS)
             .setConstraints(constraints)
             .addTag(WORK___WORDS)
             .build()
 
-        val workManagerInstance = WorkManager.getInstance(MainActivity.instance.get() as Context)
         workManagerInstance.enqueue(workRequest)
 
         Log.d(LOG_TAG_WORK, "... word pair work scheduled")
 
     }
 
-    fun scheduleShazamWork(delaySeconds: Long) {
+    fun scheduleShazamWork(delaySeconds: Long = 60) {
 
         val workManagerInstance = WorkManager.getInstance(MainActivity.instance.get() as Context)
 
@@ -104,7 +125,7 @@ object WorkHandler {
 
             MainActivity.instance.get()?.updateLabels(title, artist, valid)
             Log.i(LOG_TAG_WORK, "scheduling shazam work (state: $activityState) ...")
-            scheduleShazamWork(60)
+            scheduleShazamWork()
 
 //            if (activityState?.isAtLeast(Lifecycle.State.RESUMED) == true) {
 //

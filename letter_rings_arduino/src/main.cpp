@@ -27,8 +27,6 @@ const int16_t BITMAP_RESET_POS = -10;
 int16_t bitmapPos = BITMAP_RESET_POS;
 
 uint64_t millisAPri = 0;
-uint64_t durationAB = 0;
-uint64_t durationAC = 0;
 
 #if USE_SERIAL_LOOP_OUTPUT == true
 uint64_t totalLoopMillis = 0;
@@ -327,6 +325,8 @@ void runLoopTaskGeneral(void* pvParameters) {
 
         if (isGestureW) {
             applyGestureModus(MODUS________WORDS);
+            // TODO :: reset word if the device is not connected to immediately see that words is active
+            // TODO :: add functionality in app that updates words immediately when entering words mode
         } else if (isGestureF) {
             applyGestureModus(MODUS________PARTY);
         } else if (isGestureC) {

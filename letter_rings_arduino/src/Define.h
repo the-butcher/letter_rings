@@ -1,4 +1,4 @@
-#define DEVICE____________LEFT false
+#define DEVICE____________LEFT true
 
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"

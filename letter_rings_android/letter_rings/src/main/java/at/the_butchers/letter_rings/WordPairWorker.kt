@@ -60,6 +60,22 @@ class WordPairWorker(appContext: Context, workerParams: WorkerParameters): Worke
         Pair("HIDE", "SEEK"),
         Pair("LUCK", "FATE"),
         Pair("WEAK", "FIRM"),
+        Pair("HELL", "YEAH"),
+        Pair("COLD", "FEET"),
+        Pair("LONG", "SHOT"),
+        Pair("FAIR", "GAME"),
+        Pair("FAST", "LANE"),
+        Pair("FULL", "STOP"),
+        Pair("LONG", "HAUL"),
+        Pair("OPEN", "BOOK"),
+        Pair("SAME", "BOAT"),
+        Pair("WILD", "CARD"),
+        Pair("COME", "TRUE"),
+        Pair("CALM", "DOWN"),
+        Pair("TAKE", "CARE"),
+        Pair("BLUE", "MOON"),
+        Pair("COME", "TRUE"),
+        Pair("STEP", "DOWN"),
     )
 
     @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)

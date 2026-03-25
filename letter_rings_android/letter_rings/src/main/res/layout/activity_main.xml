@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:id="@+id/main"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:fontFamily="@font/consola"
-              android:layout_margin="8sp"
-              android:orientation="vertical"
-              android:padding="3sp">
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fontFamily="@font/consola"
+    android:layout_margin="8sp"
+    android:orientation="vertical"
+    android:padding="3sp">
 	<!-- Use android:theme NOT style, https://livefront.com/writing/how-to-change-the-toolbar-font-on-android/ -->
 	<Toolbar android:id="@+id/toolbar"
 	         android:layout_width="match_parent"
@@ -24,8 +25,15 @@
 		          android:textSize="20sp"
 		          android:textStyle="bold"/>
 	</Toolbar>
+
+
+
+
 	<ScrollView android:layout_width="match_parent"
-	            android:layout_height="match_parent">
+	            android:layout_height="0dp"
+        android:layout_weight="1"
+        >
+
 		<LinearLayout android:layout_width="match_parent"
 		              android:layout_height="wrap_content"
 		              android:orientation="vertical"
@@ -38,6 +46,10 @@
 		              android:paddingEnd="6sp"
 		              android:paddingRight="4sp"
 		              android:paddingBottom="6sp">
+
+
+
+
 			<Switch android:id="@+id/swRecognition"
 			        android:layout_width="match_parent"
 			        android:layout_height="wrap_content"
@@ -45,6 +57,7 @@
 			        android:padding="8sp"
 			        android:text="recognition"
 			        android:textSize="20sp"/>
+
 			<View android:layout_width="match_parent"
 			      android:layout_height="1dp"
 			      android:layout_marginVertical="4sp"
@@ -448,8 +461,29 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginVertical="4sp"
-                    android:background="@color/white" />
+                     />
             </LinearLayout>
 		</LinearLayout>
 	</ScrollView>
+
+    <com.ncorti.slidetoact.SlideToActView
+
+        android:id="@+id/staGlobal"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        app:bump_vibration="100"
+
+        app:slider_height="48dp"
+        app:text="slide to lock"
+        app:outer_color="#666666"
+        app:slider_reversed="true"
+        android:fontFamily="@font/consola"
+        app:text_size="16sp"
+        app:complete_icon="@drawable/lock_24dp_e3e3e3_fill0_wght400_grad0_opsz24"
+        app:slider_icon="@drawable/lock_open_right_24dp_e3e3e3_fill0_wght400_grad0_opsz24"
+        app:icon_margin="9dp"
+
+
+        />
+
 </LinearLayout>

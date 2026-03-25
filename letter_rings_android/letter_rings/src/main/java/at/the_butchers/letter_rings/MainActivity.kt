@@ -7,6 +7,8 @@ import android.bluetooth.BluetoothManager
 import android.content.pm.PackageManager
 import android.content.res.AssetManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -34,6 +36,7 @@ import java.util.EnumMap
 import java.util.Properties
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import com.ncorti.slidetoact.SlideToActView
 
 
 class MainActivity : AppCompatActivity() {
@@ -101,6 +104,8 @@ class MainActivity : AppCompatActivity() {
         setupConnButton(Side.LEFT)
         setupConnButton(Side.RIGHT)
 
+        setupLockSlider()
+
         // set up bluetooth and find devices ====================
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
@@ -108,6 +113,93 @@ class MainActivity : AppCompatActivity() {
         BleScanner(bluetoothAdapter, Side.RIGHT).startScan()
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+    }
+
+    /**
+     * https://github.com/cortinico/slidetoact?tab=readme-ov-file
+     * https://fonts.google.com/icons
+     */
+    fun setupLockSlider() {
+
+        Log.i(LOG_TAG_MAIN, "set up slide to act button")
+
+        val sta: SlideToActView = findViewById(R.id.staGlobal)
+        sta.onSlideCompleteListener = object: SlideToActView.OnSlideCompleteListener {
+            override fun onSlideComplete(view: SlideToActView) {
+                Log.i(LOG_TAG_MAIN, "slide to act button completed")
+                Handler(Looper.getMainLooper()).postDelayed(  {
+                    if (view.isReversed) {
+                        view.completeIcon = R.drawable.lock_24dp_e3e3e3_fill0_wght400_grad0_opsz24
+                        view.sliderIcon = R.drawable.lock_open_right_24dp_e3e3e3_fill0_wght400_grad0_opsz24
+                    } else {
+                        view.completeIcon = R.drawable.lock_open_right_24dp_e3e3e3_fill0_wght400_grad0_opsz24
+                        view.sliderIcon = R.drawable.lock_24dp_e3e3e3_fill0_wght400_grad0_opsz24
+                    }
+                }, 500)
+                if (view.isReversed) {
+                    view.isReversed = false;
+                    view.text = "slide to unlock"
+
+                } else {
+                    view.isReversed = true
+                    view.text = "slide to lock"
+                }
+
+                enableUi(view.isReversed)
+                view.setCompleted(false, true)
+            }
+        }
+
+    }
+
+    fun enableUi(isEnabled: Boolean) {
+
+        val recognitionSwitch: Switch = findViewById (R.id.swRecognition)
+        val btRecognizeNow: Button =  findViewById ( R.id.btRecognition)
+
+        val swConnL: Switch = findViewById ( Side.LEFT.idSwConn)
+        val swConnR: Switch = findViewById ( Side.RIGHT.idSwConn)
+        val btConnL: Button = findViewById ( Side.LEFT.idBtConn)
+        val btConnR: Button = findViewById ( Side.RIGHT.idBtConn)
+
+        val rgModusChars: RadioButton =  findViewById (R.id.radio_chars)
+        val rgModusWords: RadioButton =  findViewById (R.id.radio_words)
+        val rgModusLabel: RadioButton =  findViewById (R.id.radio_label)
+        val rgModusFrequ: RadioButton =  findViewById (R.id.radio_frequ)
+        val rgModusBreak: RadioButton =  findViewById (R.id.radio_break)
+        val rgModusParty: RadioButton =  findViewById (R.id.radio_party)
+        val rgModusAccel: RadioButton =  findViewById (R.id.radio_accel)
+
+        val sbLight: SeekBar =  findViewById (R.id.sbLight)
+        val sbCoefP: SeekBar =  findViewById (R.id.sbCoefP)
+        val sbCoefG: SeekBar =  findViewById (R.id.sbCoefG)
+
+        this@MainActivity.runOnUiThread {
+
+            recognitionSwitch.isEnabled = isEnabled
+            btRecognizeNow.isEnabled = isEnabled && recognitionSwitch.isChecked
+
+            swConnL.isEnabled = isEnabled
+            swConnR.isEnabled = isEnabled
+            btConnL.isEnabled = isEnabled
+            btConnR.isEnabled = isEnabled
+
+            rgModusChars.isEnabled = isEnabled
+            rgModusWords.isEnabled = isEnabled
+            rgModusLabel.isEnabled = isEnabled
+            rgModusFrequ.isEnabled = isEnabled
+            rgModusBreak.isEnabled = isEnabled
+            rgModusParty.isEnabled = isEnabled
+            rgModusAccel.isEnabled = isEnabled
+
+            sbLight.isEnabled = isEnabled
+            sbCoefP.isEnabled = isEnabled
+            sbCoefG.isEnabled = isEnabled
+
+        }
+
+
 
     }
 
@@ -251,6 +343,8 @@ class MainActivity : AppCompatActivity() {
 
         // TODO :: warn if settings are inconsistent
 
+
+
         Log.d(LOG_TAG_BLUE, "set modus ($modus)")
         if (modus.toInt() == MODUS________CHARS) {
             val rgModusChars: RadioButton =  findViewById (R.id.radio_chars)
@@ -258,8 +352,11 @@ class MainActivity : AppCompatActivity() {
             this@MainActivity.runOnUiThread { rgModusChars.setChecked(true) }
         } else if (modus.toInt() == MODUS________WORDS) {
             val rgModusWords: RadioButton =  findViewById (R.id.radio_words)
-            Log.d(LOG_TAG_BLUE, "rgModusWords will be checked on ui-thread")
-            this@MainActivity.runOnUiThread { rgModusWords.setChecked(true) }
+            if (!rgModusWords.isChecked) {
+                WorkHandler.scheduleWordPairWork(1) // get a new pair of words for fast indication of word modus on the device
+                Log.d(LOG_TAG_BLUE, "rgModusWords will be checked on ui-thread")
+                this@MainActivity.runOnUiThread { rgModusWords.setChecked(true) }
+            }
         } else if (modus.toInt() == MODUS________LABEL) {
             val rgModusLabel: RadioButton =  findViewById (R.id.radio_label)
             Log.d(LOG_TAG_BLUE, "rgModusLabel will be checked on ui-thread")
@@ -396,7 +493,7 @@ class MainActivity : AppCompatActivity() {
 
         //keep current activity instance and use to perform any UI related task on work completion
         instance = WeakReference(this)
-        WorkHandler.scheduleShazamWork(60)
+        WorkHandler.scheduleShazamWork()
         WorkHandler.scheduleWordPairWork()
 
     }
@@ -422,7 +519,8 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.BLUETOOTH_CONNECT,
             Manifest.permission.INTERNET,
             Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.WAKE_LOCK
+            Manifest.permission.WAKE_LOCK,
+            Manifest.permission.VIBRATE
         )
 
         // Filter out the permissions that are not yet granted
