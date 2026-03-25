@@ -62,23 +62,55 @@
 			      android:layout_height="1dp"
 			      android:layout_marginVertical="4sp"
 			      android:background="@android:color/darker_gray"/>
-			<TextView android:id="@+id/txTitle"
+
+            <TextView
+                android:id="@+id/txLabelL"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:clickable="true"
+                android:fontFamily="@font/consola"
+                android:padding="8sp"
+                android:paddingStart="8sp"
+                android:text="NA (initial)"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:visibility="visible" />
+
+            <at.the_butchers.letter_rings.ClearFocusEditText
+                android:id="@+id/edLabelL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints=""
+                android:hint="label-l"
+                android:imeOptions="actionSend"
+                android:inputType="text"
+                android:fontFamily="@font/consola"
+                android:textSize="20sp"
+                android:drawableEnd="@drawable/cancel"
+                android:visibility="gone" />
+
+			<TextView android:id="@+id/txLabelR"
 			          android:layout_width="match_parent"
-			          android:layout_height="wrap_content"
+			          android:layout_height="48dp"
 			          android:fontFamily="@font/consola"
 			          android:padding="4sp"
 			          android:paddingStart="8sp"
 			          android:text="NA (initial)"
 			          android:textSize="20sp"
-			          android:textStyle="bold"/>
-			<TextView android:id="@+id/txArtist"
-			          android:layout_width="match_parent"
-			          android:layout_height="wrap_content"
-			          android:fontFamily="@font/consola"
-			          android:padding="4sp"
-			          android:paddingStart="8sp"
-			          android:text="NA (initial)"
-			          android:textSize="20sp"/>
+                android:visibility="visible"/>
+
+            <at.the_butchers.letter_rings.ClearFocusEditText
+                android:id="@+id/edLabelR"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints=""
+                android:hint="label-r"
+                android:imeOptions="actionSend"
+                android:inputType="text"
+                android:fontFamily="@font/consola"
+                android:textSize="20sp"
+                android:drawableEnd="@drawable/cancel"
+                android:visibility="gone" />
 					  
 			<View android:layout_width="match_parent"
 			      android:layout_height="1dp"

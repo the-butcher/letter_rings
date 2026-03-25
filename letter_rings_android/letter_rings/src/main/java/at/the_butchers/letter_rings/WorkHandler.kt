@@ -109,7 +109,7 @@ object WorkHandler {
             val activityState = MainActivity.instance.get()?.lifecycle?.currentState
 
             MainActivity.instance.get()?.updateWords(wordL, wordR)
-            Log.i(LOG_TAG_WORK, "scheduling word pair work (state: $activityState) ...")
+            Log.d(LOG_TAG_WORK, "scheduling word pair work (state: $activityState) ...")
             scheduleWordPairWork()
 
         } catch (ex: Exception) {
@@ -124,7 +124,7 @@ object WorkHandler {
             val activityState = MainActivity.instance.get()?.lifecycle?.currentState
 
             MainActivity.instance.get()?.updateLabels(title, artist, valid)
-            Log.i(LOG_TAG_WORK, "scheduling shazam work (state: $activityState) ...")
+            Log.d(LOG_TAG_WORK, "scheduling shazam work (state: $activityState) ...")
             scheduleShazamWork()
 
 //            if (activityState?.isAtLeast(Lifecycle.State.RESUMED) == true) {

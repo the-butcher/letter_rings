@@ -4,15 +4,19 @@ package at.the_butchers.letter_rings
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.AssetManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.SeekBar
@@ -27,6 +31,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
+import com.ncorti.slidetoact.SlideToActView
 import com.shazam.shazamkit.DeveloperToken
 import com.shazam.shazamkit.DeveloperTokenProvider
 import com.shazam.shazamkit.ShazamCatalog
@@ -34,9 +41,6 @@ import com.shazam.shazamkit.ShazamKit
 import java.lang.ref.WeakReference
 import java.util.EnumMap
 import java.util.Properties
-import androidx.core.view.isGone
-import androidx.core.view.isVisible
-import com.ncorti.slidetoact.SlideToActView
 
 
 class MainActivity : AppCompatActivity() {
@@ -103,8 +107,10 @@ class MainActivity : AppCompatActivity() {
         setupCoefGBar()
         setupConnButton(Side.LEFT)
         setupConnButton(Side.RIGHT)
-
         setupLockSlider()
+
+        setupTextFields(Side.LEFT)
+        setupTextFields(Side.RIGHT)
 
         // set up bluetooth and find devices ====================
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
@@ -115,6 +121,69 @@ class MainActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
     }
+
+    public fun CharSequence.isBlank(): Boolean = length == 0 || indices.all { this[it].isWhitespace() }
+
+
+    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    fun setupTextFields(side: Side) {
+
+        Log.i(LOG_TAG_MAIN, "set up text fields (${side})")
+
+        val txLabel: TextView = findViewById(side.idTxLabel)
+        val edLabel: ClearFocusEditText = findViewById(side.idEdLabel)
+
+        /**
+         * replace text with input when clicked
+         */
+        txLabel.setOnClickListener {
+            Log.i(LOG_TAG_MAIN, "title was clicked, showing edit field (${side})")
+            txLabel.setVisibility(View.GONE)
+            edLabel.setVisibility(View.VISIBLE)
+            edLabel.text?.clear()
+            edLabel.requestFocus()
+            // show keyboard
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(edLabel, InputMethodManager.SHOW_IMPLICIT);
+        }
+
+        // https://medium.com/@dimabatyuk/adding-clear-button-to-edittext-9655e9dbb721
+        /**
+         * cancel input without sending text
+         */
+        edLabel.onEndDrawableClicked {
+            Log.i(LOG_TAG_MAIN, "title was cancelled, hiding edit field (${side})")
+            // hide keyboard
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(edLabel.windowToken, 0);
+            edLabel.clearFocus()
+        }
+
+        /**
+         * send text, if not blank, to left device
+         */
+        edLabel.onSend  {
+            Log.i(LOG_TAG_MAIN, "title was sent {${edLabel.text}}, hiding edit field (${side})")
+            if (edLabel.text!!.isNotBlank()) {
+                bleDeviceInstanceMap[side]?.writeLabelValue(edLabel.text.toString())
+                txLabel.text = edLabel.text.toString()
+            }
+            // hide keyboard
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(edLabel.windowToken, 0);
+            // hide input, show text
+            edLabel.clearFocus()
+        }
+        edLabel.onFocusChangeListener  = View.OnFocusChangeListener { v, hasFocus ->
+            Log.i(LOG_TAG_MAIN, "title focus changed ${hasFocus} (${side})")
+            if (!hasFocus) {
+                txLabel.setVisibility(View.VISIBLE)
+                edLabel.setVisibility(View.GONE)
+            }
+        }
+
+    }
+
 
     /**
      * https://github.com/cortinico/slidetoact?tab=readme-ov-file
@@ -455,10 +524,10 @@ class MainActivity : AppCompatActivity() {
 
         Log.i(LOG_TAG_MAIN, "update tx (textL: $title) (textR: $artist)")
 
-        val txTitle = findViewById<View?>(R.id.txTitle) as TextView
-        val txArtist = findViewById<View?>(R.id.txArtist) as TextView
-        txTitle.text = title
-        txArtist.text = artist
+        val txLabelL: TextView = findViewById(Side.LEFT.idTxLabel)
+        val txLabelR: TextView = findViewById(Side.RIGHT.idTxLabel)
+        txLabelL.text = title
+        txLabelR.text = artist
 
         // pass to any connected device
         if (valid) {
@@ -475,8 +544,8 @@ class MainActivity : AppCompatActivity() {
 
         Log.i(LOG_TAG_MAIN, "update words (wordL: $wordL, wordR: $wordR)")
 
-        val txWordL = findViewById<View?>(R.id.txWordL) as TextView
-        val txWordR = findViewById<View?>(R.id.txWordR) as TextView
+        val txWordL: TextView = findViewById(R.id.txWordL)
+        val txWordR: TextView = findViewById(R.id.txWordR)
         txWordL.text = wordL
         txWordR.text = wordR
 
