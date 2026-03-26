@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="material_button_style" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <item name="backgroundTint">@color/background_tint_material_button</item>
+        <item name="android:textColor">@color/text_color_material_button</item>
+        <item name="cornerRadius">10dp</item>
+    </style>
+
+    <style name="material_slider_font_style" parent="SlideToActView">
+        <item name="android:fontFamily">@font/consola</item>
+    </style>
+</resources>

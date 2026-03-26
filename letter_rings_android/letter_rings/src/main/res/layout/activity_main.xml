@@ -1,67 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+
+<androidx.constraintlayout.widget.ConstraintLayout  xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:fontFamily="@font/consola"
-    android:layout_margin="8sp"
+    android:layout_margin="12dp"
     android:orientation="vertical"
-    android:padding="3sp">
-	<!-- Use android:theme NOT style, https://livefront.com/writing/how-to-change-the-toolbar-font-on-android/ -->
-	<Toolbar android:id="@+id/toolbar"
-	         android:layout_width="match_parent"
-	         android:layout_height="50sp"
-	         android:background="#575757"
-	         android:contentInsetStart="0dp"
-	         android:contentInsetLeft="0dp">
-		<TextView android:id="@+id/tbTitle"
-		          android:layout_width="match_parent"
-		          android:layout_height="wrap_content"
-		          android:fontFamily="@font/consola"
-		          android:padding="8sp"
-		          android:text="letter-rings"
-		          android:textSize="20sp"
-		          android:textStyle="bold"/>
-	</Toolbar>
+    android:padding="0dp"
+    tools:layout_editor_absoluteX="1dp"
+    tools:layout_editor_absoluteY="1dp"
+    >
 
+    <!-- Use android:theme NOT style, https://livefront.com/writing/how-to-change-the-toolbar-font-on-android/ -->
+    <Toolbar
 
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_weight="0"
+        android:background="#575757"
+        android:contentInsetStart="0dp"
+        android:contentInsetLeft="0dp">
 
+        <TextView
+            android:id="@+id/tbTitle"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:fontFamily="@font/consola"
+            android:padding="8dp"
+            android:text="letter-rings"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+    </Toolbar>
 
-	<ScrollView android:layout_width="match_parent"
-	            android:layout_height="0dp"
-        android:layout_weight="1"
-        >
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="100">
 
-		<LinearLayout android:layout_width="match_parent"
-		              android:layout_height="wrap_content"
-		              android:orientation="vertical"
-		              android:padding="6sp"
-		              android:paddingHorizontal="6sp"
-		              android:paddingVertical="6sp"
-		              android:paddingStart="6sp"
-		              android:paddingLeft="6sp"
-		              android:paddingTop="6sp"
-		              android:paddingEnd="6sp"
-		              android:paddingRight="4sp"
-		              android:paddingBottom="6sp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="6dp"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="6dp"
+            android:paddingStart="6dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="6dp">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
+                <Switch
+                    android:id="@+id/swRecognition"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="48dp"
+                    android:fontFamily="@font/consola"
+                    android:padding="8dp"
+                    android:text="shazam"
+                    android:textSize="20sp"
+                    tools:ignore="HardcodedText" />
 
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="4dp"
+                    />
 
-			<Switch android:id="@+id/swRecognition"
-			        android:layout_width="match_parent"
-			        android:layout_height="wrap_content"
-			        android:fontFamily="@font/consola"
-			        android:padding="8sp"
-			        android:text="recognition"
-			        android:textSize="20sp"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btRecognition"
+                    style="@style/material_button_style"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:fontFamily="@font/consola"
+                    android:gravity="center_horizontal"
+                    android:text="shazam now"
+                    android:textAlignment="center"
+                    android:textAllCaps="false"
+                    android:textSize="20sp"
+                    tools:ignore="HardcodedText" />
 
-			<View android:layout_width="match_parent"
-			      android:layout_height="1dp"
-			      android:layout_marginVertical="4sp"
-			      android:background="@android:color/darker_gray"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="4dp"
+                android:background="@android:color/darker_gray" />
 
             <TextView
                 android:id="@+id/txLabelL"
@@ -69,35 +110,43 @@
                 android:layout_height="48dp"
                 android:clickable="true"
                 android:fontFamily="@font/consola"
-                android:padding="10sp"
-                android:paddingStart="8sp"
+                android:padding="10dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:text="NA (initial)"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:visibility="visible" />
+                android:visibility="visible"
+                tools:ignore="HardcodedText" />
 
             <at.the_butchers.letter_rings.ClearFocusEditText
                 android:id="@+id/edLabelL"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:autofillHints=""
+                android:drawableEnd="@drawable/cancel"
+                android:fontFamily="@font/consola"
                 android:hint="label-l"
                 android:imeOptions="actionSend"
                 android:inputType="text"
-                android:fontFamily="@font/consola"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:textSize="20sp"
-                android:drawableEnd="@drawable/cancel"
-                android:visibility="gone" />
+                android:visibility="gone"
+                tools:ignore="HardcodedText" />
 
-			<TextView android:id="@+id/txLabelR"
-			          android:layout_width="match_parent"
-			          android:layout_height="48dp"
-			          android:fontFamily="@font/consola"
-			          android:padding="10sp"
-			          android:paddingStart="8sp"
-			          android:text="NA (initial)"
-			          android:textSize="20sp"
-                android:visibility="visible"/>
+            <TextView
+                android:id="@+id/txLabelR"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:fontFamily="@font/consola"
+                android:padding="10dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="NA (initial)"
+                android:textSize="20sp"
+                android:visibility="visible"
+                tools:ignore="HardcodedText" />
 
             <at.the_butchers.letter_rings.ClearFocusEditText
                 android:id="@+id/edLabelR"
@@ -109,148 +158,186 @@
                 android:inputType="text"
                 android:fontFamily="@font/consola"
                 android:textSize="20sp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:drawableEnd="@drawable/cancel"
-                android:visibility="gone" />
-					  
-			<View android:layout_width="match_parent"
-			      android:layout_height="1dp"
-			      android:layout_marginVertical="4sp"
-			      android:background="@android:color/darker_gray"/>
+                android:visibility="gone"
+                tools:ignore="HardcodedText" />
 
-            <Button
-                android:id="@+id/btRecognition"
+
+            <View
+                android:id="@+id/view"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="4dp"
+                android:background="@color/white" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:enabled="false"
-                android:fontFamily="@font/consola"
-                android:gravity="left"
-                android:text="recognize now"
-                android:textAlignment="center"
-                android:textAllCaps="false"
-                android:textSize="20sp" />
-				
-			<View android:id="@+id/view"
-			      android:layout_width="match_parent"
-			      android:layout_height="1dp"
-			      android:layout_marginVertical="4sp"
-			      android:background="@color/white"/>
-			<LinearLayout android:layout_width="match_parent"
-			              android:layout_height="wrap_content"
-			              android:orientation="horizontal">
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/txWordL"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:layout_weight="1"
                     android:fontFamily="@font/consola"
-                    android:padding="4sp"
-                    android:paddingStart="8sp"
+                    android:padding="10dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
                     android:text="word-l"
                     android:textAlignment="center"
-                    android:textSize="20sp" />
+                    android:textSize="20sp"
+                    tools:ignore="HardcodedText" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="4dp"
+                    />
 
                 <TextView
                     android:id="@+id/txWordR"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:layout_weight="1"
                     android:fontFamily="@font/consola"
-                    android:padding="4sp"
-                    android:paddingStart="8sp"
+                    android:padding="10dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
                     android:text="word-r"
                     android:textAlignment="center"
-                    android:textSize="20sp" />
-			</LinearLayout>
-			<View android:layout_width="match_parent"
-			      android:layout_height="1dp"
-			      android:layout_marginVertical="4sp"
-			      android:background="@android:color/white"/>
+                    android:textSize="20sp"
+                    tools:ignore="HardcodedText" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/btConnL"
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/consola"
-                android:gravity="left"
-                android:text="ble scan left"
-                android:textAlignment="center"
-                android:textAllCaps="false"
-                android:textSize="20sp" />
+                android:layout_height="1dp"
+                android:layout_marginVertical="4dp"
+                android:background="@android:color/white" />
 
             <LinearLayout
-                android:id="@+id/llConnL"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:orientation="horizontal">
 
-                <Switch
-                    android:id="@+id/swConnL"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="true"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btConnL"
+                    style="@style/material_button_style"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
                     android:fontFamily="@font/consola"
-                    android:padding="4sp"
-                    android:paddingStart="8sp"
-                    android:showText="false"
-                    android:text="ble conn left"
-                    android:textSize="20sp" />
+                    android:gravity="center_horizontal"
+                    android:text="scan-l"
+                    android:textAlignment="center"
+                    android:textAllCaps="false"
+                    android:textSize="20sp"
+                    android:visibility="visible"
+                    tools:ignore="HardcodedText" />
 
-                <TextView
-                    android:id="@+id/txAddrL"
-                    android:layout_width="match_parent"
+                <LinearLayout
+                    android:id="@+id/llConnL"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <Switch
+                        android:id="@+id/swConnL"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:enabled="true"
+                        android:fontFamily="@font/consola"
+                        android:padding="4dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:showText="false"
+                        android:text="conn-l"
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText" />
+
+                    <TextView
+                        android:id="@+id/txAddrL"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/consola"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="8dp"
+                        android:text="NA"
+                        android:textSize="12sp"
+                        tools:ignore="HardcodedText" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="4dp"
+                    />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btConnR"
+                    style="@style/material_button_style"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
                     android:fontFamily="@font/consola"
-                    android:paddingStart="8sp"
-                    android:paddingBottom="8sp"
-                    android:text="NA"
-                    android:textSize="12sp" />
+                    android:gravity="center_horizontal"
+                    android:text="scan-r"
+                    android:textAlignment="center"
+                    android:textAllCaps="false"
+                    android:textSize="20sp"
+                    android:visibility="visible"
+                    tools:ignore="HardcodedText" />
+
+
+                <LinearLayout
+                    android:id="@+id/llConnR"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <Switch
+                        android:id="@+id/swConnR"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:enabled="true"
+                        android:fontFamily="@font/consola"
+                        android:padding="4dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:showText="false"
+                        android:text="conn-r"
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText" />
+
+                    <TextView
+                        android:id="@+id/txAddrR"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/consola"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="8dp"
+                        android:text="NA"
+                        android:textSize="12sp"
+                        tools:ignore="HardcodedText" />
+                </LinearLayout>
 
             </LinearLayout>
-			<View android:layout_width="match_parent"
-			      android:layout_height="1dp"
-			      android:layout_marginVertical="4sp"
-			      android:background="@color/white"/>
 
-            <Button
-                android:id="@+id/btConnR"
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/consola"
-                android:gravity="left"
-                android:text="ble scan right"
-                android:textAlignment="center"
-                android:textAllCaps="false"
-                android:textSize="20sp" />
-			<LinearLayout android:id="@+id/llConnR"
-			              android:layout_width="match_parent"
-			              android:layout_height="wrap_content"
-			              android:orientation="vertical"
-			              android:visibility="gone">
-				<Switch android:id="@+id/swConnR"
-				        android:layout_width="match_parent"
-				        android:layout_height="wrap_content"
-				        android:enabled="true"
-				        android:fontFamily="@font/consola"
-				        android:padding="4sp"
-				        android:paddingStart="8sp"
-				        android:showText="false"
-				        android:text="ble conn right"
-				        android:textSize="20sp"/>
-				<TextView android:id="@+id/txAddrR"
-				          android:layout_width="match_parent"
-				          android:layout_height="wrap_content"
-				          android:fontFamily="@font/consola"
-				          android:paddingStart="8sp"
-				          android:paddingBottom="8sp"
-				          android:text="NA"
-				          android:textSize="12sp"/>
-			</LinearLayout>
-			<View android:layout_width="match_parent"
-			      android:layout_height="1dp"
-			      android:layout_marginVertical="4sp"
-			      android:background="@color/white"/>
+                android:layout_height="1dp"
+                android:layout_marginVertical="4dp"
+                android:background="@color/white" />
 
             <LinearLayout
                 android:id="@+id/llContr"
@@ -264,91 +351,98 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingStart="4sp"
-                    android:paddingEnd="4sp">
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp">
 
                     <RadioButton
                         android:id="@+id/radio_chars"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/consola"
-                        android:padding="4sp"
-                        android:paddingStart="8sp"
-                        android:paddingEnd="8sp"
+                        android:padding="4dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
                         android:text="chars"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_words"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/consola"
-                        android:padding="4sp"
-                        android:paddingStart="8sp"
-                        android:paddingEnd="8sp"
+                        android:padding="4dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
                         android:text="words"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_label"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/consola"
-                        android:padding="4sp"
-                        android:paddingStart="8sp"
-                        android:paddingRight="8sp"
+                        android:padding="4dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
                         android:text="label"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_frequ"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/consola"
-                        android:padding="4sp"
-                        android:paddingStart="8sp"
-                        android:paddingEnd="8sp"
+                        android:padding="4dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
                         android:text="frequ"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_break"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/consola"
-                        android:padding="4sp"
-                        android:paddingStart="8sp"
-                        android:paddingEnd="8sp"
+                        android:padding="4dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
                         android:text="break"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_party"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/consola"
-                        android:padding="4sp"
-                        android:paddingStart="8sp"
-                        android:paddingEnd="8sp"
+                        android:padding="4dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
                         android:text="party"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_accel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/consola"
-                        android:padding="4sp"
-                        android:paddingStart="8sp"
-                        android:paddingEnd="8sp"
+                        android:padding="4dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
                         android:text="accel"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText" />
                 </RadioGroup>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginVertical="4sp"
+                    android:layout_marginVertical="4dp"
                     android:background="#999999" />
 
                 <LinearLayout
@@ -361,11 +455,13 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/consola"
-                        android:paddingStart="8sp"
-                        android:paddingTop="10sp"
+                        android:paddingStart="8dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="0dp"
                         android:text=" 0"
                         android:textAlignment="center"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        tools:ignore="HardcodedText" />
 
                     <SeekBar
                         android:id="@+id/sbLight"
@@ -374,9 +470,9 @@
                         android:layout_height="36dp"
                         android:layout_weight="10"
                         android:max="9"
-                        android:padding="6sp"
-                        android:paddingStart="20sp"
-                        android:paddingEnd="20sp"
+                        android:padding="6dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:progress="0" />
 
                     <TextView
@@ -384,18 +480,20 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/consola"
-                        android:paddingTop="10sp"
-                        android:paddingEnd="8sp"
+                        android:paddingStart="0dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="8dp"
                         android:text=" 9"
                         android:textAlignment="center"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        tools:ignore="HardcodedText" />
 
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginVertical="4sp"
+                    android:layout_marginVertical="4dp"
                     android:background="#999999" />
 
                 <LinearLayout
@@ -408,11 +506,13 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/consola"
-                        android:paddingStart="8sp"
-                        android:paddingTop="10sp"
+                        android:paddingStart="8dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="0dp"
                         android:text="60"
                         android:textAlignment="center"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        tools:ignore="HardcodedText" />
 
                     <SeekBar
                         android:id="@+id/sbCoefP"
@@ -422,9 +522,9 @@
                         android:layout_weight="10"
                         android:max="90"
                         android:min="60"
-                        android:padding="6sp"
-                        android:paddingStart="20sp"
-                        android:paddingEnd="20sp"
+                        android:padding="6dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:progress="7" />
 
                     <TextView
@@ -432,18 +532,20 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/consola"
-                        android:paddingTop="10sp"
-                        android:paddingEnd="8sp"
+                        android:paddingStart="0dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="8dp"
                         android:text="90"
                         android:textAlignment="center"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        tools:ignore="HardcodedText" />
 
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginVertical="4sp"
+                    android:layout_marginVertical="4dp"
                     android:background="#999999" />
 
                 <LinearLayout
@@ -456,11 +558,13 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/consola"
-                        android:paddingStart="8sp"
-                        android:paddingTop="10sp"
+                        android:paddingStart="8dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="0dp"
                         android:text="60"
                         android:textAlignment="center"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        tools:ignore="HardcodedText" />
 
                     <SeekBar
                         android:id="@+id/sbCoefG"
@@ -470,9 +574,9 @@
                         android:layout_weight="10"
                         android:max="90"
                         android:min="60"
-                        android:padding="6sp"
-                        android:paddingStart="20sp"
-                        android:paddingEnd="20sp"
+                        android:padding="6dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:progress="7" />
 
                     <TextView
@@ -480,11 +584,13 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/consola"
-                        android:paddingTop="10sp"
-                        android:paddingEnd="8sp"
+                        android:paddingStart="0dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="8dp"
                         android:text="90"
                         android:textAlignment="center"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        tools:ignore="HardcodedText" />
 
                 </LinearLayout>
 
@@ -492,30 +598,37 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginVertical="4sp"
-                     />
+                    android:layout_marginVertical="4dp" />
             </LinearLayout>
-		</LinearLayout>
-	</ScrollView>
+        </LinearLayout>
+    </ScrollView>
 
     <com.ncorti.slidetoact.SlideToActView
 
         android:id="@+id/staGlobal"
         android:layout_width="match_parent"
         android:layout_height="48dp"
+        android:layout_weight="0"
         app:bump_vibration="100"
 
+        app:slider_icon_color="#cccccc"
+        app:text_color="#cccccc"
+        app:area_margin="3dp"
         app:slider_height="48dp"
+        app:inner_color="#444444"
+
         app:text="slide to lock"
-        app:outer_color="#666666"
+        app:outer_color="#777777"
         app:slider_reversed="true"
-        android:fontFamily="@font/consola"
+
+        app:text_appearance="@style/material_slider_font_style"
         app:text_size="16sp"
         app:complete_icon="@drawable/lock_24dp_e3e3e3_fill0_wght400_grad0_opsz24"
         app:slider_icon="@drawable/lock_open_right_24dp_e3e3e3_fill0_wght400_grad0_opsz24"
         app:icon_margin="9dp"
 
-
         />
 
 </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

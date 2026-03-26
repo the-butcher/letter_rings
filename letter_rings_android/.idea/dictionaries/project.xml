@@ -2,15 +2,8 @@
   <dictionary name="project">
     <words>
       <w>addr</w>
-      <w>cccd</w>
-      <w>coef</w>
-      <w>coeff</w>
-      <w>coefp</w>
-      <w>contr</w>
-      <w>frequ</w>
-      <w>lbel</w>
-      <w>modus</w>
-      <w>shazamkey</w>
+      <w>consola</w>
+      <w>materialbutton</w>
     </words>
   </dictionary>
 </component>

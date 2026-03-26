@@ -4,19 +4,16 @@ package at.the_butchers.letter_rings
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothManager
-import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.AssetManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.SeekBar
@@ -69,9 +66,14 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         supportActionBar?.hide()
+//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+//            v.setPadding(systemBars.left, 80, systemBars.right, systemBars.bottom)
+//            insets
+//        }
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, 80, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
@@ -122,10 +124,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    public fun CharSequence.isBlank(): Boolean = length == 0 || indices.all { this[it].isWhitespace() }
-
-
-    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun setupTextFields(side: Side) {
 
         Log.i(LOG_TAG_MAIN, "set up text fields (${side})")
@@ -143,8 +142,8 @@ class MainActivity : AppCompatActivity() {
             edLabel.text?.clear()
             edLabel.requestFocus()
             // show keyboard
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(edLabel, InputMethodManager.SHOW_IMPLICIT);
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(edLabel, InputMethodManager.SHOW_IMPLICIT)
         }
 
         // https://medium.com/@dimabatyuk/adding-clear-button-to-edittext-9655e9dbb721
@@ -154,8 +153,8 @@ class MainActivity : AppCompatActivity() {
         edLabel.onEndDrawableClicked {
             Log.i(LOG_TAG_MAIN, "title was cancelled, hiding edit field (${side})")
             // hide keyboard
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(edLabel.windowToken, 0);
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(edLabel.windowToken, 0)
             edLabel.clearFocus()
         }
 
@@ -169,13 +168,13 @@ class MainActivity : AppCompatActivity() {
                 txLabel.text = edLabel.text.toString()
             }
             // hide keyboard
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(edLabel.windowToken, 0);
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(edLabel.windowToken, 0)
             // hide input, show text
             edLabel.clearFocus()
         }
-        edLabel.onFocusChangeListener  = View.OnFocusChangeListener { v, hasFocus ->
-            Log.i(LOG_TAG_MAIN, "title focus changed ${hasFocus} (${side})")
+        edLabel.onFocusChangeListener  = View.OnFocusChangeListener { _, hasFocus ->
+            Log.i(LOG_TAG_MAIN, "title focus changed $hasFocus (${side})")
             if (!hasFocus) {
                 txLabel.setVisibility(View.VISIBLE)
                 edLabel.setVisibility(View.GONE)
@@ -207,7 +206,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }, 500)
                 if (view.isReversed) {
-                    view.isReversed = false;
+                    view.isReversed = false
                     view.text = "slide to unlock"
 
                 } else {
@@ -216,7 +215,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 enableUi(view.isReversed)
-                view.setCompleted(false, true)
+                view.setCompleted(completed = false, withAnimation = true)
             }
         }
 

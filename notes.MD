@@ -1,7 +1,10 @@
 ✔️ reply to host
 
+
 - android app
   ~~ try to identify code that can fail and handle errors accordingly, read more BLE tutorials
+  ✔ lockability in app to prevent accidental touch events
+  ✔ editability for labels in app 
   ❌ when the device disconnects before the gatt-services are in place there is no event or other notification
   ❌ attempting to connect from this state returns the app to a stable state (gatt connect fails and the UI shows the button again after that)
   ✔ integrate ChatGPT word list
@@ -18,7 +21,8 @@
   ✔ a switch disconnect in the app does not disconnect the device!
 
 - esp
-  -- when entering words mode through gesture it can take a few seconds for the first words to appear
+
+  ✔ when entering words mode through gesture it can take a few seconds for the first words to appear
      -- also when changing UP/DOWN orientation it may take a bit
   -- test with full setup, on arms and powerbank, wear for a while to discover problems, uncomfortable spots, short cables, ...
   ~~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
