@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:fontFamily="@font/consola"
-            android:padding="8dp"
+            android:padding="10dp"
             android:text="letter-rings"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -84,16 +84,8 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btRecognition"
                     style="@style/material_button_style"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
                     android:enabled="false"
-                    android:fontFamily="@font/consola"
-                    android:gravity="center_horizontal"
                     android:text="shazam now"
-                    android:textAlignment="center"
-                    android:textAllCaps="false"
-                    android:textSize="20sp"
                     tools:ignore="HardcodedText" />
 
             </LinearLayout>
@@ -166,11 +158,10 @@
 
 
             <View
-                android:id="@+id/view"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginVertical="4dp"
-                android:background="@color/white" />
+                android:background="@android:color/darker_gray" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -216,7 +207,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginVertical="4dp"
-                android:background="@android:color/white" />
+                android:background="@android:color/darker_gray" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -226,15 +217,7 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btConnL"
                     style="@style/material_button_style"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/consola"
-                    android:gravity="center_horizontal"
                     android:text="scan-l"
-                    android:textAlignment="center"
-                    android:textAllCaps="false"
-                    android:textSize="20sp"
                     android:visibility="visible"
                     tools:ignore="HardcodedText" />
 
@@ -283,18 +266,9 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btConnR"
                     style="@style/material_button_style"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/consola"
-                    android:gravity="center_horizontal"
                     android:text="scan-r"
-                    android:textAlignment="center"
-                    android:textAllCaps="false"
-                    android:textSize="20sp"
                     android:visibility="visible"
                     tools:ignore="HardcodedText" />
-
 
                 <LinearLayout
                     android:id="@+id/llConnR"
@@ -337,7 +311,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginVertical="4dp"
-                android:background="@color/white" />
+                android:background="@android:color/darker_gray" />
 
             <LinearLayout
                 android:id="@+id/llContr"
@@ -356,86 +330,44 @@
 
                     <RadioButton
                         android:id="@+id/radio_chars"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/consola"
-                        android:padding="4dp"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
+                        style="@style/radio_button_style"
                         android:text="chars"
-                        android:textSize="20sp"
                         tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_words"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/consola"
-                        android:padding="4dp"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
+                        style="@style/radio_button_style"
                         android:text="words"
-                        android:textSize="20sp"
                         tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_label"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/consola"
-                        android:padding="4dp"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
+                        style="@style/radio_button_style"
                         android:text="label"
-                        android:textSize="20sp"
                         tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_frequ"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/consola"
-                        android:padding="4dp"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
+                        style="@style/radio_button_style"
                         android:text="frequ"
-                        android:textSize="20sp"
                         tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_break"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/consola"
-                        android:padding="4dp"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
+                        style="@style/radio_button_style"
                         android:text="break"
-                        android:textSize="20sp"
                         tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_party"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/consola"
-                        android:padding="4dp"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
+                        style="@style/radio_button_style"
                         android:text="party"
-                        android:textSize="20sp"
                         tools:ignore="HardcodedText" />
 
                     <RadioButton
                         android:id="@+id/radio_accel"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/consola"
-                        android:padding="4dp"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
+                        style="@style/radio_button_style"
                         android:text="accel"
-                        android:textSize="20sp"
                         tools:ignore="HardcodedText" />
                 </RadioGroup>
 
@@ -607,7 +539,7 @@
 
         android:id="@+id/staGlobal"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="42dp"
         android:layout_weight="0"
         app:bump_vibration="100"
 
