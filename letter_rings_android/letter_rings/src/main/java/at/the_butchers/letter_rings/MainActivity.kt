@@ -244,6 +244,11 @@ class MainActivity : AppCompatActivity() {
         val sbCoefP: SeekBar =  findViewById (R.id.sbCoefP)
         val sbCoefG: SeekBar =  findViewById (R.id.sbCoefG)
 
+        val txLabelL: TextView = findViewById(Side.LEFT.idTxLabel)
+        val txLabelR: TextView = findViewById(Side.RIGHT.idTxLabel)
+        val edLabelL: ClearFocusEditText = findViewById(Side.LEFT.idEdLabel)
+        val edLabelR: ClearFocusEditText = findViewById(Side.RIGHT.idEdLabel)
+
         this@MainActivity.runOnUiThread {
 
             recognitionSwitch.isEnabled = isEnabled
@@ -265,6 +270,13 @@ class MainActivity : AppCompatActivity() {
             sbLight.isEnabled = isEnabled
             sbCoefP.isEnabled = isEnabled
             sbCoefG.isEnabled = isEnabled
+
+            txLabelL.isClickable = isEnabled
+            txLabelR.isClickable = isEnabled
+            if (!isEnabled) {
+                edLabelL.clearFocus()
+                edLabelR.clearFocus()
+            }
 
         }
 
