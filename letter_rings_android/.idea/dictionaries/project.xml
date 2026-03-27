@@ -2,8 +2,14 @@
   <dictionary name="project">
     <words>
       <w>addr</w>
+      <w>coef</w>
       <w>consola</w>
+      <w>contr</w>
+      <w>frequ</w>
       <w>materialbutton</w>
+      <w>modus</w>
+      <w>opsz</w>
+      <w>wght</w>
     </words>
   </dictionary>
 </component>

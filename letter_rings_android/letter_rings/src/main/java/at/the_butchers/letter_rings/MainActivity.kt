@@ -30,6 +30,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.ncorti.slidetoact.SlideToActView
 import com.shazam.shazamkit.DeveloperToken
 import com.shazam.shazamkit.DeveloperTokenProvider
@@ -89,8 +90,10 @@ class MainActivity : AppCompatActivity() {
         }
         catalog = ShazamKit.createShazamCatalog(tokenProvider)
 
-        val recognitionSwitch: Switch = findViewById (R.id.swRecognition)
+        val recognitionSwitch: SwitchMaterial = findViewById (R.id.swRecognition)
+        Log.d(LOG_TAG_MAIN, "got recognitionSwitch")
         val btRecognizeNow: Button =  findViewById ( R.id.btRecognition)
+        Log.d(LOG_TAG_MAIN, "got btRecognizeNow")
         recognitionSwitch.setOnCheckedChangeListener { _, isChecked ->
             isRecognitionChecked = isChecked
             if (isRecognitionChecked != btRecognizeNow.isEnabled) { // set the radio groups visibility to gone if visibility
@@ -223,11 +226,11 @@ class MainActivity : AppCompatActivity() {
 
     fun enableUi(isEnabled: Boolean) {
 
-        val recognitionSwitch: Switch = findViewById (R.id.swRecognition)
+        val recognitionSwitch: SwitchMaterial = findViewById (R.id.swRecognition)
         val btRecognizeNow: Button =  findViewById ( R.id.btRecognition)
 
-        val swConnL: Switch = findViewById ( Side.LEFT.idSwConn)
-        val swConnR: Switch = findViewById ( Side.RIGHT.idSwConn)
+        val swConnL: SwitchMaterial = findViewById ( Side.LEFT.idSwConn)
+        val swConnR: SwitchMaterial = findViewById ( Side.RIGHT.idSwConn)
         val btConnL: Button = findViewById ( Side.LEFT.idBtConn)
         val btConnR: Button = findViewById ( Side.RIGHT.idBtConn)
 
@@ -386,7 +389,7 @@ class MainActivity : AppCompatActivity() {
 
         Log.i(LOG_TAG_BLUE, "set ble-device (${side}, ${bleDevice.address})")
 
-        val bleDeviceSwitch: Switch =  findViewById (side.idSwConn)
+        val bleDeviceSwitch: SwitchMaterial =  findViewById (side.idSwConn)
         val txAddr: TextView =  findViewById (side.idTxAddr)
         this@MainActivity.runOnUiThread { txAddr.setText(bleDeviceInstanceMap[side]?.address) }
 
@@ -497,7 +500,7 @@ class MainActivity : AppCompatActivity() {
 
         Log.i(LOG_TAG_BLUE, "check ble-state (side: ${side}, gatt: ${bleDeviceInstanceMap[side]?.gattInstance})")
 
-        val bleDeviceSwitch: Switch =  findViewById (side.idSwConn)
+        val bleDeviceSwitch: SwitchMaterial =  findViewById (side.idSwConn)
         val llContr: LinearLayout =  findViewById ( R.id.llContr)
         if (bleDeviceInstanceMap[Side.LEFT]?.gattInstance == null && bleDeviceInstanceMap[Side.RIGHT]?.gattInstance == null) {
 
