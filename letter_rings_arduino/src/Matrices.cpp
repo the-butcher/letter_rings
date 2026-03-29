@@ -33,9 +33,12 @@ bool Matrices::depower() {
     return true;
 }
 
-bool Matrices::setBrightness(uint8_t brightness) {
+bool Matrices::setBrightness(uint8_t brightness, bool force) {
     if (brightness >= 0 && brightness <= 15) {
         Matrices::brightnessPend = brightness;
+    }
+    if (force) {
+        Matrices::brightnessCurr = 64;
     }
     return Matrices::brightnessPend != Matrices::brightnessCurr;
 }
@@ -57,6 +60,44 @@ void Matrices::drawPixel(int16_t x, int16_t y, uint16_t color) {
         Matrices::matrixA.drawPixel(x - 24, y, color);
     }
     Matrices::needsWrite = true;
+}
+
+static uint8_t toValueIndex(uint64_t offset) {
+    // https://www.desmos.com/calculator/e8oafd81vd?lang=de
+    int16_t m = offset % 62 - 31;
+    uint8_t o = m * ((m > 0) - (m < 0));
+    return o;
+}
+
+static float toValueOffset(uint8_t matrixIndex) {
+    // 0 -> 0
+    // 7 -> 31
+    return matrixIndex * 31 / 7.0;
+}
+
+void Matrices::drawLedbar() {
+
+    uint8_t sideOffset = BITMAPS_OFF * -2 + 2; // 0 or 4, depending on side
+    ledbar________t ledbar = Device::getCurrLedbar();
+
+    uint8_t valueIndex = toValueIndex(ledbar.offset);
+    uint8_t valueIndexA = round(abs(toValueOffset(sideOffset + 0) - valueIndex));
+    uint8_t valueIndexB = round(abs(toValueOffset(sideOffset + 1) - valueIndex));
+    uint8_t valueIndexC = round(abs(toValueOffset(sideOffset + 2) - valueIndex));
+    uint8_t valueIndexD = round(abs(toValueOffset(sideOffset + 3) - valueIndex));
+
+    // Serial.print(ledbar.offset);
+    // Serial.print(" -> ");
+    // Serial.print(valueIndex);
+    // Serial.print(" -> ");
+    // Serial.println(valueIndexA);
+
+    Matrices::matrixA.drawLedbar(Device::gamknValues[valueIndexA]);
+    Matrices::matrixB.drawLedbar(Device::gamknValues[valueIndexB]);
+    Matrices::matrixC.drawLedbar(Device::gamknValues[valueIndexC]);
+    Matrices::matrixD.drawLedbar(Device::gamknValues[valueIndexD]);
+    Matrices::needsWrite = true;
+
 }
 
 void Matrices::drawBars() {
@@ -172,20 +213,20 @@ void Matrices::clear(uint8_t flags) {
 
 bool Matrices::write() {
     bool written = false;
-    if (Matrices::needsWrite) {
-        Matrices::matrixA.write();
-        Matrices::matrixB.write();
-        Matrices::matrixC.write();
-        Matrices::matrixD.write();
-        Matrices::needsWrite = false;
-        written = true;
-    }
     if (Matrices::brightnessCurr != Matrices::brightnessPend) {
         Matrices::brightnessCurr = Matrices::brightnessPend;
         Matrices::matrixA.setBrightness(Matrices::brightnessCurr);
         Matrices::matrixB.setBrightness(Matrices::brightnessCurr);
         Matrices::matrixC.setBrightness(Matrices::brightnessCurr);
         Matrices::matrixD.setBrightness(Matrices::brightnessCurr);
+        written = true;
+    }
+    if (Matrices::needsWrite) {
+        Matrices::matrixA.write();
+        Matrices::matrixB.write();
+        Matrices::matrixC.write();
+        Matrices::matrixD.write();
+        Matrices::needsWrite = false;
         written = true;
     }
     return written;

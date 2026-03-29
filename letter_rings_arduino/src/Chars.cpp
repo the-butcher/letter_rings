@@ -13,7 +13,7 @@ bool Chars::powerup() {
             (float)random(0, CHARS______FIELD_DIM_Y)
         };
         float direction = (float)(random(0, 100) * PI / 200.0);
-        float velocity = (float)(random(100, 200) / 200.0);
+        float velocity = (float)(random(100, 200) / 300.0);
         Chars::chars[i].velocity = {
             cos(direction) * velocity,
             sin(direction) * velocity

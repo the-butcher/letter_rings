@@ -68,7 +68,7 @@ bool Nowsrv::depower() {
 /**
  * both left and right send acceleration when in accel mode
  */
-bool Nowsrv::sendDeviceData() {
+bool Nowsrv::sendDeviceData(modus_________e determModus) {
 
 #if USE_SERIAL_SYNC_OUTPUT == true
     Serial.print(DEVICE____________SIDE);
@@ -78,20 +78,56 @@ bool Nowsrv::sendDeviceData() {
     Serial.println(xPortGetCoreID());
 #endif
 
+    // Serial.print("sending device data, determModus: ");
+    // Serial.println(determModus);
+
     Nowsrv::millisSend = millis();
 
     // device_role___e deviceRole = Device::getDeviceRole();
     // Serial.print("outgoing device role ");
     // Serial.println(deviceRole);
 
-    device_data___t deviceData = {
-        Device::getDeviceRole(),
-        Device::currBitmaps,
-        Orientation::getMagnitudesA()
-    };
+    if (determModus == MODUS____GAMPM_PRI) {
 
-    esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&deviceData, sizeof(magnitudes___t));
-    return result == ESP_OK;
+        // Serial.println("sending device data, bitmaps");
+
+        // send device data with bitmaps
+        device_data_b_t deviceData = {
+            Device::getDeviceRole(),
+            Device::getCurrBitmaps(),
+            Orientation::getMagnitudesA()
+        };
+        esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&deviceData, sizeof(device_data_b_t));
+        return result == ESP_OK;
+
+    } else if (determModus == MODUS____GAMKN_PRI) {
+
+        // Serial.println("sending device data, ledbar");
+
+        // send device data with ledbar
+        device_data_l_t deviceData = {
+            Device::getDeviceRole(),
+            Device::getCurrLedbar(),
+            Orientation::getMagnitudesA()
+        };
+        esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&deviceData, sizeof(device_data_l_t));
+        return result == ESP_OK;
+
+    } else {
+
+        // Serial.println("sending device data, plain");
+
+        // send plain device data
+        device_data___t deviceData = {
+            Device::getDeviceRole(),
+            Orientation::getMagnitudesA()
+        };
+        esp_err_t result = esp_now_send(STA_ADDRESS_OUT, (uint8_t*)&deviceData, sizeof(device_data___t));
+        return result == ESP_OK;
+
+    }
+
+
 }
 
 void Nowsrv::OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
@@ -123,56 +159,45 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
     Nowsrv::millisRecv = millis();
     Orientation::setMillisWaitA((Nowsrv::millisRecv - Nowsrv::millisSend) - Nowsrv::destMillisWait);
 
-    device_data___t incominingDeviceData;
-    memcpy(&incominingDeviceData, incomingData, sizeof(device_data___t));
-    Orientation::setMagnitudesB(incominingDeviceData.magnitudes); // will recalculate coefP
+    if (len == sizeof(device_data___t)) { // incoming, neither bitmaps nor ledbar
 
-    // Serial.print("incoming device role ");
-    // Serial.print(incominingDeviceData.deviceRole);
-    // Serial.print(", ACCEPT__ROLE_DOWNGRADE ");
-    // Serial.println(ACCEPT__ROLE_DOWNGRADE ? "true" : "false");
+        // Serial.println("receiving device data, plain");
 
-    // the other device has sent to be pri -> switch to sec if not already
-    if (incominingDeviceData.deviceRole == DEVICE_ROLE_____PRI && Device::getDeviceRole() != DEVICE_ROLE_____SEC) {
-        bool success = Device::setDeviceRole(DEVICE_ROLE_____SEC);
-        // Serial.print("set DEVICE_ROLE_____SEC due to incoming DEVICE_ROLE_____PRI, ");
-        // Serial.println(success);
-    }
-    // the other device has sent to be any -> switch to any if in sec
-    if (incominingDeviceData.deviceRole == DEVICE_ROLE_____ANY && Device::getDeviceRole() == DEVICE_ROLE_____SEC) {
-        bool success = Device::setDeviceRole(DEVICE_ROLE_____ANY);
-        // Serial.print("set DEVICE_ROLE_____ANY due to incoming DEVICE_ROLE_____ANY, ");
-        // Serial.println(success);
-    }
-
-
-    if (Device::getDeviceRole() == DEVICE_ROLE_____SEC) {          // must accept bitmaps when in sec
-        Device::currBitmaps = incominingDeviceData.bitmaps;
-        // Serial.print("incoming bitmapA ");
-        // Serial.print(incominingDeviceData.bitmaps.bitmapA.bitmap);
-        // Serial.print(" offset ");
-        // Serial.print(incominingDeviceData.bitmaps.bitmapA.offset);
-        // Serial.print(", incoming bitmapB ");
-        // Serial.print(incominingDeviceData.bitmaps.bitmapB.bitmap);
-        // Serial.print(" offset ");
-        // Serial.print(incominingDeviceData.bitmaps.bitmapB.offset);
-        // Serial.print(", orientation ");
-        // Serial.println(incominingDeviceData.bitmaps.orientation);
-    } else {
-        // make a role decision based on orientation threshold, only when not in SEC (must remain passive in SEC)
-        if (Orientation::isAboveCoefPThreshold()) {          // should be PRI
-            if (Device::getDeviceRole() != DEVICE_ROLE_____PRI) {  // but is not
-                bool success = Device::setDeviceRole(DEVICE_ROLE_____PRI);     // set to pri
-                // Serial.print("set DEVICE_ROLE_____PRI due to coefP threshold, ");
-                // Serial.println(success);
-            }
-        } else {                                                   // should be ANY
-            if (Device::getDeviceRole() != DEVICE_ROLE_____ANY) {  // but is not
-                bool success = Device::setDeviceRole(DEVICE_ROLE_____ANY);        // set to any
-                // Serial.print("set DEVICE_ROLE_____ANY due to coefP threshold, ");
-                // Serial.println(success);
-            }
+        device_data___t incominingDeviceData;
+        memcpy(&incominingDeviceData, incomingData, sizeof(device_data___t));
+        Orientation::setMagnitudesB(incominingDeviceData.magnitudes); // will recalculate coefP
+        Nowsrv::handleIncomingDeviceRole(incominingDeviceData.deviceRole);
+        if (Device::getDeviceRole() != DEVICE_ROLE_____PRI) {
+            Device::setCurrDterm(DTERM_________NONE);
         }
+        Nowsrv::handleRoleTriggers();
+
+    } else if (len == sizeof(device_data_b_t)) { // incoming with bitmaps
+
+        // Serial.println("receiving device data, bitmaps");
+
+        device_data_b_t incominingDeviceData;
+        memcpy(&incominingDeviceData, incomingData, sizeof(device_data_b_t));
+        Orientation::setMagnitudesB(incominingDeviceData.magnitudes); // will recalculate coefP
+        Nowsrv::handleIncomingDeviceRole(incominingDeviceData.deviceRole);
+        if (Device::getDeviceRole() == DEVICE_ROLE_____SEC) {         // must accept bitmaps when in sec
+            Device::setCurrBitmaps(incominingDeviceData.bitmaps);     // sets dterm to GAMPM
+        }
+        Nowsrv::handleRoleTriggers();
+
+    } else if (len == sizeof(device_data_l_t)) { // incoming with ledbar
+
+        // Serial.println("receiving device data, ledbar");
+
+        device_data_l_t incominingDeviceData;
+        memcpy(&incominingDeviceData, incomingData, sizeof(device_data_l_t));
+        Orientation::setMagnitudesB(incominingDeviceData.magnitudes); // will recalculate coefP
+        Nowsrv::handleIncomingDeviceRole(incominingDeviceData.deviceRole);
+        if (Device::getDeviceRole() == DEVICE_ROLE_____SEC) {         // must accept ledbars when in sec
+            Device::setCurrLedbar(incominingDeviceData.ledbar);       // sets dterm to GAMKN
+        }
+        Nowsrv::handleRoleTriggers();
+
     }
 
 #if USE_SERIAL_SYNC_OUTPUT == true
@@ -187,4 +212,33 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
     Serial.println(String(Orientation::getAccelB().millisWait));
 #endif
 
+}
+
+void Nowsrv::handleRoleTriggers() {
+    if (Device::getDeviceRole() != DEVICE_ROLE_____SEC) {          // may only check coefficient when not in SEC mode
+        // make a role decision based on orientation threshold, only when not in SEC (must remain passive in SEC)
+        if (Orientation::isAboveCoefPThreshold()) {                // should be PRI
+            if (Device::getDeviceRole() != DEVICE_ROLE_____PRI) {  // but is not
+                if (Device::setDeviceRole(DEVICE_ROLE_____PRI)) {  // set to pri
+                    Device::setCurrDterm(DTERM________GAMPM);      // will cause bitmaps to be sent, which will cause currDterm on the secondary device to be GAMPM as well
+                }
+            }
+        } else {                                                   // should be ANY
+            if (Device::getDeviceRole() != DEVICE_ROLE_____ANY) {  // but is not
+                if (Device::setDeviceRole(DEVICE_ROLE_____ANY)) {  // set to any
+                    Device::setCurrDterm(DTERM_________NONE);      // reset DTERM
+                }
+            }
+        }
+        // TODO :: handle KN trigger
+    }
+}
+
+void Nowsrv::handleIncomingDeviceRole(device_role___e incomingDeviceRole) {
+    if (incomingDeviceRole == DEVICE_ROLE_____PRI && Device::getDeviceRole() != DEVICE_ROLE_____SEC) { // the other device has sent to be pri -> switch to sec if not already
+        Device::setDeviceRole(DEVICE_ROLE_____SEC);
+    }
+    if (incomingDeviceRole == DEVICE_ROLE_____ANY && Device::getDeviceRole() == DEVICE_ROLE_____SEC) { // the other device has sent to be any -> switch to any if in sec
+        Device::setDeviceRole(DEVICE_ROLE_____ANY);
+    }
 }

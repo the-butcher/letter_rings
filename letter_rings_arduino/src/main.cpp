@@ -71,13 +71,25 @@ modus_________e determineModus() {
     // if in accel mode and paired -> run pacman, fallback to previous mode if not paired
     if (modus == MODUS________ACCEL) {
 
-        if (USE__FORCE_______GAMPM || Device::getDeviceRole() == DEVICE_ROLE_____PRI) {
+        if (USE__FORCE_______GAMXX) {
 
-            modus = MODUS____GAMPM_PRI;
+            modus = MODUS____GAMKN_PRI; // temporary for initial testing
+
+        } else if (Device::getDeviceRole() == DEVICE_ROLE_____PRI) {
+
+            if (Device::getCurrDterm() == DTERM________GAMPM) {
+                modus = MODUS____GAMPM_PRI;
+            } else if (Device::getCurrDterm() == DTERM________GAMKN) {
+                modus = MODUS____GAMKN_PRI;
+            }
 
         } else if (Device::getDeviceRole() == DEVICE_ROLE_____SEC) {
 
-            modus = MODUS____GAMPM_SEC;
+            if (Device::getCurrDterm() == DTERM________GAMPM) {
+                modus = MODUS____GAMPM_SEC;
+            } else if (Device::getCurrDterm() == DTERM________GAMKN) {
+                modus = MODUS____GAMKN_SEC;
+            }
 
         } else {
 
@@ -209,7 +221,7 @@ void runLoopTaskDisplay(void* pvParameters) {
 
         } else if (determModus == MODUS____GAMPM_PRI || determModus == MODUS____GAMPM_SEC) {
 
-            bitmaps_______t bitmaps = Device::currBitmaps;
+            bitmaps_______t bitmaps = Device::getCurrBitmaps();
 
             Matrices::clear(CLEAR_MATRIX_CANVAS);
             // first two calls clear the bitmap ahead and behind
@@ -222,15 +234,28 @@ void runLoopTaskDisplay(void* pvParameters) {
 
             vTaskDelay(100);
 
+        } else if (determModus == MODUS____GAMKN_PRI || determModus == MODUS____GAMKN_SEC) {
+
+            ledbar________t ledbar = Device::getCurrLedbar();
+
+            Matrices::drawLedbar();
+
+            Display::drawAcceleration();
+
+            vTaskDelay(50);
+
         } else if (determModus == MODUS________GAMOL) {
 
             GamOL::drawFieldState();
             GamOL::stepFieldState();
 
+            Display::drawAcceleration();
+
             vTaskDelay(75);
 
         } else {
 
+            // ACCEL = 6
             Serial.print("unknown determModus: ");
             Serial.println(String(determModus));
             vTaskDelay(100);
@@ -255,18 +280,18 @@ void runLoopTaskDisplay(void* pvParameters) {
 //     Serial.print("}");
 // }
 
-#if DEVICE____________LEFT == true
-void applyGestureModus(modus_________e gestureModus) {
-    if (Device::getCurrModus() == MODUS________ACCEL && Device::getPrevModus() != gestureModus) { // if in ACCEL, set to WORDS, then reapply ACCEL
-        Device::setCurrModus(gestureModus);
-        Device::setCurrModus(MODUS________ACCEL);
-        Blesrv::writeModus();
-    } else if (Device::getCurrModus() != gestureModus) {
-        Device::setCurrModus(gestureModus);
-        Blesrv::writeModus();
-    }
-}
-#endif
+// #if DEVICE____________LEFT == true
+// void applyGestureModus(modus_________e gestureModus) {
+//     if (Device::getCurrModus() == MODUS________ACCEL && Device::getPrevModus() != gestureModus) { // if in ACCEL, set to WORDS, then reapply ACCEL
+//         Device::setCurrModus(gestureModus);
+//         Device::setCurrModus(MODUS________ACCEL);
+//         Blesrv::writeModus();
+//     } else if (Device::getCurrModus() != gestureModus) {
+//         Device::setCurrModus(gestureModus);
+//         Blesrv::writeModus();
+//     }
+// }
+// #endif
 
 void runLoopTaskGeneral(void* pvParameters) {
 
@@ -282,27 +307,40 @@ void runLoopTaskGeneral(void* pvParameters) {
         Serial.println(String(lastLoopMillis));
 #endif
 
-        if (counterGeneral % 2 == 0) { // every second iteration of this loop
-            if (Device::getCurrModus() == MODUS________ACCEL) {  // must refer to actual curr device modus or it will not happen due to prevMode
+        if (Device::getCurrModus() == MODUS________ACCEL) {  // must refer to actual curr device modus or it will not happen due to prevMode
 
-                modus_________e determModus = determineModus(); // see what central logic tells about modus
-                if (determModus == MODUS____GAMPM_PRI) {
+            modus_________e determModus = determineModus(); // see what central logic tells about modus
+            if (determModus == MODUS____GAMPM_PRI) { // move bitmaps forward when in GAMPM_PRI
+
+                if (counterGeneral % 2 == 0) { // every second iteration of this loop => every 100ms
 
                     if (bitmapPos > 64) {
                         bitmapPos = BITMAP_RESET_POS;
                     }
                     bitmapPos++;
 
-                    Device::currBitmaps.bitmapB.offset = bitmapPos;
-                    Device::currBitmaps.bitmapB.bitmap = (bitmap________e)((bitmapPos + 64) % 2);  // open and close mouth, keep the number going into modulo in positive range
-                    Device::currBitmaps.orientation = Device::getOrientation();
+                    // get and alter bitmaps
+                    bitmaps_______t bitmaps = Device::getCurrBitmaps();
+                    bitmaps.bitmapB.offset = bitmapPos;
+                    bitmaps.bitmapB.bitmap = (bitmap________e)((bitmapPos + 64) % 2);  // open and close mouth, keep the number going into modulo in positive range
+                    bitmaps.orientation = Device::getOrientation();
+                    Device::setCurrBitmaps(bitmaps);
 
                 }
 
-            } else {
-                bitmapPos = BITMAP_RESET_POS;  // TODO :: this could be done when "modus", not "Device::getCurrModus()" != ACCEL, so it also resets when in fallback mode
+            } else if (determModus == MODUS____GAMKN_PRI) { // move values forward when in MODUS____GAMKN_PRI
+
+                ledbar________t ledbar = Device::getCurrLedbar();
+                ledbar.offset = ledbar.offset + 1;
+                Device::setCurrLedbar(ledbar);
+
             }
+
+        } else {
+            bitmapPos = BITMAP_RESET_POS;
         }
+
+
 
         // if (Orientation::isAboveSignificantThreshold((float)ACCELERATION_TAP_THRES, ACCELERATION___SAMPLES - 5, ACCELERATION___SAMPLES - 3)) {
         //     acceleration_t accelerationsA = Orientation::getAccelerationsA();
@@ -316,24 +354,22 @@ void runLoopTaskGeneral(void* pvParameters) {
         //     Serial.println("}");
         // }
 
-#if DEVICE____________LEFT == true
+// #if DEVICE____________LEFT == true
 
-        double coefG = Orientation::getCoefGThreshold();
-        bool isGestureW = Orientation::matchGesture(ACCEL_W, 1.87 * coefG); // 1.12@0.6 - 1.40@0.75 - 1.68@0.9
-        bool isGestureF = Orientation::matchGesture(ACCEL_F, 2.07 * coefG); // 1.42@0.6 - 1.55@0.75 - 1.86@0.9
-        bool isGestureC = Orientation::matchGesture(ACCEL_C, 2.13 * coefG); // 1.28@0.6 - 1.60@0.75 - 1.92@0.9
+//         double coefG = Orientation::getCoefGThreshold();
+//         bool isGestureW = Orientation::matchGesture(ACCEL_W, 1.87 * coefG); // 1.12@0.6 - 1.40@0.75 - 1.68@0.9
+//         bool isGestureF = Orientation::matchGesture(ACCEL_F, 2.07 * coefG); // 1.42@0.6 - 1.55@0.75 - 1.86@0.9
+//         bool isGestureC = Orientation::matchGesture(ACCEL_C, 2.13 * coefG); // 1.28@0.6 - 1.60@0.75 - 1.92@0.9
 
-        if (isGestureW) {
-            applyGestureModus(MODUS________WORDS);
-            // TODO :: reset word if the device is not connected to immediately see that words is active
-            // TODO :: add functionality in app that updates words immediately when entering words mode
-        } else if (isGestureF) {
-            applyGestureModus(MODUS________PARTY);
-        } else if (isGestureC) {
-            applyGestureModus(MODUS________CHARS);
-        }
+//         if (isGestureW) {
+//             applyGestureModus(MODUS________WORDS);
+//         } else if (isGestureF) {
+//             applyGestureModus(MODUS________PARTY);
+//         } else if (isGestureC) {
+//             applyGestureModus(MODUS________CHARS);
+//         }
 
-#endif
+// #endif
 
         counterGeneral++;
         vTaskDelay(50);
@@ -368,7 +404,7 @@ void runLoopTaskPrimary(void* pvParameters) {
 
         modus_________e deviceModus = Device::getCurrModus();
         if (deviceModus == MODUS________ACCEL) { // must refer to actual curr device modus or it will not happen due to prevMode
-            Nowsrv::sendDeviceData();
+            Nowsrv::sendDeviceData(determModus);
         }
 
         Matrices::write();  // only writes if required
@@ -450,6 +486,11 @@ void setup(void) {
     String separator = "----------------------";
     Serial.println(separator);
     Serial.println(DEVICE____________NAME);
+    Serial.println(separator);
+
+    Device::powerup();
+    delay(100);
+
     Serial.println(separator);
 
     Display::powerup();

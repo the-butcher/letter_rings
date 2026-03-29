@@ -1,4 +1,4 @@
-#define DEVICE____________LEFT true
+#define DEVICE____________LEFT false
 
 #if DEVICE____________LEFT == true
 #define COMMAND_SERVICE___UUID "791320d5-7f0a-4b58-89f6-cc2031479da5"
@@ -12,7 +12,7 @@
 #define ACCEPT__ROLE_DOWNGRADE true
 #endif
 
-#define USE__FORCE_______GAMPM false // when true (and mode ACCEL) mode GAMPM will be active, regardless of device pairing
+#define USE__FORCE_______GAMXX false // when true (and mode ACCEL) mode GAMPM will be active, regardless of device pairing
 #define USE__________CLIP_DRAW false // draw red clip areas on display
 #define USE__FORCE_BACKLITE_ON false // when true, the display backlite will never turn off, even when the display is inactive
 #define USE_SERIAL_LOOP_OUTPUT false // measure loop duration and write to console
@@ -68,13 +68,13 @@ static const char* WORDS[] PROGMEM = { "LOVE", "ICON", "GAIN", "HYPE", "UNDO", "
                                       "PAIR", "LIST", "NOTE", "SELF", "BASS", "FINE", "BLUE", "HALF", "LIVE", "LONG", "HOUR", "LOOK", "MARK", "MOVE", "LIFT", "GOAL", "BAND", "SOFT", "CARE", "PURE", "FUND", "STAY", "MORE", "WARM", "LAMB", "TEAM", "VIEW", "REAL", "HAVE", "LINK", "RISE", "RELY", "WISH", "WAIT", "TALK", "REST", "MANY", "RICH", "KNOW", "JOIN", "RIDE", "TIDY", "HUGE", "HEAL", "NICE", "OKAY", "FAIR", "NEAT", "TRUE", "LIFE" };
 static const uint8_t WORD_COUNT = 100;
 static const uint8_t STA_ADDRESS_OUT[] = { 0x64, 0xE8, 0x33, 0x73, 0xF1, 0x48 }; // sta address of right device
-static const int8_t BITMAPS_OFF = 1;                                             // 1 * ORIENTATION * 16 + 16 -> 0 when UP, 32 when DOWN
+static const int8_t BITMAPS_OFF = 1;                                             // 1 * ORIENTATION * 16 + 16 -> 0 when UP, 32 when DOWN, 1 * -2 + 2 -> 0
 #else
 static const char* WORDS[] PROGMEM = { "HATE", "FAIL", "GANG", "JUNK", "FAKE", "BAIT", "CAGE", "SCAR", "SLOW", "WOLF", "PAIN", "TINY", "LUSH", "FIRE", "FUCK", "LESS", "LOSS", "BURN", "DENY", "FALL", "FEAR", "HURT", "KILL", "NONE", "EVIL", "DULL", "FOUL", "GRIM", "DAMN", "GORE", "GOSH", "HELL", "LATE", "DUST", "DARK", "DUTY", "RISK", "WARN", "SLIP", "UGLY", "WILD", "VAIN", "POOR", "MEAN", "RUDE", "SORE", "VOID", "ANTI", "DIRE", "COPE",
                                       "COST", "PUSH", "MYTH", "URGE", "RAIN", "REDO", "NEED", "SEEM", "LONE", "VAST", "PALE", "SICK", "RARE", "BEEF", "FOOL", "DEAF", "DRUG", "ITCH", "PITY", "LACK", "WANT", "SEEK", "TRIP", "DOWN", "GREY", "RULE", "WORK", "TASK", "STOP", "LOUD", "MUST", "GIVE", "LOSE", "TORN", "ONLY", "SOLO", "TRAP", "FLOP", "QUIT", "SUNK", "HOWL", "ENVY", "CYST", "COLD", "DROP", "BASE", "FLEE", "OVER", "HARD", "PASS" };
 static const uint8_t WORD_COUNT = 100;
 static const uint8_t STA_ADDRESS_OUT[] = { 0xD0, 0xCF, 0x13, 0x0A, 0xE1, 0xC8 }; // sta address of left device
-static const int8_t BITMAPS_OFF = -1;                                            // -1 * ORIENTATION * 16 + 16 -> 32 when UP, 0 when DOWN
+static const int8_t BITMAPS_OFF = -1;                                            // -1 * ORIENTATION * 16 + 16 -> 32 when UP, 0 when DOWN, -1 * -2 + 2 -> 4
 #endif
 
 const gpio_num_t AUDIO______________PIN = GPIO_NUM_8;  // A5
@@ -94,14 +94,12 @@ const uint64_t MAIN_LOOP_______DEST_MS = 50;
 typedef enum : uint8_t {
     BITMAP_PAC____OPEN_R = 0,
     BITMAP_PAC_____CLOSE = 1,
-    BITMAP_GHOST_____A_R = 2,
-    BITMAP_GHOST_____B_R = 3,
-    BITMAP_GHOST_____C_R = 4
+    BITMAP_________EMPTY = 2
 } bitmap________e;
 
 
 
-const uint8_t PROGMEM BITMAP_STORE[5][8] = { {
+const uint8_t PROGMEM BITMAP_STORE[3][8] = { {
                                                 B00111100,  // PACMAN_______OPEN_R
                                                 B01111110,  //
                                                 B11111000,  //
@@ -122,34 +120,14 @@ const uint8_t PROGMEM BITMAP_STORE[5][8] = { {
                                                 B00111100   //
                                             },
                                             {
-                                                B00111100,  // BITMAP_GHOST_____A_R
-                                                B01111110,  //
-                                                B11011011,  //
-                                                B11001001,  //
-                                                B11111111,  //
-                                                B11111111,  //
-                                                B11111111,  //
-                                                B11011011   //
-                                            },
-                                            {
-                                                B00111100,  // BITMAP_GHOST_____B_R
-                                                B01111110,  //
-                                                B11011011,  //
-                                                B11001001,  //
-                                                B11111111,  //
-                                                B11111111,  //
-                                                B11111111,  //
-                                                B10110110   //
-                                            },
-                                            {
-                                                B00111100,  // BITMAP_GHOST_____C_R
-                                                B01111110,  //
-                                                B11011011,  //
-                                                B11001001,  //
-                                                B11111111,  //
-                                                B11111111,  //
-                                                B11111111,  //
-                                                B01101101   //
+                                                B00000000,  // BITMAP_________EMPTY
+                                                B00000000,  //
+                                                B00000000,  //
+                                                B00000000,  //
+                                                B00000000,  //
+                                                B00000000,  //
+                                                B00000000,  //
+                                                B00000000   //
                                             } };
 
 typedef enum : int8_t {
@@ -212,8 +190,19 @@ typedef enum : uint8_t {
     /**
      * game of life, after a significant bump has occured
      */
-    MODUS________GAMOL
+    MODUS________GAMOL,
+    /**
+     * kitt anim, only after specific interaction, TODO :: define interaction (could be touch sensor on the right device, activated in a "look at watch" gesture)
+     */
+    MODUS____GAMKN_PRI,
+    MODUS____GAMKN_SEC
 } modus_________e;
+
+typedef enum : uint8_t {
+    DTERM_________NONE,
+    DTERM________GAMPM,
+    DTERM________GAMKN
+} dterm_________e;
 
 typedef enum : uint8_t {
     TEXT_HALIGN___LEFT,
@@ -276,8 +265,18 @@ typedef struct {
 typedef struct {
     bitmap________t bitmapA;      // erasing
     bitmap________t bitmapB;      // drawing
+    bitmap________t bitmapC;      // reserve
+    bitmap________t bitmapD;      // reserve
     orientation___e orientation;  // the orientation of the primary device
 } bitmaps_______t;
+// const a = sizeof(bitmaps_______t); // 5
+
+typedef struct {
+    // uint8_t values[8];
+    int64_t offset;
+    uint16_t padding;
+} ledbar________t;
+// const a = sizeof(ledbar________t); // 8
 
 typedef struct {
     char character;
@@ -304,9 +303,22 @@ typedef enum : uint8_t {
 
 typedef struct {
     device_role___e deviceRole;
-    bitmaps_______t bitmaps;
     magnitudes___t magnitudes;
 } device_data___t;
 // const a = sizeof(device_data___t); // 144
+
+typedef struct {
+    device_role___e deviceRole;
+    ledbar________t ledbar;
+    magnitudes___t magnitudes;
+} device_data_l_t;
+// const b = sizeof(device_data_l_t); // 160
+
+typedef struct {
+    device_role___e deviceRole;
+    bitmaps_______t bitmaps;
+    magnitudes___t magnitudes;
+} device_data_b_t;
+// const c = sizeof(device_data_b_t); // 152
 
 #endif

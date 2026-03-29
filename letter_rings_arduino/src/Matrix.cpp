@@ -4,6 +4,8 @@ Matrix::Matrix(uint8_t addr, String name) : writeCanvas(8, 8), clearCanvas(8, 8)
     this->baseMatrix = Adafruit_8x8matrix();
     this->addr = addr;
     this->name = name;
+    this->brightnessCurr = 64;
+    this->brightnessPend = 0;
     this->powered = false;
 }
 
@@ -110,6 +112,20 @@ void Matrix::drawLabel(String label, int16_t offset) {
     }
 }
 
+void Matrix::drawLedbar(uint8_t value) {
+    this->clear(CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP);
+    if (this->powered) {
+        Matrix::setBrightness(value);
+        // if (value > 9) {
+        //     this->writeCanvas.drawRect(1, 1, 6, 6, LED_ON);
+        // } else if (value > 6) {
+        this->writeCanvas.drawRect(2, 2, 4, 4, LED_ON);
+        // } else {
+        //     this->writeCanvas.drawRect(3, 3, 2, 2, LED_ON); // always draw innermost
+        // }
+    }
+}
+
 void Matrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
     if (this->powered) {
         this->writeCanvas.drawPixel(x, y, color);
@@ -143,13 +159,18 @@ void Matrix::write() {
         this->baseMatrix.drawBitmap(0, 0, this->clearCanvas.getBuffer(), 8, 8, LED_OFF);
         this->baseMatrix.drawBitmap(0, 0, this->writeCanvas.getBuffer(), 8, 8, LED_ON);
         this->baseMatrix.writeDisplay();
+        if (this->brightnessCurr != this->brightnessPend) {
+            this->brightnessCurr = this->brightnessPend;
+            this->baseMatrix.setBrightness(this->brightnessCurr);
+        }
     }
 }
 
-void Matrix::setBrightness(uint8_t brightness) {
-    if (this->powered) {
-        this->baseMatrix.setBrightness(brightness);
+bool Matrix::setBrightness(uint8_t brightness) {
+    if (brightness >= 0 && brightness <= 15) {
+        this->brightnessPend = brightness;
     }
+    return this->brightnessPend != this->brightnessCurr;
 }
 
 uint8_t* Matrix::getBuffer() {

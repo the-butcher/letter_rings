@@ -35,7 +35,7 @@ public:
      * sets a new brightness value to the Matrices
      * @return true if the new value is an actual change with respect to the old brightness
      */
-    static bool setBrightness(uint8_t brightness);
+    static bool setBrightness(uint8_t brightness, bool force = false);
 
     static Matrix matrixA;
     static Matrix matrixB;
@@ -59,6 +59,7 @@ public:
     static void setOrientation(orientation___e orientation);
     static void drawPixel(int16_t x, int16_t y, uint16_t color);
     static void drawBars();
+    static void drawLedbar();
     static void drawChar(char__________t character);
     static void drawWord(String word);
     static void drawLabel(String label, int16_t offset);

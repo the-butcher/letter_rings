@@ -3,6 +3,7 @@
 // Adafruit_8x8matrix Matrix::baseMatrix();
 modus_________e Device::prevModus = MODUS________CHARS;
 modus_________e Device::currModus = MODUS________CHARS;
+dterm_________e Device::currDterm = DTERM_________NONE;
 
 orientation___e Device::orientation = ORIENTATION______UP;
 
@@ -15,19 +16,71 @@ bitmaps_______t Device::currBitmaps = { {
                                        {
                                            BITMAP_PAC____OPEN_R,  // this draws the shape of pacman
                                            0
+                                       },
+                                       {
+                                           BITMAP_________EMPTY,  // reserve
+                                           0
+                                       },
+                                       {
+                                           BITMAP_________EMPTY,  // reserve
+                                           0
                                        } };
+
+uint8_t Device::gamknValues[32] = {};
+
+ledbar________t Device::currLedbar = {
+    0,
+    0
+}; // empty ledbar
 
 device_role___e Device::deviceRole = DEVICE_ROLE_____ANY;
 uint64_t Device::lastRolePriAssignmentMillis = 0;
 
 bool Device::powerup() {
-    // nothing
+    // https://www.desmos.com/calculator/e8oafd81vd?lang=de
+    for (uint8_t i = 0; i < 32; i++) {
+        Device::gamknValues[i] = round(pow((cos(i * PI / 32) + 1) * 0.5, 4) * 10);
+        Serial.printf("kn value    %03d -> %03d\n", i, Device::gamknValues[i]);
+    }
     return true;
 }
 
 bool Device::depower() {
     // nothing
     return true;
+}
+
+void Device::setCurrBitmaps(bitmaps_______t currBitmaps) {
+    Device::currBitmaps = currBitmaps;
+    Device::setCurrDterm(DTERM________GAMPM);
+}
+
+bitmaps_______t Device::getCurrBitmaps() {
+    return Device::currBitmaps;
+}
+
+void Device::setCurrLedbar(ledbar________t currLedbar) {
+    Device::currLedbar = currLedbar;
+    Device::setCurrDterm(DTERM________GAMKN);
+}
+
+ledbar________t Device::getCurrLedbar() {
+    return Device::currLedbar;
+}
+
+void Device::setCurrDterm(dterm_________e currDterm) {
+    if (currDterm != Device::currDterm) {
+        if (Device::currDterm == DTERM________GAMKN) {
+            Matrices::setBrightness(Matrices::getBrightness(), true);
+        }
+        // Serial.print("setting currDterm: ");
+        // Serial.println(currDterm);
+        Device::currDterm = currDterm;
+    }
+}
+
+dterm_________e Device::getCurrDterm() {
+    return Device::currDterm;
 }
 
 orientation___e Device::getOrientation() {
@@ -64,7 +117,7 @@ bool Device::setDeviceRole(device_role___e deviceRole) {
         return true;
     } else if (deviceRole == DEVICE_ROLE_____ANY) {
         if (Device::deviceRole == DEVICE_ROLE_____PRI) {  // when in PRI only accept ANY after a while
-            if ((millis() - Device::lastRolePriAssignmentMillis) > ROLE_PRI____DURATION_MS || ACCEPT__ROLE_DOWNGRADE) {
+            if ((millis() - Device::lastRolePriAssignmentMillis) > ROLE_PRI____DURATION_MS || ACCEPT__ROLE_DOWNGRADE) { // ACCEPT__ROLE_DOWNGRADE is true for R, false for L
                 Device::deviceRole = deviceRole;
                 return true;
             } else {
