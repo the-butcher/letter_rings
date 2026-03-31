@@ -462,59 +462,6 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginVertical="4dp"
-                    android:background="#999999" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="36dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/consola"
-                        android:paddingStart="8dp"
-                        android:paddingTop="10dp"
-                        android:paddingEnd="0dp"
-                        android:text="60"
-                        android:textAlignment="center"
-                        android:textSize="12sp"
-                        tools:ignore="HardcodedText" />
-
-                    <SeekBar
-                        android:id="@+id/sbCoefG"
-
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
-                        android:layout_weight="10"
-                        android:max="90"
-                        android:min="60"
-                        android:padding="6dp"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:progress="7" />
-
-                    <TextView
-                        android:layout_width="36dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/consola"
-                        android:paddingStart="0dp"
-                        android:paddingTop="10dp"
-                        android:paddingEnd="8dp"
-                        android:text="90"
-                        android:textAlignment="center"
-                        android:textSize="12sp"
-                        tools:ignore="HardcodedText" />
-
-                </LinearLayout>
-
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
                     android:layout_marginVertical="4dp" />
             </LinearLayout>
         </LinearLayout>

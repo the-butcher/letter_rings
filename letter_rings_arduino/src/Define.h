@@ -24,7 +24,6 @@
 #define COMMAND_MODUS_____UUID "a8792ef9-c01c-47ee-a063-f8712bf8dd67"  // for remote reading/writing the modus
 #define COMMAND_LIGHT_____UUID "28c64d42-4958-43f0-8845-5a106498bf1d"  // for remote reading/writing the light
 #define COMMAND_COEFP_____UUID "cfb68865-9243-4646-af27-750d02d44a3a"  // for remote reading/writing the coefP (pairing coefficient)
-#define COMMAND_COEFG_____UUID "2151fc75-d815-4b69-8b68-2bd56f93c1dc"  // for remote reading/writing the coefG (gesture coefficient)
 
 #define AUDIO__________SAMPLES 512    // Must be a power of 2
 #define AUDIO____SAMPLING_FREQ 40000  // Hz, must be 40000 or less due to ADC conversion time. Determines maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
@@ -74,10 +73,13 @@ static const char* WORDS[] PROGMEM = { "HATE", "FAIL", "GANG", "JUNK", "FAKE", "
                                       "COST", "PUSH", "MYTH", "URGE", "RAIN", "REDO", "NEED", "SEEM", "LONE", "VAST", "PALE", "SICK", "RARE", "BEEF", "FOOL", "DEAF", "DRUG", "ITCH", "PITY", "LACK", "WANT", "SEEK", "TRIP", "DOWN", "GREY", "RULE", "WORK", "TASK", "STOP", "LOUD", "MUST", "GIVE", "LOSE", "TORN", "ONLY", "SOLO", "TRAP", "FLOP", "QUIT", "SUNK", "HOWL", "ENVY", "CYST", "COLD", "DROP", "BASE", "FLEE", "OVER", "HARD", "PASS" };
 static const uint8_t WORD_COUNT = 100;
 static const uint8_t STA_ADDRESS_OUT[] = { 0xD0, 0xCF, 0x13, 0x0A, 0xE1, 0xC8 }; // sta address of left device
-static const int8_t BITMAPS_OFF = -1;                                            // -1 * ORIENTATION * 16 + 16 -> 32 when UP, 0 when DOWN, -1 * -2 + 2 -> 4
+static const int8_t BITMAPS_OFF = -1; // -1 * ORIENTATION * 16 + 16 -> 32 when UP, 0 when DOWN, -1 * -2 + 2 -> 4
+static const gpio_num_t TOUCH______________PIN = GPIO_NUM_12; // only on the right device
+static const uint32_t   TOUCH________THRESHOLD = 100000;
 #endif
 
 const gpio_num_t AUDIO______________PIN = GPIO_NUM_8;  // A5
+
 
 const uint64_t ROLE_PRI____DURATION_MS = 15000;
 const uint64_t WORD_UPDATE_INTERVAL_MS = 14000;
@@ -149,8 +151,7 @@ typedef enum : uint8_t {
     BUTTON_ACTION_MODUS,
     BUTTON_ACTION_DECAY,  // the decay of the frequency bands
     BUTTON_ACTION_LIGHT,
-    BUTTON_ACTION_COEFP,
-    BUTTON_ACTION_COEFG
+    BUTTON_ACTION_COEFP
 } button_action_e;
 
 typedef enum : uint8_t {

@@ -5,6 +5,7 @@ bool Nowsrv::powered;
 uint64_t Nowsrv::millisSend = 0;
 uint64_t Nowsrv::millisRecv = 0;
 uint64_t Nowsrv::destMillisWait = 2;
+uint8_t Nowsrv::roleTriggerTouchCount = 0;
 
 // Function to convert a struct to a byte array
 // https://wokwi.com/projects/384215584338530305
@@ -78,18 +79,9 @@ bool Nowsrv::sendDeviceData(modus_________e determModus) {
     Serial.println(xPortGetCoreID());
 #endif
 
-    // Serial.print("sending device data, determModus: ");
-    // Serial.println(determModus);
-
     Nowsrv::millisSend = millis();
 
-    // device_role___e deviceRole = Device::getDeviceRole();
-    // Serial.print("outgoing device role ");
-    // Serial.println(deviceRole);
-
     if (determModus == MODUS____GAMPM_PRI) {
-
-        // Serial.println("sending device data, bitmaps");
 
         // send device data with bitmaps
         device_data_b_t deviceData = {
@@ -102,7 +94,7 @@ bool Nowsrv::sendDeviceData(modus_________e determModus) {
 
     } else if (determModus == MODUS____GAMKN_PRI) {
 
-        // Serial.println("sending device data, ledbar");
+        Nowsrv::roleTriggerTouchCount = 0; // reset every time GAMKN ledbar is sent, so the count has to restart upon a distinct new touch
 
         // send device data with ledbar
         device_data_l_t deviceData = {
@@ -115,8 +107,6 @@ bool Nowsrv::sendDeviceData(modus_________e determModus) {
 
     } else {
 
-        // Serial.println("sending device data, plain");
-
         // send plain device data
         device_data___t deviceData = {
             Device::getDeviceRole(),
@@ -126,7 +116,6 @@ bool Nowsrv::sendDeviceData(modus_________e determModus) {
         return result == ESP_OK;
 
     }
-
 
 }
 
@@ -161,8 +150,6 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
 
     if (len == sizeof(device_data___t)) { // incoming, neither bitmaps nor ledbar
 
-        // Serial.println("receiving device data, plain");
-
         device_data___t incominingDeviceData;
         memcpy(&incominingDeviceData, incomingData, sizeof(device_data___t));
         Orientation::setMagnitudesB(incominingDeviceData.magnitudes); // will recalculate coefP
@@ -174,8 +161,6 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
 
     } else if (len == sizeof(device_data_b_t)) { // incoming with bitmaps
 
-        // Serial.println("receiving device data, bitmaps");
-
         device_data_b_t incominingDeviceData;
         memcpy(&incominingDeviceData, incomingData, sizeof(device_data_b_t));
         Orientation::setMagnitudesB(incominingDeviceData.magnitudes); // will recalculate coefP
@@ -186,8 +171,6 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
         Nowsrv::handleRoleTriggers();
 
     } else if (len == sizeof(device_data_l_t)) { // incoming with ledbar
-
-        // Serial.println("receiving device data, ledbar");
 
         device_data_l_t incominingDeviceData;
         memcpy(&incominingDeviceData, incomingData, sizeof(device_data_l_t));
@@ -215,12 +198,23 @@ void Nowsrv::OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len
 }
 
 void Nowsrv::handleRoleTriggers() {
+#if DEVICE____________LEFT == false
+    if (touchRead(TOUCH______________PIN) > TOUCH________THRESHOLD) {
+        Nowsrv::roleTriggerTouchCount++;
+    }
+#endif
     if (Device::getDeviceRole() != DEVICE_ROLE_____SEC) {          // may only check coefficient when not in SEC mode
         // make a role decision based on orientation threshold, only when not in SEC (must remain passive in SEC)
         if (Orientation::isAboveCoefPThreshold()) {                // should be PRI
             if (Device::getDeviceRole() != DEVICE_ROLE_____PRI) {  // but is not
-                if (Device::setDeviceRole(DEVICE_ROLE_____PRI)) {  // set to pri
+                if (Device::setDeviceRole(DEVICE_ROLE_____PRI)) {  // set to pri accepted
                     Device::setCurrDterm(DTERM________GAMPM);      // will cause bitmaps to be sent, which will cause currDterm on the secondary device to be GAMPM as well
+                }
+            }
+        } else if (Nowsrv::roleTriggerTouchCount > 3) {            // can only happen in the right device
+            if (Device::getDeviceRole() != DEVICE_ROLE_____PRI) {  // but is not
+                if (Device::setDeviceRole(DEVICE_ROLE_____PRI)) {  // set to pri accepted
+                    Device::setCurrDterm(DTERM________GAMKN);      // will cause bitmaps to be sent, which will cause currDterm on the secondary device to be GAMPM as well
                 }
             }
         } else {                                                   // should be ANY
@@ -230,7 +224,6 @@ void Nowsrv::handleRoleTriggers() {
                 }
             }
         }
-        // TODO :: handle KN trigger
     }
 }
 

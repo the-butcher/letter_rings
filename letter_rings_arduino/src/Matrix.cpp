@@ -116,13 +116,9 @@ void Matrix::drawLedbar(uint8_t value) {
     this->clear(CLEAR_MATRIX_CANVAS | CLEAR_MATRIX___DISP);
     if (this->powered) {
         Matrix::setBrightness(value);
-        // if (value > 9) {
-        //     this->writeCanvas.drawRect(1, 1, 6, 6, LED_ON);
-        // } else if (value > 6) {
-        this->writeCanvas.drawRect(2, 2, 4, 4, LED_ON);
-        // } else {
-        //     this->writeCanvas.drawRect(3, 3, 2, 2, LED_ON); // always draw innermost
-        // }
+        this->writeCanvas.drawRect(1, 1, 6, 6, LED_ON);
+        // this->writeCanvas.drawRect(2, 2, 4, 4, LED_ON);
+        // this->writeCanvas.drawRect(3, 3, 2, 2, LED_ON);
     }
 }
 

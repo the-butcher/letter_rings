@@ -38,8 +38,6 @@ private:
     static double coefP;
     static double coefPThreshold;
 
-    static double coefGThreshold;
-
 public:
 
     static bool read();
@@ -60,19 +58,6 @@ public:
     static void calculateCoefP();
 
     static double calculateCoefficient(float valuesA[ACCELERATION___SAMPLES], float valuesB[ACCELERATION___SAMPLES], uint8_t count = ACCELERATION___SAMPLES);
-
-    static bool matchGesture(acceleration_t gesture, float threshold = 1.5);
-
-    /**
-     * get the current coefG (gesture) value
-     */
-    static double getCoefGThreshold();
-
-    /**
-     * set a new coefP threshold value
-     * @return true if the value could be set (was within min/max values), false otherwise
-     */
-    static bool setCoefGThreshold(double coefGThreshold);
 
     /**
      * get the current coefP value

@@ -115,10 +115,8 @@ void Display::drawConfig() {
             baText = "DECAY";
         } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT) {
             baText = "LIGHT";
-        } else if (Buttons::buttonAction == BUTTON_ACTION_COEFP) {
-            baText = "COEFP";
         } else {
-            baText = "COEFG";
+            baText = "COEFP";
         }
         Display::drawString(baText, DISPLAY__WIDTH / 2, configYPos, TEXT_HALIGN_CENTER);
         Display::drawString("+", DISPLAY__WIDTH, configYPos, TEXT_HALIGN__RIGHT);
@@ -147,10 +145,8 @@ void Display::drawConfig() {
             value = String(Microphone::decay);
         } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT) {
             value = String(Matrices::getBrightness());
-        } else if (Buttons::buttonAction == BUTTON_ACTION_COEFP) {
+        } else { // coefP
             value = String((int)round(Orientation::getCoefPThreshold() * 100));
-        } else { // coefG
-            value = String((int)round(Orientation::getCoefGThreshold() * 100));
         }
 
         Display::drawString(value, DISPLAY__WIDTH / 2, configYPos - 17, TEXT_HALIGN_CENTER, DISPLAY__WIDTH / 2);

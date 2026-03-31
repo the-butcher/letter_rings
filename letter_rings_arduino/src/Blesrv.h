@@ -23,7 +23,6 @@ private:
     static BLECharacteristic* pModusCharacteristic;
     static BLECharacteristic* pLightCharacteristic;
     static BLECharacteristic* pCoefPCharacteristic;
-    static BLECharacteristic* pCoefGCharacteristic;
 
 public:
     /**
@@ -46,10 +45,6 @@ public:
      * write new coefP value when changed on the device
      */
     static bool writeCoefP();
-    /**
-     * write new coefG value when changed on the device
-     */
-    static bool writeCoefG();
     /**
      * initialize bluetooth, build characteristics and start advertising
      */

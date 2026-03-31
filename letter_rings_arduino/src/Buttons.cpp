@@ -47,9 +47,7 @@ void Buttons::handleInterruptA() {
                 Microphone::decay += 5;
             } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT && Matrices::setBrightness(Matrices::getBrightness() + 1)) {
                 Blesrv::writeLight();
-            } else if (Buttons::buttonAction == BUTTON_ACTION_COEFP && Orientation::setCoefPThreshold(min(COEFF________THRES_MAX, Orientation::getCoefPThreshold() + 0.05))) {
-                Blesrv::writeCoefP();
-            } else if (Orientation::setCoefGThreshold(min(COEFF________THRES_MAX, Orientation::getCoefGThreshold() + 0.05))) {
+            } else if (Orientation::setCoefPThreshold(min(COEFF________THRES_MAX, Orientation::getCoefPThreshold() + 0.05))) {
                 Blesrv::writeCoefP();
             }
         }
@@ -68,8 +66,6 @@ void Buttons::handleInterruptB() {
                 Buttons::buttonAction = BUTTON_ACTION_LIGHT;
             } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT) {
                 Buttons::buttonAction = BUTTON_ACTION_COEFP;
-            } else if (Buttons::buttonAction == BUTTON_ACTION_COEFP) {
-                Buttons::buttonAction = BUTTON_ACTION_COEFG;
             } else {
                 Buttons::buttonAction = BUTTON_ACTION_MODUS;
             }
@@ -105,10 +101,8 @@ void Buttons::handleInterruptC() {
                 Microphone::decay -= 5;
             } else if (Buttons::buttonAction == BUTTON_ACTION_LIGHT && Matrices::setBrightness(Matrices::getBrightness() - 1)) {
                 Blesrv::writeLight();
-            } else if (Buttons::buttonAction == BUTTON_ACTION_COEFP && Orientation::setCoefPThreshold(max(COEFF________THRES_MIN, Orientation::getCoefPThreshold() - 0.05))) {
+            } else if (Orientation::setCoefPThreshold(max(COEFF________THRES_MIN, Orientation::getCoefPThreshold() - 0.05))) {
                 Blesrv::writeCoefP();
-            } else if (Orientation::setCoefGThreshold(max(COEFF________THRES_MIN, Orientation::getCoefGThreshold() - 0.05))) {
-                Blesrv::writeCoefG();
             }
         }
         Buttons::buttonC.lastInterruptMillis = interruptMillis;

@@ -24,7 +24,6 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
     var modusCharacteristic: BluetoothGattCharacteristic? = null // get/set modus
     var lightCharacteristic: BluetoothGattCharacteristic? = null // get/set light
     var coefPCharacteristic: BluetoothGattCharacteristic? = null // get/set coefficient for pairing
-    var coefGCharacteristic: BluetoothGattCharacteristic? = null // get/set coefficient for gestures
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun writeLabelValue(value: String) {
@@ -71,16 +70,6 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun writeCoefGValue(coefG: Int) {
-        if (gattInstance != null && coefGCharacteristic != null) {
-            val bytes = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(coefG).array()
-            bytes.reverse() // significant byte need to be first
-            Log.i(LOG_TAG_BLUE, "writing coefG value ${bytes.size} ${bytes[0]} ${bytes[3]}")
-            gattInstance!!.writeCharacteristic(coefGCharacteristic!!, bytes, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
-        }
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun readModusValue() {
         val readResult = gattInstance?.readCharacteristic(modusCharacteristic)
         Log.i(LOG_TAG_BLUE,"read-characteristic-modus (result: ${readResult})") // returns true
@@ -96,12 +85,6 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
     fun readCoefPValue() {
         val readResult = gattInstance?.readCharacteristic(coefPCharacteristic)
         Log.i(LOG_TAG_BLUE,"read-characteristic-coef-p (result: ${readResult})") // returns true
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun readCoefGValue() {
-        val readResult = gattInstance?.readCharacteristic(coefGCharacteristic)
-        Log.i(LOG_TAG_BLUE,"read-characteristic-coef-g (result: ${readResult})") // returns true
     }
 
     // https://punchthrough.com/android-ble-guide/
@@ -184,10 +167,6 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                             val coefP = value[0]
                             Log.i(LOG_TAG_BLUE, "characteristic-read (side: ${side}, coefP: ${coefP})")
                             MainActivity.instance.get()?.setCoefP(coefP)
-                        } else if (characteristic.uuid.toString() == COMMAND_COEFG_____UUID) {
-                            val coefG = value[0]
-                            Log.i(LOG_TAG_BLUE, "characteristic-read (side: ${side}, coefG: ${coefG})")
-                            MainActivity.instance.get()?.setCoefG(coefG)
                         } else {
                             Log.w(LOG_TAG_BLUE, "characteristic-read (side: ${side}, unknown characteristic)")
                         }
@@ -213,9 +192,6 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                 } else if (characteristic.uuid.toString() == COMMAND_COEFP_____UUID) {
                     Log.i(LOG_TAG_BLUE, "trigger read-characteristic (side: ${side}, coefP)")
                     readCoefPValue()
-                } else if (characteristic.uuid.toString() == COMMAND_COEFG_____UUID) {
-                    Log.i(LOG_TAG_BLUE, "trigger read-characteristic (side: ${side}, coefG)")
-                    readCoefGValue()
                 }
             }
 
@@ -234,7 +210,6 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                         modusCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_MODUS_____UUID))
                         lightCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_LIGHT_____UUID))
                         coefPCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_COEFP_____UUID))
-                        coefGCharacteristic = service.getCharacteristic(UUID.fromString(COMMAND_COEFG_____UUID))
 
                         modusCharacteristic?.let {
 
@@ -297,27 +272,6 @@ class BleDevice(val device: BluetoothDevice, private val side: Side) {
                             }, 1750)
 
                         } ?: Log.i(LOG_TAG_BLUE,"coefP characteristic not found") // returns true
-
-                        coefGCharacteristic?.let {
-
-                            Handler(Looper.getMainLooper()).postDelayed({
-
-                                enableNotifications(coefGCharacteristic!!)
-
-                            }, 2000)
-
-                            Handler(Looper.getMainLooper()).postDelayed({
-
-                                // get initial coefG value
-                                try {
-                                    readCoefGValue()
-                                } catch (e: Exception) {
-                                    Log.e(LOG_TAG_BLUE, "failed to read coefG ${e.message}")
-                                }
-
-                            }, 2250)
-
-                        } ?: Log.i(LOG_TAG_BLUE,"coefG characteristic not found") // returns true
 
                         Log.i(LOG_TAG_BLUE, "services-discovered (side: ${side})")
                         MainActivity.instance.get()?.checkBleState(side)

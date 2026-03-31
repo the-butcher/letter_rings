@@ -39,7 +39,7 @@ uint64_t Device::lastRolePriAssignmentMillis = 0;
 bool Device::powerup() {
     // https://www.desmos.com/calculator/e8oafd81vd?lang=de
     for (uint8_t i = 0; i < 32; i++) {
-        Device::gamknValues[i] = round(pow((cos(i * PI / 32) + 1) * 0.5, 4) * 10);
+        Device::gamknValues[i] = round(pow((cos(i * PI / 32) + 1) * 0.5, 12) * 12);
         Serial.printf("kn value    %03d -> %03d\n", i, Device::gamknValues[i]);
     }
     return true;
@@ -73,8 +73,6 @@ void Device::setCurrDterm(dterm_________e currDterm) {
         if (Device::currDterm == DTERM________GAMKN) {
             Matrices::setBrightness(Matrices::getBrightness(), true);
         }
-        // Serial.print("setting currDterm: ");
-        // Serial.println(currDterm);
         Device::currDterm = currDterm;
     }
 }
@@ -96,6 +94,7 @@ void Device::setOrientation(orientation___e orientation) {
 void Device::setCurrModus(modus_________e currModus) {
     if (Device::currModus != MODUS________ACCEL) {
         Device::prevModus = Device::currModus;
+        Device::setCurrDterm(DTERM_________NONE); // be sure to reset DTERM, this will also force a brightness update if the device was actually in GAMKN mode
     }
     Device::currModus = currModus;
 }
@@ -117,7 +116,7 @@ bool Device::setDeviceRole(device_role___e deviceRole) {
         return true;
     } else if (deviceRole == DEVICE_ROLE_____ANY) {
         if (Device::deviceRole == DEVICE_ROLE_____PRI) {  // when in PRI only accept ANY after a while
-            if ((millis() - Device::lastRolePriAssignmentMillis) > ROLE_PRI____DURATION_MS || ACCEPT__ROLE_DOWNGRADE) { // ACCEPT__ROLE_DOWNGRADE is true for R, false for L
+            if ((millis() - Device::lastRolePriAssignmentMillis) > ROLE_PRI____DURATION_MS || (currDterm == DTERM________GAMPM && ACCEPT__ROLE_DOWNGRADE)) { // ACCEPT__ROLE_DOWNGRADE is true for R, false for L
                 Device::deviceRole = deviceRole;
                 return true;
             } else {

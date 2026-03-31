@@ -269,30 +269,6 @@ void runLoopTaskDisplay(void* pvParameters) {
 
 }
 
-// void logValues(float values[ACCELERATION___SAMPLES]) {
-//     Serial.print("{");
-//     for (uint8_t i = 0; i < ACCELERATION___SAMPLES; i++) {
-//         Serial.print(String(values[i], 3));
-//         if (i < ACCELERATION___SAMPLES - 1) {
-//             Serial.print(",");
-//         }
-//     }
-//     Serial.print("}");
-// }
-
-// #if DEVICE____________LEFT == true
-// void applyGestureModus(modus_________e gestureModus) {
-//     if (Device::getCurrModus() == MODUS________ACCEL && Device::getPrevModus() != gestureModus) { // if in ACCEL, set to WORDS, then reapply ACCEL
-//         Device::setCurrModus(gestureModus);
-//         Device::setCurrModus(MODUS________ACCEL);
-//         Blesrv::writeModus();
-//     } else if (Device::getCurrModus() != gestureModus) {
-//         Device::setCurrModus(gestureModus);
-//         Blesrv::writeModus();
-//     }
-// }
-// #endif
-
 void runLoopTaskGeneral(void* pvParameters) {
 
     uint64_t counterGeneral = 0;
@@ -339,37 +315,6 @@ void runLoopTaskGeneral(void* pvParameters) {
         } else {
             bitmapPos = BITMAP_RESET_POS;
         }
-
-
-
-        // if (Orientation::isAboveSignificantThreshold((float)ACCELERATION_TAP_THRES, ACCELERATION___SAMPLES - 5, ACCELERATION___SAMPLES - 3)) {
-        //     acceleration_t accelerationsA = Orientation::getAccelerationsA();
-        //     Serial.println("{");
-        //     logValues(accelerationsA.valuesX);
-        //     Serial.println(",");
-        //     logValues(accelerationsA.valuesY);
-        //     Serial.println(",");
-        //     logValues(accelerationsA.valuesZ);
-        //     Serial.println();
-        //     Serial.println("}");
-        // }
-
-// #if DEVICE____________LEFT == true
-
-//         double coefG = Orientation::getCoefGThreshold();
-//         bool isGestureW = Orientation::matchGesture(ACCEL_W, 1.87 * coefG); // 1.12@0.6 - 1.40@0.75 - 1.68@0.9
-//         bool isGestureF = Orientation::matchGesture(ACCEL_F, 2.07 * coefG); // 1.42@0.6 - 1.55@0.75 - 1.86@0.9
-//         bool isGestureC = Orientation::matchGesture(ACCEL_C, 2.13 * coefG); // 1.28@0.6 - 1.60@0.75 - 1.92@0.9
-
-//         if (isGestureW) {
-//             applyGestureModus(MODUS________WORDS);
-//         } else if (isGestureF) {
-//             applyGestureModus(MODUS________PARTY);
-//         } else if (isGestureC) {
-//             applyGestureModus(MODUS________CHARS);
-//         }
-
-// #endif
 
         counterGeneral++;
         vTaskDelay(50);

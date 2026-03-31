@@ -7,7 +7,6 @@ magnitudes___t Orientation::magnitudesB;
 acceleration_t Orientation::accelerationsA;
 double Orientation::coefP;
 double Orientation::coefPThreshold = 0.80;
-double Orientation::coefGThreshold = 0.75;
 
 bool Orientation::powered = false;
 
@@ -113,25 +112,6 @@ double Orientation::calculateCoefficient(float valuesA[ACCELERATION___SAMPLES], 
 
 }
 
-bool Orientation::matchGesture(acceleration_t gesture, float threshold) {
-
-    double coefX = Orientation::calculateCoefficient(Orientation::accelerationsA.valuesX, (float*)gesture.valuesX, 22);
-    double coefY = Orientation::calculateCoefficient(Orientation::accelerationsA.valuesY, (float*)gesture.valuesY, 22);
-
-    if ((coefX + coefY) > threshold) {
-        // Serial.print("x: ");
-        // Serial.print(coefX);
-        // Serial.print(", y: ");
-        // Serial.print(coefY);
-        // Serial.print(", s: ");
-        // Serial.println((coefX + coefY));
-        return true;
-    } else {
-        return false;
-    }
-
-}
-
 double Orientation::getCoefP() {
     return Orientation::coefP;
 }
@@ -143,19 +123,6 @@ double Orientation::getCoefPThreshold() {
 bool Orientation::setCoefPThreshold(double coefPThreshold) {
     if (coefPThreshold >= COEFF________THRES_MIN && coefPThreshold <= COEFF________THRES_MAX) {
         Orientation::coefPThreshold = coefPThreshold;
-        return true;
-    } else {
-        return false;
-    }
-}
-
-double Orientation::getCoefGThreshold() {
-    return Orientation::coefGThreshold;
-}
-
-bool Orientation::setCoefGThreshold(double coefGThreshold) {
-    if (coefGThreshold >= COEFF________THRES_MIN && coefGThreshold <= COEFF________THRES_MAX) {
-        Orientation::coefGThreshold = coefGThreshold;
         return true;
     } else {
         return false;

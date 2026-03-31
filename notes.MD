@@ -22,11 +22,12 @@
   ✔ a switch disconnect in the app does not disconnect the device!
 
 - esp
-  || devie is not return from PRI to Any
-  !! trigger for kitt animation
-  !! actually render kitt animation depending on DTERM setting
+  ✔ trigger for kitt animation
+  ✔ device does not return from PRI to Any :: did switch to WORDS due to false positive W pattern recognition
+  ✔ actually render kitt animation depending on DTERM setting
   ✔ return all matrices to their original brightness when done with drawing the kitt animation
-  -- test with full setup, on arms and powerbank, wear for a while to discover problems, uncomfortable spots, short cables, ...
+     -- does not work when switching modus while still in GAMKN animation, but can be recovered by manually setting brightness
+  ~~ test with full setup, on arms and powerbank, wear for a while to discover problems, uncomfortable spots, short cables, ...
   ~~ check any thinkable maximum in terms of device orientation and be sure there is no problem throughout orientations
   ~~ test with high volume and noise as good as possible, experiment with gain settings on the microphone
      - https://leobot.net/tutorial/1067?srsltid=AfmBOopGwK3bNLB8GH9lWKwbYeUN1UAsiPBQsh7GJRLy7i_L0Uc4ghWd

@@ -103,7 +103,6 @@ class MainActivity : AppCompatActivity() {
         setupRadioButtons()
         setupLightBar()
         setupCoefPBar()
-        setupCoefGBar()
         setupConnButton(Side.LEFT)
         setupConnButton(Side.RIGHT)
         setupLockSlider()
@@ -238,7 +237,6 @@ class MainActivity : AppCompatActivity() {
 
         val sbLight: SeekBar =  findViewById (R.id.sbLight)
         val sbCoefP: SeekBar =  findViewById (R.id.sbCoefP)
-        val sbCoefG: SeekBar =  findViewById (R.id.sbCoefG)
 
         val txLabelL: TextView = findViewById(Side.LEFT.idTxLabel)
         val txLabelR: TextView = findViewById(Side.RIGHT.idTxLabel)
@@ -265,7 +263,6 @@ class MainActivity : AppCompatActivity() {
 
             sbLight.isEnabled = isEnabled
             sbCoefP.isEnabled = isEnabled
-            sbCoefG.isEnabled = isEnabled
 
             txLabelL.isClickable = isEnabled
             txLabelR.isClickable = isEnabled
@@ -352,25 +349,6 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
 //                Log.i(LOG_TAG_MAIN, "onProgressChanged (${side.sbCoefP}, ${progress})")
-            }
-        })
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun setupCoefGBar() {
-        val sbCoefG: SeekBar =  findViewById (R.id.sbCoefG)
-        sbCoefG.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-                Log.i(LOG_TAG_MAIN, "stop-tracking-touch (${R.id.sbCoefG})")
-                bleDeviceInstanceMap[Side.LEFT]?.writeCoefGValue(sbCoefG.progress)
-                bleDeviceInstanceMap[Side.RIGHT]?.writeCoefGValue(sbCoefG.progress)
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-//                Log.i(LOG_TAG_MAIN, "onStartTrackingTouch (${side.sbCoefG}, ${sbCoefG.progress})")
-            }
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-//                Log.i(LOG_TAG_MAIN, "onProgressChanged (${side.sbCoefG}, ${progress})")
             }
         })
     }
@@ -477,17 +455,6 @@ class MainActivity : AppCompatActivity() {
         this@MainActivity.runOnUiThread { sbCoefP.setProgress((coefP.toInt())) }
 
     }
-
-    fun setCoefG(coefG: Byte) {
-
-        // TODO :: warn if settings are inconsistent
-
-        val sbCoefG: SeekBar =  findViewById (R.id.sbCoefG)
-        Log.d(LOG_TAG_BLUE, "sbCoefG will be changed on ui-thread")
-        this@MainActivity.runOnUiThread { sbCoefG.setProgress((coefG.toInt())) }
-
-    }
-
 
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     fun checkBleState(side: Side) {

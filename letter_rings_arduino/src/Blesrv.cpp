@@ -7,7 +7,6 @@ BLECharacteristic* Blesrv::pWordCharacteristic;
 BLECharacteristic* Blesrv::pModusCharacteristic;
 BLECharacteristic* Blesrv::pLightCharacteristic;
 BLECharacteristic* Blesrv::pCoefPCharacteristic;
-BLECharacteristic* Blesrv::pCoefGCharacteristic;
 String Blesrv::macAdress;
 
 /**
@@ -102,22 +101,6 @@ class CoefPCallbacks : public BLECharacteristicCallbacks {
 
 };
 
-/**
- * coefG write callback (incoming coefG values)
- */
-class CoefGCallbacks : public BLECharacteristicCallbacks {
-
-    void onWrite(BLECharacteristic* pCharacteristic) {
-
-        uint8_t* newValue = (uint8_t*)pCharacteristic->getData();
-        if (Orientation::setCoefGThreshold(newValue[0] / 100.0)) {
-            Display::setNeedsConfigRedraw();
-        }
-
-    }
-
-};
-
 bool Blesrv::isConnected() {
     return Blesrv::pServer->getConnectedCount() > 0;
 }
@@ -157,12 +140,6 @@ bool Blesrv::powerup() {
     Blesrv::pCoefPCharacteristic->setCallbacks(new CoefPCallbacks());
     Blesrv::writeCoefP();
 
-    // setup coefG characteristic, read and write, can be changed from both device and app
-    Blesrv::pCoefGCharacteristic = Blesrv::pService->createCharacteristic(COMMAND_COEFG_____UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
-    Blesrv::pCoefGCharacteristic->addDescriptor(new BLE2902());
-    Blesrv::pCoefGCharacteristic->setCallbacks(new CoefGCallbacks());
-    Blesrv::writeCoefG();
-
     Blesrv::pService->start();
 
     // add service and all characteristics to advertising
@@ -173,7 +150,6 @@ bool Blesrv::powerup() {
     pAdvertising->addServiceUUID(COMMAND_MODUS_____UUID);
     pAdvertising->addServiceUUID(COMMAND_LIGHT_____UUID);
     pAdvertising->addServiceUUID(COMMAND_COEFP_____UUID);
-    pAdvertising->addServiceUUID(COMMAND_COEFG_____UUID);
 
     pServer->getAdvertising()->start();
 
@@ -222,13 +198,3 @@ bool Blesrv::writeCoefP() {
     }
 }
 
-bool Blesrv::writeCoefG() {
-    int cCoefG = (int)round(Orientation::getCoefGThreshold() * 100);
-    Blesrv::pCoefGCharacteristic->setValue(cCoefG);
-    if (Blesrv::isConnected()) {
-        Blesrv::pCoefGCharacteristic->notify();
-        return true;
-    } else {
-        return false;
-    }
-}
