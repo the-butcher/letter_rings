@@ -1,5 +1,6 @@
 *.skb
 *.bkp
 *.xlsx
+*.stl
 nowsrv_sync_test/
 accel_pattern_test/
